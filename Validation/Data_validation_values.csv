@@ -1,0 +1,745 @@
+Pollu_ID,chr_uid,Char_Name,Char_Speciation,Sample_Fraction,Statistical_Base,p01,p99,IRWQSUnitName
+1,500,Acenaphthene,NULL,Extractable,NULL,0.0040012,0.7817999999999999,ug/l
+1,500,Acenaphthene,NULL,Total,NULL,2.9682E-05,0.21000000000000002,ug/l
+3,520,Acrylonitrile,NULL,Total,NULL,1,1,ug/l
+4,529,Aldrin,NULL,Extractable,NULL,7.125999999999999E-05,0.00192496,ug/l
+4,529,Aldrin,NULL,Total,NULL,2.2236999999999997E-07,0.01,ug/l
+5,544,"Alkalinity, total",NULL,NULL,NULL,20.5,364.0999999999981,mg/l
+5,544,"Alkalinity, total",NULL,Dissolved,NULL,12.106,125,mg/l
+5,544,"Alkalinity, total",NULL,Total,NULL,17,161.10000000000036,mg/l
+5,544,"Alkalinity, total",as CaCO3,Dissolved,NULL,10,335.25999999999976,mg/l
+5,544,"Alkalinity, total",as CaCO3,Total,NULL,9,312,mg/l
+5,100331,"Alkalinity, bicarbonate",NULL,NULL,NULL,46.943999999999996,67.63499999999999,mg/l
+5,100331,"Alkalinity, bicarbonate",as CaCO3,NULL,NULL,9.136000000000001,228.39999999999975,mg/l
+5,100331,"Alkalinity, bicarbonate",as CaCO3,Dissolved,NULL,415,415,mg/l
+5,100331,"Alkalinity, bicarbonate",as HCO3,NULL,NULL,36.160000000000004,110.55999999999999,mg/l
+5,100455,"Alkalinity, carbonate",as CaCO3,NULL,NULL,2,2,mg/l
+6,556,Ammonia,NULL,Dissolved,NULL,0.009999999999999998,0.9312999999999982,mg/l
+6,556,Ammonia,NULL,None,NULL,0.01,0.01489,mg/l
+6,556,Ammonia,NULL,Total,NULL,0.01,0.44460000000000033,mg/l
+6,556,Ammonia,as N,Dissolved,NULL,0.01,1.49,mg/l
+6,556,Ammonia,as N,Total,NULL,3E-05,0.7293799999999974,mg/l
+6,556,Ammonia,as NH3,Filterable,NULL,0.05,0.15132,mg/l
+6,556,Ammonia,None,Dissolved,NULL,0.01,0.48549999999999993,mg/l
+6,2942,Ammonia-nitrogen,NULL,Total,NULL,0.01,0.029199999999999997,mg/l
+6,2942,Ammonia-nitrogen,as N,Total,NULL,0.05,0.7,mg/l
+7,568,Anthracene,NULL,Extractable,NULL,0.0057964,2.527999999999999,ug/l
+7,568,Anthracene,NULL,Total,NULL,7.633399999999999E-05,0.1,ug/l
+7,568,Anthracene,NULL,Total Recoverable,NULL,0.02,0.02,ug/l
+8,570,Antimony,NULL,Dissolved,NULL,0.02,4.724000000000001,ug/l
+8,570,Antimony,NULL,Total,NULL,0.02,0.47799999999999954,ug/l
+8,570,Antimony,NULL,Total Recoverable,NULL,0.07605999999999999,9.411999999999988,ug/l
+9,591,Arsenic,NULL,Dissolved,NULL,0.08,31.790000000000052,ug/l
+9,591,Arsenic,NULL,Total,NULL,0.17,14.21,ug/l
+9,591,Arsenic,NULL,Total Recoverable,NULL,0.09,39.787999999999926,ug/l
+9,591,Arsenic,as As,Dissolved,NULL,0.78932,1.02,ug/l
+9,591,Arsenic,as As,Total,NULL,0.9061100000000001,1.0789000000000002,ug/l
+9,4618,"Arsenic, Inorganic",NULL,Total,NULL,0.042,40.350000000000016,ug/l
+11,611,Barium,NULL,Dissolved,NULL,1.1377,81.61400000000003,ug/l
+11,611,Barium,NULL,Extractable,NULL,25.795,48.05500000000001,ug/l
+11,611,Barium,NULL,Total,NULL,5.248,38.872,ug/l
+11,611,Barium,NULL,Total Recoverable,NULL,1.4484,281.59999999999854,ug/l
+12,621,Benz[a]anthracene,NULL,Extractable,NULL,0.0029903000000000004,1.4362999999999997,ug/l
+12,621,Benz[a]anthracene,NULL,Total,NULL,3.442E-05,0.1,ug/l
+13,624,Benzene,NULL,Total,NULL,0.2,24.53599999999996,ug/l
+13,624,Benzene,NULL,Volatile,NULL,1.3250000000000006,41.9,ug/l
+15,638,Benzo[a]pyrene,NULL,Extractable,NULL,0.0025411,0.9274000000000003,ug/l
+15,638,Benzo[a]pyrene,NULL,None,NULL,0.01008,0.01498,ug/l
+15,638,Benzo[a]pyrene,NULL,Total,NULL,2.0300000000000002E-05,0.1,ug/l
+15,638,Benzo[a]pyrene,NULL,Total Recoverable,NULL,0.010300000000000002,0.039700000000000006,ug/l
+16,636,Benzo(b)fluoranthene,NULL,Extractable,NULL,0.0032816,1.1279999999999992,ug/l
+16,636,Benzo(b)fluoranthene,NULL,None,NULL,0.0101,0.033620000000000004,ug/l
+16,636,Benzo(b)fluoranthene,NULL,Total,NULL,2.1726E-05,0.10620000000000004,ug/l
+17,644,Benzo[k]fluoranthene,NULL,Extractable,NULL,0.0034051999999999997,0.0067372000000000005,ug/l
+17,644,Benzo[k]fluoranthene,NULL,Total,NULL,0.0014,0.1,ug/l
+18,8,.alpha.-Hexachlorocyclohexane,NULL,Dissolved,NULL,0.00012115000000000003,0.00366385,ug/l
+18,8,.alpha.-Hexachlorocyclohexane,NULL,Extractable,NULL,6.907199999999999E-05,0.006359999999999999,ug/l
+18,8,.alpha.-Hexachlorocyclohexane,NULL,None,NULL,0.0006438,0.0029762,ug/l
+18,8,.alpha.-Hexachlorocyclohexane,NULL,Total,NULL,3.936E-08,0.01,ug/l
+20,14,.beta.-Hexachlorocyclohexane,NULL,Total,NULL,5.6439999999999995E-08,0.01,ug/l
+20,100464,"Benzene Hexachloride, Beta (BHC)",NULL,Extractable,NULL,6.1605E-05,0.0013465499999999974,ug/l
+20,100464,"Benzene Hexachloride, Beta (BHC)",NULL,None,NULL,0.0012,0.0012,ug/l
+22,1235,Lindane,NULL,Extractable,NULL,6.1345E-05,0.0009606000000000001,ug/l
+22,1235,Lindane,NULL,Total,NULL,6.359E-08,0.01,ug/l
+23,1935,Tribromomethane,NULL,Total,NULL,1,5,ug/l
+23,1935,Tribromomethane,NULL,Total Recoverable,NULL,0.01,0.01,ug/l
+24,714,Butyl benzyl phthalate,NULL,Extractable,NULL,0.261,0.261,ug/l
+24,714,Butyl benzyl phthalate,NULL,None,NULL,3.8,3.8,ug/l
+24,714,Butyl benzyl phthalate,NULL,Total,NULL,4.6955999999999975E-05,1,ug/l
+25,725,Cadmium,NULL,Dissolved,NULL,0.00471,1,ug/l
+25,725,Cadmium,NULL,Total,NULL,0.010579999999999999,1.1399999999999864,ug/l
+25,725,Cadmium,NULL,Total Recoverable,NULL,0.003,27.480000000000246,ug/l
+26,741,Carbon tetrachloride,NULL,Total,NULL,0.16999999999999998,5,ug/l
+27,767,Chlordane,NULL,Dissolved,NULL,0.00010223,0.0006147699999999999,ug/l
+27,767,Chlordane,NULL,Total,NULL,3.7335999999999997E-06,0.0023831999999999833,ug/l
+27,821,cis-Chlordane,NULL,Dissolved,NULL,6.26E-05,0.0003174,ug/l
+27,821,cis-Chlordane,NULL,Extractable,NULL,8.160599999999999E-05,0.00036033999999999996,ug/l
+27,821,cis-Chlordane,NULL,Total,NULL,4.3539000000000004E-07,0.01,ug/l
+27,822,cis-Nonachlor,NULL,Extractable,NULL,6.9158E-05,0.000100808,ug/l
+27,822,cis-Nonachlor,NULL,Total,NULL,3.4194E-07,0.01,ug/l
+27,1929,trans-Chlordane,NULL,Dissolved,NULL,3.9630000000000005E-05,0.00029737,ug/l
+27,1929,trans-Chlordane,NULL,Total,NULL,5.8133E-07,0.01,ug/l
+27,1931,trans-Nonachlor,NULL,Total,NULL,5.412E-07,0.01,ug/l
+27,101587,gamma-Chlordane + trans-Nonachlor,NULL,Extractable,NULL,0.00013006,0.00032988000000000006,ug/l
+28,773,Chloride,NULL,Dissolved,NULL,600,212000,ug/l
+28,773,Chloride,NULL,"Filtered, field",NULL,700,24365.999999999996,ug/l
+28,773,Chloride,NULL,"Filtered, lab",NULL,500,178279.99999999884,ug/l
+28,773,Chloride,NULL,None,NULL,2100,25976.000000000007,ug/l
+28,773,Chloride,NULL,Total,NULL,500,20974,ug/l
+28,773,Chloride,as Cl,Total,NULL,39.699999999999996,1609.3000000000015,ug/l
+29,774,Chlorine,NULL,Total Residual,NULL,0,281.76,ug/l
+30,779,Chlorobenzene,NULL,Total,NULL,0.2,5,ug/l
+31,781,Chlorodibromomethane,NULL,Total,NULL,0.2,5,ug/l
+31,781,Chlorodibromomethane,NULL,Volatile,NULL,0.6101,0.6199,ug/l
+32,674,Bis(2-chloroethyl) ether,NULL,Total,NULL,0.015,1,ug/l
+33,784,Chloroform,NULL,Total,NULL,0.2,5,ug/l
+33,784,Chloroform,NULL,Volatile,NULL,1.55,9.28,ug/l
+34,672,Bis(2-chloro-1-methylethyl) ether,NULL,Total,NULL,1,1,ug/l
+36,358,2-Chloronaphthalene,NULL,Total,NULL,0.016,1,ug/l
+37,1467,o-Chlorophenol,NULL,Total,NULL,0.015,1,ug/l
+38,1795,Silvex,NULL,Extractable,NULL,0.1,0.3,ug/l
+38,1795,Silvex,NULL,Total,NULL,0.042,0.20999999999999996,ug/l
+39,320,"2,4-D",NULL,Dissolved,NULL,0.005435000000000001,0.9837700000000013,ug/l
+39,320,"2,4-D",NULL,Extractable,NULL,0.09,7.820999999999998,ug/l
+39,320,"2,4-D",NULL,Total,NULL,0.034,0.1843999999999994,ug/l
+40,791,Chlorophyll a,NULL,NULL,NULL,0.0002,0.29070999999999914,mg/l
+40,791,Chlorophyll a,NULL,None,NULL,0.0002,0.073,mg/l
+40,791,Chlorophyll a,NULL,Total,NULL,0.000341,0.091003,mg/l
+41,803,Chlorpyrifos,NULL,Dissolved,NULL,0.0007157999999999999,0.12196000000000048,ug/l
+41,803,Chlorpyrifos,NULL,Extractable,NULL,0.01,2.189999999999992,ug/l
+41,803,Chlorpyrifos,NULL,Total Recoverable,NULL,0.06,0.06,ug/l
+43,811,Chromium(VI),NULL,Total,NULL,0.6,20,ug/l
+44,813,Chrysene,NULL,Extractable,NULL,0.0041436,0.5843599999999997,ug/l
+44,813,Chrysene,NULL,Total,NULL,8.9868E-05,0.1,ug/l
+45,832,Copper,NULL,Dissolved,NULL,0.24,5.995200000000004,ug/l
+45,832,Copper,NULL,Extractable,NULL,13.02,25.76,ug/l
+45,832,Copper,NULL,Total,NULL,0.42766000000000004,11.4,ug/l
+45,832,Copper,NULL,Total Recoverable,NULL,0.25421,33.615999999999985,ug/l
+46,842,Cyanide,NULL,Dissolved,NULL,3,5,ug/l
+46,842,Cyanide,NULL,Total,NULL,3,23.700000000000045,ug/l
+48,1516,"p,p'-DDD",NULL,Dissolved,NULL,0.0001957,0.0007543000000000001,ug/l
+48,1516,"p,p'-DDD",NULL,Extractable,NULL,6.8408E-05,0.033929,ug/l
+48,1516,"p,p'-DDD",NULL,None,NULL,0.0002581,0.0009573999999999999,ug/l
+48,1516,"p,p'-DDD",NULL,Total,NULL,4.2916E-06,0.02,ug/l
+49,1517,"p,p'-DDE",NULL,Dissolved,NULL,0.0001229,0.0013871,ug/l
+49,1517,"p,p'-DDE",NULL,Extractable,NULL,6.0375E-05,0.042625,ug/l
+49,1517,"p,p'-DDE",NULL,None,NULL,0.000458,0.005156000000000001,ug/l
+49,1517,"p,p'-DDE",NULL,Total,NULL,4.7258E-06,0.02,ug/l
+50,1461,"o,p'-DDD",NULL,Extractable,NULL,6.339E-05,0.00023267999999999995,ug/l
+50,1461,"o,p'-DDD",NULL,Total,NULL,1.138E-06,0.01,ug/l
+50,1462,"o,p'-DDE",NULL,Total,NULL,2.4108E-07,0.01,ug/l
+50,1463,"o,p'-DDT",NULL,Extractable,NULL,6.572E-05,0.0004071000000000001,ug/l
+50,1463,"o,p'-DDT",NULL,Total,NULL,2.8447999999999996E-07,0.01,ug/l
+50,1518,"p,p'-DDT",NULL,Dissolved,NULL,3.975000000000002E-05,0.00148525,ug/l
+50,1518,"p,p'-DDT",NULL,Extractable,NULL,6.511E-05,0.05910000000000001,ug/l
+50,1518,"p,p'-DDT",NULL,None,NULL,0.00027880000000000005,0.002776,ug/l
+50,1518,"p,p'-DDT",NULL,Total,NULL,6.503599999999999E-07,0.02,ug/l
+50,3369,"DDT/DDD/DDE, sum of p,p' & o,p' isomers",NULL,Dissolved,NULL,0.0003637,0.0036663,ug/l
+50,3369,"DDT/DDD/DDE, sum of p,p' & o,p' isomers",NULL,Total,NULL,1.123086E-05,0.02,ug/l
+50,3372,"DDD, o,p'- and p,p'- isomers",NULL,Dissolved,NULL,0.0001957,0.0007543000000000001,ug/l
+50,3372,"DDD, o,p'- and p,p'- isomers",NULL,Total,NULL,5.15653E-06,0.02,ug/l
+50,3373,"DDE, o,p'- and p,p'- isomers",NULL,Dissolved,NULL,0.0001229,0.0013871,ug/l
+50,3373,"DDE, o,p'- and p,p'- isomers",NULL,Total,NULL,4.91516E-06,0.02,ug/l
+50,3374,"DDT, o,p'- and p,p'- isomers",NULL,Dissolved,NULL,3.975000000000002E-05,0.00148525,ug/l
+50,3374,"DDT, o,p'- and p,p'- isomers",NULL,Total,NULL,1.3719000000000002E-06,0.005094150000000013,ug/l
+50,3377,"DDD, o,o'-, o,p'-, and p,p'- isomers",NULL,Total,NULL,8.842599999999999E-06,0.0035121600000000003,ug/l
+50,3378,"DDE, o,o'-, o,p'-, and p,p'- isomers",NULL,Total,NULL,1.1738E-05,0.000647862,ug/l
+50,3418,"DDT/DDD/DDE, sum of p,p' isomers",NULL,Total,NULL,8.69038E-06,0.0034539999999999797,ug/l
+53,886,"Dibenz[a,h]anthracene",NULL,Extractable,NULL,0.003961200000000001,0.009128,ug/l
+53,886,"Dibenz[a,h]anthracene",NULL,Total,NULL,1.555E-05,0.07795999999999845,ug/l
+54,1263,m-Dichlorobenzene,NULL,Total,NULL,0.011,5,ug/l
+55,1479,o-Dichlorobenzene,NULL,Total,NULL,0.015,5,ug/l
+55,1479,o-Dichlorobenzene,NULL,Volatile,NULL,0.1,0.1,ug/l
+56,1623,p-Dichlorobenzene,NULL,Total,NULL,0.014,5,ug/l
+56,1623,p-Dichlorobenzene,NULL,Volatile,NULL,0.009300000000000001,0.009300000000000001,ug/l
+57,410,"3,3'-Dichlorobenzidine",NULL,Total,NULL,0.43,1,ug/l
+58,917,Dichlorobromomethane,NULL,Total,NULL,0.2,5,ug/l
+58,917,Dichlorobromomethane,NULL,Volatile,NULL,0.5438000000000001,1.1905999999999999,ug/l
+59,65,"1,2-Dichloroethane",NULL,Total,NULL,0.2,5,ug/l
+59,65,"1,2-Dichloroethane",NULL,Volatile,NULL,0.903,1.197,ug/l
+60,28,"1,1-Dichloroethylene",NULL,Total,NULL,0.04,5,ug/l
+60,28,"1,1-Dichloroethylene",NULL,Volatile,NULL,0.9,0.9,ug/l
+61,1926,"trans-1,2-Dichloroethylene",NULL,Total,NULL,0.3,5,ug/l
+61,1926,"trans-1,2-Dichloroethylene",NULL,Volatile,NULL,39,39,ug/l
+63,330,"2,4-Dichlorophenol",NULL,Total,NULL,0.024,1,ug/l
+64,67,"1,2-Dichloropropane",NULL,Total,NULL,0.2,5,ug/l
+65,818,"cis-1,3-Dichloropropene",NULL,Total,NULL,0.2,5,ug/l
+65,1927,"trans-1,3-Dichloropropene",NULL,Total,NULL,0.2,5,ug/l
+66,934,Dieldrin,NULL,NULL,NULL,0.0010600000000000002,0.004819999999999999,ug/l
+66,934,Dieldrin,NULL,Dissolved,NULL,0.00014432000000000008,0.00396,ug/l
+66,934,Dieldrin,NULL,Extractable,NULL,6.3767E-05,0.025144999999999987,ug/l
+66,934,Dieldrin,NULL,None,NULL,0.0011870000000000001,0.010811000000000005,ug/l
+66,934,Dieldrin,NULL,Total,NULL,9.7219E-07,0.02,ug/l
+67,938,Diethyl phthalate,NULL,Extractable,NULL,0.04,0.05176,ug/l
+67,938,Diethyl phthalate,NULL,Total,NULL,9.2862E-05,1,ug/l
+67,938,Diethyl phthalate,NULL,Total Recoverable,NULL,0.1,0.1,ug/l
+68,957,Dimethyl phthalate,NULL,Total,NULL,1.4938999999999997E-05,1,ug/l
+69,331,"2,4-Dimethylphenol",NULL,Extractable,NULL,0.006536,0.021529999999999997,ug/l
+69,331,"2,4-Dimethylphenol",NULL,Total,NULL,0.32,1,ug/l
+70,899,Dibutyl phthalate,NULL,Extractable,NULL,0.1,0.11860000000000001,ug/l
+70,899,Dibutyl phthalate,NULL,Total,NULL,0.00023820999999999998,1,ug/l
+71,332,"2,4-Dinitrophenol",NULL,Extractable,NULL,0.6,0.6,ug/l
+71,332,"2,4-Dinitrophenol",NULL,Total,NULL,0.53,2.32000000000005,ug/l
+73,333,"2,4-Dinitrotoluene",NULL,Extractable,NULL,0.0258,0.0258,ug/l
+73,333,"2,4-Dinitrotoluene",NULL,Total,NULL,0.02,1,ug/l
+74,299,"2,3,7,8-Tetrachlorodibenzo-p-dioxin",NULL,Extractable,NULL,7.1875E-07,2.7542E-06,ug/l
+74,299,"2,3,7,8-Tetrachlorodibenzo-p-dioxin",NULL,Total,NULL,1.5369E-09,9.7782E-06,ug/l
+75,72,"1,2-Diphenylhydrazine",NULL,Total,NULL,1,1,ug/l
+76,2287,Escherichia coli,NULL,NULL,NULL,1,2419,cfu/100ml
+76,2287,Escherichia coli,NULL,None,NULL,2,2100,cfu/100ml
+76,2287,Escherichia coli,NULL,Total,NULL,2,5350,cfu/100ml
+77,1000,Endosulfan,NULL,Dissolved,NULL,0.0013,0.0013,ug/l
+77,1000,Endosulfan,NULL,Total,NULL,1.7450000000000002E-06,0.00083,ug/l
+78,7,.alpha.-Endosulfan,NULL,Extractable,NULL,5.7237999999999996E-05,0.06196200000000005,ug/l
+78,7,.alpha.-Endosulfan,NULL,Total,NULL,4.7852E-07,0.01,ug/l
+79,13,.beta.-Endosulfan,NULL,Extractable,NULL,6.117E-05,0.041534,ug/l
+79,13,.beta.-Endosulfan,NULL,None,NULL,0.0007886000000000001,0.00219,ug/l
+79,13,.beta.-Endosulfan,NULL,Total,NULL,8.02E-07,0.02,ug/l
+80,1001,Endosulfan sulfate,NULL,Dissolved,NULL,0.007,0.04943999999999994,ug/l
+80,1001,Endosulfan sulfate,NULL,Extractable,NULL,6.534000000000001E-05,0.17160000000000086,ug/l
+80,1001,Endosulfan sulfate,NULL,None,NULL,0.0001905,0.0029200000000000003,ug/l
+80,1001,Endosulfan sulfate,NULL,Total,NULL,7.686599999999999E-07,0.02,ug/l
+81,1003,Endrin,NULL,Dissolved,NULL,7.172E-05,0.00043628000000000004,ug/l
+81,1003,Endrin,NULL,Extractable,NULL,0.07959999999999999,0.07959999999999999,ug/l
+81,1003,Endrin,NULL,Total,NULL,1.1276E-07,0.02,ug/l
+81,101591,Endrin + cis-Nonachlor,NULL,Extractable,NULL,0.00017429999999999998,0.00021545999999999997,ug/l
+82,1004,Endrin aldehyde,NULL,Extractable,NULL,0.0428,0.0428,ug/l
+82,1004,Endrin aldehyde,NULL,None,NULL,0.0013160000000000001,0.002884,ug/l
+82,1004,Endrin aldehyde,NULL,Total,NULL,1.3824E-07,0.02,ug/l
+83,1007,Enterococcus,NULL,NULL,NULL,4,864.0999999999985,cfu/100ml
+83,1007,Enterococcus,NULL,NULL,MPN,10,1860,cfu/100ml
+84,1030,Ethylbenzene,NULL,NULL,NULL,0.6600000000000001,11.860000000000001,ug/l
+84,1030,Ethylbenzene,NULL,Total,NULL,0.2,9.73599999999999,ug/l
+85,881,Di(2-ethylhexyl) phthalate,NULL,Extractable,NULL,0.33549,2.5281,ug/l
+85,881,Di(2-ethylhexyl) phthalate,NULL,Total,NULL,0.0033912,5.475999999999976,ug/l
+86,1048,Fecal Coliform,NULL,NULL,NULL,2,3000,cfu/100ml
+86,1048,Fecal Coliform,NULL,Total,NULL,1,2005.9000000000003,cfu/100ml
+87,1064,Fluoranthene,NULL,Extractable,NULL,0.0027681,1.9410000000000018,ug/l
+87,1064,Fluoranthene,NULL,None,NULL,0.010119999999999999,0.024720000000000002,ug/l
+87,1064,Fluoranthene,NULL,Total,NULL,1.8943E-05,0.1,ug/l
+87,1064,Fluoranthene,NULL,Total Recoverable,NULL,0.0103,0.11729999999999997,ug/l
+88,1066,Fluorene,NULL,Extractable,NULL,0.0036564,0.012342599999999997,ug/l
+88,1066,Fluorene,NULL,Semivolatile,NULL,0.06335000000000003,3.5350000000000006,ug/l
+88,1066,Fluorene,NULL,Total,NULL,4.716E-05,0.1,ug/l
+89,602,Azinphos-methyl,NULL,Extractable,NULL,0.015229999999999997,4.753,ug/l
+89,100238,Azinphos-methyl oxygen analog,NULL,Extractable,NULL,0.05042,7.185999999999988,ug/l
+90,1104,Heptachlor,NULL,NULL,NULL,0.002,0.00588,ug/l
+90,1104,Heptachlor,NULL,Extractable,NULL,7.0602E-05,0.000149198,ug/l
+90,1104,Heptachlor,NULL,None,NULL,0.0007634000000000001,0.0010966,ug/l
+90,1104,Heptachlor,NULL,Total,NULL,3.1472E-08,0.01,ug/l
+91,1105,Heptachlor epoxide,NULL,NULL,NULL,0.0010400000000000001,0.006920000000000001,ug/l
+91,1105,Heptachlor epoxide,NULL,Dissolved,NULL,9.687E-05,0.00047613,ug/l
+91,1105,Heptachlor epoxide,NULL,Extractable,NULL,6.4363E-05,0.002648089999999998,ug/l
+91,1105,Heptachlor epoxide,NULL,Total,NULL,1.1571999999999999E-07,0.01,ug/l
+92,1115,Hexachlorobenzene,NULL,Dissolved,NULL,0.00010121000000000002,0.00227779,ug/l
+92,1115,Hexachlorobenzene,NULL,Extractable,NULL,0.00038080000000000004,0.006382400000000001,ug/l
+92,1115,Hexachlorobenzene,NULL,Total,NULL,1.1747E-06,0.5773099999999933,ug/l
+93,1118,Hexachlorobutadiene,NULL,Total,NULL,5.283999999999999E-08,1,ug/l
+95,1121,Hexachlorocyclopentadiene,NULL,Total,NULL,0.041,1,ug/l
+97,1123,Hexachloroethane,NULL,Total,NULL,0.000472,1,ug/l
+98,1173,"Indeno[1,2,3-cd]pyrene",NULL,None,NULL,0.01,0.01,ug/l
+98,1173,"Indeno[1,2,3-cd]pyrene",NULL,Total,NULL,1.8176E-05,0.1,ug/l
+99,1185,Iron,NULL,Dissolved,NULL,3.3,1347.1999999999935,ug/l
+99,1185,Iron,NULL,Extractable,NULL,795.5000000000001,3243.5,ug/l
+99,1185,Iron,NULL,Total,NULL,30,4553.600000000007,ug/l
+99,1185,Iron,NULL,Total Recoverable,NULL,13.846,35279.999999999745,ug/l
+99,1185,Iron,None,Dissolved,NULL,16.968,2301.9999999999854,ug/l
+99,1185,Iron,None,Total Recoverable,NULL,35.199,12559.000000000084,ug/l
+100,1199,Isophorone,NULL,Dissolved,NULL,0.024,0.024,ug/l
+100,1199,Isophorone,NULL,Extractable,NULL,0.064091,0.18809,ug/l
+100,1199,Isophorone,NULL,Total,NULL,0.0085,1,ug/l
+100,1199,Isophorone,NULL,Total Recoverable,NULL,0.0031400000000000004,0.06193999999999998,ug/l
+101,1215,Lead,NULL,Dissolved,NULL,0.01,0.578,ug/l
+101,1215,Lead,NULL,Extractable,NULL,10.09,26.85,ug/l
+101,1215,Lead,NULL,Total,NULL,0.05137,31.278200000000012,ug/l
+101,1215,Lead,NULL,Total Recoverable,NULL,0.02,10.173999999999978,ug/l
+102,1245,Malathion,NULL,Dissolved,NULL,0.004658000000000001,2.6017000000000006,ug/l
+102,1245,Malathion,NULL,Extractable,NULL,0.018664999999999998,6.001400000000004,ug/l
+103,1249,Manganese,NULL,Dissolved,NULL,0.7231000000000001,582.349999999994,ug/l
+103,1249,Manganese,NULL,Extractable,NULL,33.755,183.65000000000003,ug/l
+103,1249,Manganese,NULL,Total,NULL,10,1384.2199999999984,ug/l
+103,1249,Manganese,NULL,Total Recoverable,NULL,2.0223999999999998,1003.8000000000011,ug/l
+104,1266,Mercury,NULL,Dissolved,NULL,0.00019,0.08,ug/l
+104,1266,Mercury,NULL,Suspended,NULL,7.000000000000001E-05,0.016588000000000023,ug/l
+104,1266,Mercury,NULL,Total,NULL,0.00039000000000000005,0.08,ug/l
+104,1266,Mercury,NULL,Total Recoverable,NULL,0.0005264000000000001,0.01380400000000002,ug/l
+104,1266,Mercury,None,Dissolved,NULL,0.00027560000000000003,0.004371399999999999,ug/l
+104,1266,Mercury,None,Total Recoverable,NULL,0.00039900000000000005,0.6,ug/l
+105,1280,Methoxychlor,NULL,Dissolved,NULL,3.593000000000001E-05,0.00091107,ug/l
+105,1280,Methoxychlor,NULL,Extractable,NULL,0.00028924,0.08551999999999998,ug/l
+105,1280,Methoxychlor,NULL,None,NULL,0.00014000000000000001,0.00014000000000000001,ug/l
+105,1280,Methoxychlor,NULL,Total,NULL,5.406899999999999E-07,0.1,ug/l
+106,1283,Methyl bromide,NULL,Total,NULL,0.5,5,ug/l
+107,454,"4,6-Dinitro-o-cresol",NULL,Extractable,NULL,0.7,0.7,ug/l
+107,454,"4,6-Dinitro-o-cresol",NULL,Total,NULL,0.013,5,ug/l
+108,1328,Methylene chloride,NULL,Total,NULL,6.144,20,ug/l
+108,1328,Methylene chloride,NULL,Volatile,NULL,1.912,5.232,ug/l
+110,1349,Mirex,NULL,Extractable,NULL,0.199,0.199,ug/l
+110,1349,Mirex,NULL,Total,NULL,0.000472,0.01,ug/l
+111,1395,Nickel,NULL,Dissolved,NULL,0.137,3.317000000000007,ug/l
+111,1395,Nickel,NULL,Total,NULL,0.24132,3.1304000000000003,ug/l
+111,1395,Nickel,NULL,Total Recoverable,NULL,0.193,186.64999999999827,ug/l
+111,1395,Nickel,None,Dissolved,NULL,0.2,7.707000000000036,ug/l
+111,1395,Nickel,None,Extractable,NULL,4.016,9.668000000000001,ug/l
+111,1395,Nickel,None,Total Recoverable,NULL,1,25.19399999999994,ug/l
+112,1400,Nitrate,NULL,Dissolved,NULL,10,18600,ug/l
+112,1400,Nitrate,NULL,None,NULL,0,0,ug/l
+112,1400,Nitrate,NULL,Total,NULL,67.695,127000.00000000001,ug/l
+112,1400,Nitrate,as N,Dissolved,NULL,11.810000000000002,12619.000000000005,ug/l
+112,1400,Nitrate,as N,"Filtered, lab",NULL,5.5,4500,ug/l
+112,1400,Nitrate,as N,Total,NULL,10,567.1000000000031,ug/l
+112,1400,Nitrate,as NO3,Dissolved,NULL,55.14,55828.99999999995,ug/l
+112,1400,Nitrate,None,None,NULL,0.8508659866000001,370.78400414,ug/l
+113,1403,Nitrobenzene,NULL,Extractable,NULL,0.0058,0.0058,ug/l
+113,1403,Nitrobenzene,NULL,Total,NULL,0.0074,1,ug/l
+117,1427,N-Nitrosodimethylamine,NULL,Total,NULL,0.42000000000000004,1,ug/l
+118,1429,N-Nitrosodi-n-propylamine,NULL,Total,NULL,0.033,1,ug/l
+119,1430,N-Nitrosodiphenylamine,NULL,Total,NULL,0.028,1,ug/l
+123,1633,Pentachlorophenol,NULL,Extractable,NULL,0.09432,0.9799999999999998,ug/l
+123,1633,Pentachlorophenol,NULL,Total,NULL,0.029,0.2,ug/l
+123,1633,Pentachlorophenol,NULL,Total Recoverable,NULL,0.1,0.7759999999999999,ug/l
+124,1648,pH,NULL,NULL,NULL,6.3,9,NULL
+124,1648,pH,NULL,NULL,Delta,0.05,1.36,NULL
+124,1648,pH,NULL,NULL,Maximum,6.43,10,NULL
+124,1648,pH,NULL,NULL,Mean,6.19,9.07,NULL
+124,1648,pH,NULL,NULL,Median,6.84,9.591349999999998,NULL
+124,1648,pH,NULL,NULL,Minimum,6.25,9.7,NULL
+124,1648,pH,NULL,Dissolved,NULL,6.56,9,NULL
+124,1648,pH,NULL,None,NULL,6.461,8.238999999999999,NULL
+124,1648,pH,NULL,Total,NULL,6.6405,9.8,NULL
+124,1648,pH,NULL,Total,Mean,6.6388,8.430800000000001,NULL
+125,1654,Phenol,NULL,Dissolved,NULL,0.17,0.17,ug/l
+125,1654,Phenol,NULL,Total,NULL,0.02,1,ug/l
+125,1654,Phenol,NULL,Total Recoverable,NULL,0.07050000000000001,0.8490000000000001,ug/l
+126,1673,Phosphorus,NULL,None,NULL,22,179.5999999999998,ug/l
+126,1673,Phosphorus,NULL,Total,NULL,18,873.5199999999895,ug/l
+126,1673,Phosphorus,as P,Dissolved,NULL,5,327.83000000000106,ug/l
+126,1673,Phosphorus,as P,Total,NULL,20,620,ug/l
+126,1673,Phosphorus,as P,Total Recoverable,NULL,13.09,43.010000000000005,ug/l
+126,1673,Phosphorus,None,Suspended,NULL,0,439.1999999999996,ug/l
+126,1673,Phosphorus,None,Total,NULL,9,1450,ug/l
+128,1744,Pyrene,NULL,Extractable,NULL,0.0032034000000000003,2.9179999999999993,ug/l
+128,1744,Pyrene,NULL,None,NULL,0.01021,0.03472,ug/l
+128,1744,Pyrene,NULL,Total,NULL,0.0003961,0.27267999999999676,ug/l
+128,1744,Pyrene,NULL,Total Recoverable,NULL,0.01,0.17159999999999992,ug/l
+129,1783,Selenium,NULL,Dissolved,NULL,0.018,3.51,ug/l
+129,1783,Selenium,NULL,Total,NULL,0.1,3.2495000000000003,ug/l
+129,1783,Selenium,NULL,Total Recoverable,NULL,0.02348,6,ug/l
+130,1793,Silver,NULL,Dissolved,NULL,0.003,0.34599999999999964,ug/l
+130,1793,Silver,NULL,Total,NULL,0.003,1,ug/l
+130,1793,Silver,NULL,Total Recoverable,NULL,0.002,7.27000000000001,ug/l
+132,2849,"Temperature, water",NULL,NULL,NULL,3.4055699999999995,26.59,deg C
+132,2849,"Temperature, water",NULL,NULL,7DADM,1.47,25.23857,deg C
+132,2849,"Temperature, water",NULL,NULL,Delta,0.2,9.289559999999998,deg C
+132,2849,"Temperature, water",NULL,NULL,Geometric Mean,-0.004591250000000005,24.591876666666707,deg C
+132,2849,"Temperature, water",NULL,NULL,Maximum,0.577,26.2,deg C
+132,2849,"Temperature, water",NULL,NULL,Mean,0.17292916666666705,23.5,deg C
+132,2849,"Temperature, water",NULL,NULL,Median,3.94535,24.556422230000003,deg C
+132,2849,"Temperature, water",NULL,NULL,Minimum,0.02,22.27,deg C
+132,2849,"Temperature, water",NULL,Dissolved,NULL,0,24.2,deg C
+132,2849,"Temperature, water",NULL,Total,NULL,3.702,23.184,deg C
+132,2849,"Temperature, water",NULL,Total,Mean,2.6176000000000004,11.242399999999996,deg C
+134,24,"1,1,2,2-Tetrachloroethane",NULL,Total,NULL,0.2,5,ug/l
+135,1869,Tetrachloroethylene,NULL,NULL,NULL,0.04,15.35000000000002,ug/l
+135,1869,Tetrachloroethylene,NULL,Total,NULL,0.5,5,ug/l
+135,1869,Tetrachloroethylene,NULL,Total Recoverable,NULL,0.011100000000000002,0.11889999999999999,ug/l
+136,1883,Thallium,NULL,Dissolved,NULL,0.004,8.778,ug/l
+136,1883,Thallium,NULL,Total,NULL,0.004,0.5538000000000001,ug/l
+136,1883,Thallium,NULL,Total Recoverable,NULL,0.025,21.455999999999996,ug/l
+136,1883,Thallium,None,Total Recoverable,NULL,0.0454,0.6873999999999999,ug/l
+138,988,Total dissolved solids,NULL,NULL,NULL,19,527.9629999999997,mg/l
+138,988,Total dissolved solids,NULL,Dissolved,NULL,34,281.65999999999985,mg/l
+138,988,Total dissolved solids,NULL,Filterable,NULL,20.95,250,mg/l
+138,988,Total dissolved solids,NULL,Total,NULL,17.810000000000002,478.57000000000016,mg/l
+139,1902,Toluene,NULL,Total,NULL,0.2,5,ug/l
+139,1902,Toluene,NULL,Volatile,NULL,0.7680000000000001,94.74,ug/l
+140,1912,Toxaphene,NULL,None,NULL,0.064,0.064,ug/l
+140,1912,Toxaphene,NULL,Total,NULL,0.010677,1,ug/l
+142,58,"1,2,4-Trichlorobenzene",NULL,Total,NULL,0.016,1,ug/l
+142,58,"1,2,4-Trichlorobenzene",NULL,Volatile,NULL,0.0034538,0.0082362,ug/l
+143,25,"1,1,2-Trichloroethane",NULL,Total,NULL,0.2,5,ug/l
+146,316,"2,4,6-Trichlorophenol",NULL,Extractable,NULL,0.011835000000000002,0.023466,ug/l
+146,316,"2,4,6-Trichlorophenol",NULL,Total,NULL,0.037,1,ug/l
+147,312,"2,4,5-Trichlorophenol",NULL,Extractable,NULL,0.025536000000000003,0.032788,ug/l
+147,312,"2,4,5-Trichlorophenol",NULL,Total,NULL,0.026,1,ug/l
+148,1977,Turbidity,NULL,NULL,NULL,0.26,132,NTU
+148,1977,Turbidity,NULL,NULL,Delta,0.15,162.1725999999998,NTU
+148,1977,Turbidity,NULL,NULL,Maximum,-3.4,596.5600000000093,NTU
+148,1977,Turbidity,NULL,NULL,Mean,-4.19166666666667,84.33799999999901,NTU
+148,1977,Turbidity,NULL,NULL,Median,-0.53,58.00099999999989,NTU
+148,1977,Turbidity,NULL,NULL,Minimum,-4.9,38.42820000000007,NTU
+148,1977,Turbidity,NULL,Dissolved,NULL,1,39.45000000000027,NTU
+148,1977,Turbidity,NULL,None,NULL,1,97.28000000000065,NTU
+148,1977,Turbidity,NULL,Suspended,NULL,1.0285,53.18649999999992,NTU
+148,1977,Turbidity,NULL,Total,NULL,0.6,390,NTU
+148,1977,Turbidity,NULL,Total,Mean,-8.661999999999999,199.57560000000043,NTU
+148,101442,Turbidity Field,NULL,NULL,NULL,0.59,159.47000000000116,NTU
+148,101442,Turbidity Field,NULL,Dissolved,NULL,0.05040000000000005,3.5748,NTU
+149,1992,Vinyl chloride,NULL,Total,NULL,0.2,56.0555999999999,ug/l
+150,2005,Zinc,NULL,Dissolved,NULL,0.4,60,ug/l
+150,2005,Zinc,NULL,Extractable,NULL,188.04,397.56,ug/l
+150,2005,Zinc,NULL,Total,NULL,0.73045,93.96900000000014,ug/l
+150,2005,Zinc,NULL,Total Recoverable,NULL,0.503,176.5,ug/l
+153,140,"2,2',3,3',4,4',5,5',6-Nonachlorobiphenyl",NULL,Total,NULL,3.711E-08,9.404500000000028E-06,ug/l
+153,141,"2,2',3,3',4,4',5,5'-Octachlorobiphenyl",NULL,Extractable,NULL,0.000161,0.000161,ug/l
+153,141,"2,2',3,3',4,4',5,5'-Octachlorobiphenyl",NULL,Total,NULL,4.4399999999999994E-08,4.3115000000000254E-05,ug/l
+153,142,"2,2',3,3',4,4',5,6,6'-Nonachlorobiphenyl",NULL,Total,NULL,7.105E-09,4.186E-06,ug/l
+153,143,"2,2',3,3',4,4',5-Heptachlorobiphenyl",NULL,Total,NULL,1.0709999999999999E-07,7.489000000000043E-05,ug/l
+153,144,"2,2',3,3',4,4'-Hexachlorobiphenyl",NULL,Extractable,NULL,0.000118,0.000118,ug/l
+153,145,"2,2',3,3',4,5,5',6'-Octachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,146,"2,2',3,3',4,5,5',6-Octachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,147,"2,2',3,3',4,5,5'-Heptachlorobiphenyl",NULL,Total,NULL,2.163E-08,1.4671000000000084E-05,ug/l
+153,149,"2,2',3,3',4,5',6,6'-Octachlorobiphenyl",NULL,Total,NULL,1.1174999999999999E-08,6.260000000000011E-06,ug/l
+153,150,"2,2',3,3',4,5',6'-Heptachlorobiphenyl",NULL,Total,NULL,8.704999999999999E-08,4.776000000000026E-05,ug/l
+153,151,"2,2',3,3',4,5,6-Heptachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,152,"2,2',3,3',4,5',6-Heptachlorobiphenyl",NULL,Total,NULL,6.8049999999999996E-09,4.6940000000000045E-06,ug/l
+153,153,"2,2',3,3',4,5,6'-Heptachlorobiphenyl",NULL,Total,NULL,1.4435E-07,8.209000000000047E-05,ug/l
+153,154,"2,2',3,3',4,5'-Hexachlorobiphenyl",NULL,Total,NULL,4.4049999999999994E-08,5.798500000000007E-06,ug/l
+153,155,"2,2',3,3',4,5-Hexachlorobiphenyl",NULL,Total,NULL,1.6018E-05,1.971E-05,ug/l
+153,156,"2,2',3,3',4,6-Hexachlorobiphenyl",NULL,Total,NULL,9.35E-09,4.104000000000001E-06,ug/l
+153,157,"2,2',3,3',4-Pentachlorobiphenyl",NULL,Total,NULL,7.704999999999999E-08,4.6550000000000046E-06,ug/l
+153,158,"2,2',3,3',5,5',6-Heptachlorobiphenyl",NULL,Total,NULL,4.075E-08,1.9014000000000113E-05,ug/l
+153,159,"2,2',3,3',5,5'-Hexachlorobiphenyl",NULL,Total,NULL,1.2999999999999999E-08,5.772500000000007E-06,ug/l
+153,160,"2,2',3,3',5,6,6'-Heptachlorobiphenyl",NULL,Total,NULL,7.7E-08,3.727000000000022E-05,ug/l
+153,161,"2,2',3,3',5,6-Hexachlorobiphenyl",NULL,Total,NULL,7.912600000000001E-06,9.8744E-06,ug/l
+153,162,"2,2',3,3',5-Pentachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,163,"2,2',3,3',6,6'-Hexachlorobiphenyl",NULL,Total,NULL,9.44E-08,2.355000000000007E-05,ug/l
+153,164,"2,2',3,3'-Tetrachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,165,"2,2',3,4,4',5,5'-Heptachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,166,"2,2',3,4,4',5,6,6'-Octachlorobiphenyl",NULL,Total,NULL,5.05E-10,4.104000000000001E-06,ug/l
+153,167,"2,2',3,4,4',5,6-Heptachlorobiphenyl",NULL,Total,NULL,2E-09,4.104000000000001E-06,ug/l
+153,168,"2,2',3,4,4',5',6-Heptachlorobiphenyl",NULL,Total,NULL,5.0509E-06,8.397599999999999E-06,ug/l
+153,169,"2,2',3,4,4',5'-Hexachlorobiphenyl",NULL,Total,NULL,1.6018E-05,1.971E-05,ug/l
+153,170,"2,2',3,4,4',6,6'-Heptachlorobiphenyl",NULL,Total,NULL,1.147E-09,4.104000000000001E-06,ug/l
+153,171,"2,2',3,4,4',6'-Hexachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,172,"2,2',3,4,4',6-Hexachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,173,"2,2',3,4,4'-Pentachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,174,"2,2',3,4,5,5',6-Heptachlorobiphenyl",NULL,Total,NULL,5.0509E-06,8.397599999999999E-06,ug/l
+153,175,"2,2',3,4',5,5',6-Heptachlorobiphenyl",NULL,Extractable,NULL,0.00015900000000000002,0.00015900000000000002,ug/l
+153,175,"2,2',3,4',5,5',6-Heptachlorobiphenyl",NULL,Total,NULL,2.2825E-07,0.00011196500000000068,ug/l
+153,176,"2,2',3,4,5,5'-Hexachlorobiphenyl",NULL,Total,NULL,1.195E-07,3.751500000000016E-05,ug/l
+153,177,"2,2',3,4',5,5'-Hexachlorobiphenyl",NULL,Extractable,NULL,0.00014099999999999998,0.00014099999999999998,ug/l
+153,177,"2,2',3,4',5,5'-Hexachlorobiphenyl",NULL,Total,NULL,1.11E-07,3.5160000000000124E-05,ug/l
+153,178,"2,2',3,4,5,6,6'-Heptachlorobiphenyl",NULL,Total,NULL,1.021E-09,4.104000000000001E-06,ug/l
+153,179,"2,2',3,4',5,6,6'-Heptachlorobiphenyl",NULL,Total,NULL,1.3209999999999999E-09,4.104000000000001E-06,ug/l
+153,180,"2,2',3,4',5',6-Hexachlorobiphenyl",NULL,Extractable,NULL,0.000213,0.000213,ug/l
+153,180,"2,2',3,4',5',6-Hexachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,181,"2,2',3,4',5,6'-Hexachlorobiphenyl",NULL,Total,NULL,3E-09,4.186E-06,ug/l
+153,182,"2,2',3,4,5,6-Hexachlorobiphenyl",NULL,Total,NULL,7.799999999999999E-09,4.186E-06,ug/l
+153,183,"2,2',3,4',5,6-Hexachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,184,"2,2',3,4,5,6'-Hexachlorobiphenyl",NULL,Total,NULL,7.912600000000001E-06,9.8744E-06,ug/l
+153,185,"2,2',3,4,5'-Pentachlorobiphenyl",NULL,Total,NULL,1.2844999999999998E-05,2.9661999999999998E-05,ug/l
+153,186,"2,2',3,4',5'-Pentachlorobiphenyl",NULL,Total,NULL,2.4030000000000002E-05,2.9661999999999998E-05,ug/l
+153,187,"2,2',3,4,5-Pentachlorobiphenyl",NULL,Total,NULL,2.4030000000000002E-05,2.9661999999999998E-05,ug/l
+153,188,"2,2',3,4',5-Pentachlorobiphenyl",NULL,Total,NULL,5.1712E-06,1.2596999999999998E-05,ug/l
+153,189,"2,2',3,4,6,6'-Hexachlorobiphenyl",NULL,Total,NULL,1E-09,4.104000000000001E-06,ug/l
+153,190,"2,2',3,4',6,6'-Hexachlorobiphenyl",NULL,Total,NULL,3E-09,4.1390000000000005E-06,ug/l
+153,191,"2,2',3,4',6-Pentachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,192,"2,2',3,4,6'-Pentachlorobiphenyl",NULL,Total,NULL,1E-08,4.104000000000001E-06,ug/l
+153,193,"2,2',3,4',6'-Pentachlorobiphenyl",NULL,Total,NULL,2.0023999999999997E-05,2.4686E-05,ug/l
+153,194,"2,2',3,4,6-Pentachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,195,"2,2',3,5,5',6-Hexachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,196,"2,2',3,5,6,6'-Hexachlorobiphenyl",NULL,Total,NULL,2E-09,4.186E-06,ug/l
+153,197,"2,2',3,5',6-Pentachlorobiphenyl",NULL,Total,NULL,2.0023999999999997E-05,2.4686E-05,ug/l
+153,198,"2,2',3,5,6'-Pentachlorobiphenyl",NULL,Total,NULL,8.694499999999999E-09,9.356500000000006E-06,ug/l
+153,199,"2,2',3,5,6-Pentachlorobiphenyl",NULL,Total,NULL,2.0023999999999997E-05,2.4686E-05,ug/l
+153,200,"2,2',3,5'-Tetrachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,201,"2,2',3,5-Tetrachlorobiphenyl",NULL,Total,NULL,1.435E-08,4.6940000000000045E-06,ug/l
+153,202,"2,2',3,6,6'-Pentachlorobiphenyl",NULL,Total,NULL,7.3500000000000005E-09,4.6940000000000045E-06,ug/l
+153,203,"2,2',3,6'-Tetrachlorobiphenyl",NULL,Total,NULL,1.87E-08,4.6715000000000035E-06,ug/l
+153,204,"2,2',3,6-Tetrachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,205,"2,2',4,4',5,5'-Hexachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,206,"2,2',4,4',5,6'-Hexachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,207,"2,2',4,4',5-Pentachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,208,"2,2',4,4',6,6'-Hexachlorobiphenyl",NULL,Total,NULL,2E-09,4.104000000000001E-06,ug/l
+153,209,"2,2',4,4',6-Pentachlorobiphenyl",NULL,Total,NULL,2.0023999999999997E-05,2.4686E-05,ug/l
+153,211,"2,2',4,5,5'-Pentachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,213,"2,2',4,5',6-Pentachlorobiphenyl",NULL,Total,NULL,1.07E-08,6.255000000000005E-06,ug/l
+153,214,"2,2',4,5,6'-Pentachlorobiphenyl",NULL,Total,NULL,2.0023999999999997E-05,2.4686E-05,ug/l
+153,215,"2,2',4,5'-Tetrachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,216,"2,2',4,6,6'-Pentachlorobiphenyl",NULL,Total,NULL,2E-09,4.186E-06,ug/l
+153,217,"2,2',4,6'-Tetrachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,218,"2,2',4,6-Tetrachlorobiphenyl",NULL,Total,NULL,5.0509E-06,8.397599999999999E-06,ug/l
+153,219,"2,2',4-Trichlorobiphenyl",NULL,Total,NULL,7.134999999999999E-08,2.6490000000000046E-05,ug/l
+153,220,"2,2',5,5'-Tetrachlorobiphenyl",NULL,Total,NULL,5.278E-07,5.6525000000000005E-05,ug/l
+153,221,"2,2',5,6'-Tetrachlorobiphenyl",NULL,Total,NULL,5.0509E-06,8.397599999999999E-06,ug/l
+153,222,"2,2',5-Trichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,223,"2,2',6,6'-Tetrachlorobiphenyl",NULL,Total,NULL,3E-09,4.206000000000019E-05,ug/l
+153,224,"2,2',6-Trichlorobiphenyl",NULL,Total,NULL,2.4049999999999997E-08,0.00016760000000000025,ug/l
+153,231,"2,3,3',4,4',5,5',6-Octachlorobiphenyl",NULL,Total,NULL,3E-09,4.6940000000000045E-06,ug/l
+153,232,"2,3,3',4,4',5,5'-Heptachlorobiphenyl",NULL,Extractable,NULL,0.000214,0.000312,ug/l
+153,232,"2,3,3',4,4',5,5'-Heptachlorobiphenyl",NULL,Total,NULL,5E-09,4.6940000000000045E-06,ug/l
+153,233,"2,3,3',4,4',5',6-Heptachlorobiphenyl",NULL,Total,NULL,6E-09,4.6940000000000045E-06,ug/l
+153,234,"2,3,3',4,4',5'-Hexachlorobiphenyl",NULL,Extractable,NULL,0.000118,0.000118,ug/l
+153,234,"2,3,3',4,4',5'-Hexachlorobiphenyl",NULL,Total,NULL,5.596000000000003E-07,9.859199999999999E-06,ug/l
+153,235,"2,3,3',4,4',5-Hexachlorobiphenyl",NULL,Extractable,NULL,0.00014836,0.00035121999999999996,ug/l
+153,235,"2,3,3',4,4',5-Hexachlorobiphenyl",NULL,Total,NULL,7.912600000000001E-06,9.8744E-06,ug/l
+153,236,"2,3,3',4,4',6-Hexachlorobiphenyl",NULL,Total,NULL,5.6499999999999996E-08,1.1577000000000032E-05,ug/l
+153,237,"2,3,3',4,4'-Pentachlorobiphenyl",NULL,Extractable,NULL,0.00011696000000000002,0.0002375,ug/l
+153,237,"2,3,3',4,4'-Pentachlorobiphenyl",NULL,Total,NULL,2.2811E-07,6.437099999999999E-06,ug/l
+153,238,"2,3,3',4,5,5',6-Heptachlorobiphenyl",NULL,Total,NULL,1.1750000000000002E-09,4.104000000000001E-06,ug/l
+153,239,"2,3,3',4',5,5',6-Heptachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,240,"2,3,3',4,5,5'-Hexachlorobiphenyl",NULL,Total,NULL,7.3500000000000005E-09,5.0510000000000004E-06,ug/l
+153,241,"2,3,3',4',5,5'-Hexachlorobiphenyl",NULL,Total,NULL,3.6750000000000002E-09,4.104000000000001E-06,ug/l
+153,242,"2,3,3',4,5,6-Hexachlorobiphenyl",NULL,Total,NULL,1.6018E-05,1.971E-05,ug/l
+153,243,"2,3,3',4,5',6-Hexachlorobiphenyl",NULL,Total,NULL,5.415000000000001E-09,4.104000000000001E-06,ug/l
+153,244,"2,3,3',4',5',6-Hexachlorobiphenyl",NULL,Total,NULL,4.78E-08,1.1235500000000035E-05,ug/l
+153,245,"2,3,3',4,5'-Pentachlorobiphenyl",NULL,Total,NULL,8.0479E-06,2.5193999999999996E-05,ug/l
+153,246,"2,3,3',4',5'-Pentachlorobiphenyl",NULL,Total,NULL,9.21E-09,4.104000000000001E-06,ug/l
+153,247,"2,3,3',4,5-Pentachlorobiphenyl",NULL,Total,NULL,8.1E-09,4.104000000000001E-06,ug/l
+153,248,"2,3,3',4',5-Pentachlorobiphenyl",NULL,Total,NULL,4.0048E-06,4.9372E-06,ug/l
+153,249,"2,3,3',4,6-Pentachlorobiphenyl",NULL,Total,NULL,3.9749999999999995E-08,4.680000000000004E-06,ug/l
+153,250,"2,3,3',4',6-Pentachlorobiphenyl",NULL,Extractable,NULL,0.00010919,0.00012781,ug/l
+153,250,"2,3,3',4',6-Pentachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.942299999999998E-06,ug/l
+153,251,"2,3,3',4-Tetrachlorobiphenyl",NULL,Total,NULL,1.028E-08,4.104000000000001E-06,ug/l
+153,252,"2,3,3',5,5',6-Hexachlorobiphenyl",NULL,Total,NULL,6.069999999999999E-09,4.104000000000001E-06,ug/l
+153,253,"2,3,3',5,5'-Pentachlorobiphenyl",NULL,Total,NULL,2E-09,4.104000000000001E-06,ug/l
+153,254,"2,3,3',5,6-Pentachlorobiphenyl",NULL,Total,NULL,3.3349999999999998E-09,6.434000000000005E-06,ug/l
+153,255,"2,3,3',5',6-Pentachlorobiphenyl",NULL,Total,NULL,5.1712E-06,1.2596999999999998E-05,ug/l
+153,256,"2,3,3',5'-Tetrachlorobiphenyl",NULL,Total,NULL,5.35E-09,4.104000000000001E-06,ug/l
+153,257,"2,3,3',5-Tetrachlorobiphenyl",NULL,Total,NULL,4.700000000000001E-09,4.104000000000001E-06,ug/l
+153,258,"2,3,3',6-Tetrachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,259,"2,3,3'-Trichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,260,"2,3',4,4',5,5'-Hexachlorobiphenyl",NULL,Extractable,NULL,0.000165,0.0004247,ug/l
+153,260,"2,3',4,4',5,5'-Hexachlorobiphenyl",NULL,Total,NULL,2.1875E-08,4.813000000000003E-06,ug/l
+153,261,"2,3,4,4',5,6-Hexachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,262,"2,3',4,4',5',6-Hexachlorobiphenyl",NULL,Extractable,NULL,0.00018800000000000002,0.00018800000000000002,ug/l
+153,262,"2,3',4,4',5',6-Hexachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,263,"2,3',4,4',5'-Pentachlorobiphenyl",NULL,Total,NULL,1.971E-08,1.658200000000012E-05,ug/l
+153,264,"2,3,4,4',5-Pentachlorobiphenyl",NULL,Extractable,NULL,0.00011082000000000001,0.0002784,ug/l
+153,264,"2,3,4,4',5-Pentachlorobiphenyl",NULL,Total,NULL,1.305E-08,4.104000000000001E-06,ug/l
+153,265,"2,3',4,4',5-Pentachlorobiphenyl  ",NULL,Extractable,NULL,0.00010718,0.00054158,ug/l
+153,266,"2,3,4,4',6-Pentachlorobiphenyl",NULL,Total,NULL,7.912600000000001E-06,9.942299999999998E-06,ug/l
+153,267,"2,3',4,4',6-Pentachlorobiphenyl",NULL,Total,NULL,2.4030000000000002E-05,2.9661999999999998E-05,ug/l
+153,268,"2,3',4,4'-Tetrachlorobiphenyl",NULL,Total,NULL,4.0394999999999996E-07,1.8850000000000062E-05,ug/l
+153,269,"2,3',4,5,5'-Pentachlorobiphenyl",NULL,Total,NULL,3.3500000000000002E-09,4.104000000000001E-06,ug/l
+153,270,"2,3',4',5,5'-Pentachlorobiphenyl",NULL,Total,NULL,8.0479E-06,2.5193999999999996E-05,ug/l
+153,271,"2,3,4,5,6-Pentachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,272,"2,3',4,5',6-Pentachlorobiphenyl",NULL,Total,NULL,2.28E-09,4.104000000000001E-06,ug/l
+153,273,"2,3,4',5,6-Pentachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,274,"2,3',4',5',6-Pentachlorobiphenyl",NULL,Total,NULL,2.4030000000000002E-05,2.9661999999999998E-05,ug/l
+153,275,"2,3',4,5'-Tetrachlorobiphenyl",NULL,Total,NULL,6E-09,4.104000000000001E-06,ug/l
+153,276,"2,3,4,5-Tetrachlorobiphenyl",NULL,Total,NULL,1.6018E-05,1.971E-05,ug/l
+153,277,"2,3',4,5-Tetrachlorobiphenyl",NULL,Total,NULL,1.235E-08,4.104000000000001E-06,ug/l
+153,278,"2,3,4',5-Tetrachlorobiphenyl",NULL,Total,NULL,1.735E-08,4.104000000000001E-06,ug/l
+153,282,"2,3,4,6-Tetrachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,283,"2,3',4,6-Tetrachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,286,"2,3,4'-Trichlorobiphenyl",NULL,Total,NULL,9.615E-08,1.914500000000001E-05,ug/l
+153,287,"2,3',4'-Trichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,288,"2,3,4-Trichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,289,"2,3',4-Trichlorobiphenyl",NULL,Total,NULL,2.7699999999999997E-08,5.444000000000001E-06,ug/l
+153,290,"2,3,5,6-Tetrachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,291,"2,3',5',6-Tetrachlorobiphenyl",NULL,Total,NULL,1.35E-09,4.6940000000000045E-06,ug/l
+153,293,"2,3',5'-Trichlorobiphenyl",NULL,Total,NULL,3.285E-09,4.104000000000001E-06,ug/l
+153,294,"2,3,5-Trichlorobiphenyl",NULL,Total,NULL,1.5204999999999999E-09,4.186E-06,ug/l
+153,295,"2,3',5-Trichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,300,"2,3'-Dichlorobiphenyl",NULL,Total,NULL,2.2999999999999994E-08,7.654000000000005E-06,ug/l
+153,303,"2,4,4',5-Tetrachlorobiphenyl",NULL,Total,NULL,1.2604999999999999E-05,1.971E-05,ug/l
+153,304,"2,4,4',6-Tetrachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,305,"2,4,4'-Trichlorobiphenyl",NULL,NULL,NULL,4.5E-06,4.5E-06,ug/l
+153,305,"2,4,4'-Trichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,315,"2,4,6-Trichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,327,"2,4'-Dichlorobiphenyl",NULL,Total,NULL,6.98E-08,2.9920000000000015E-05,ug/l
+153,328,"2,4-Dichlorobiphenyl",NULL,Total,NULL,9E-09,6.812E-06,ug/l
+153,401,"3,3',4,4',5,5'-Hexachlorobiphenyl",NULL,Extractable,NULL,0.00011403,0.00036991,ug/l
+153,401,"3,3',4,4',5,5'-Hexachlorobiphenyl",NULL,Total,NULL,5.093999999999999E-09,4.186E-06,ug/l
+153,402,"3,3',4,4',5-Pentachlorobiphenyl",NULL,Extractable,NULL,0.00013555,0.00018945000000000002,ug/l
+153,402,"3,3',4,4',5-Pentachlorobiphenyl",NULL,Total,NULL,7E-09,4.104000000000001E-06,ug/l
+153,403,"3,3',4,4'-Tetrachlorobiphenyl",NULL,Extractable,NULL,0.0001125,0.0001615,ug/l
+153,403,"3,3',4,4'-Tetrachlorobiphenyl",NULL,Total,NULL,5.3924999999999995E-08,4.186E-06,ug/l
+153,404,"3,3',4,5,5'-Pentachlorobiphenyl",NULL,Total,NULL,5.62E-09,4.104000000000001E-06,ug/l
+153,405,"3,3',4,5'-Tetrachlorobiphenyl",NULL,Total,NULL,1.2E-08,4.104000000000001E-06,ug/l
+153,406,"3,3',4,5-Tetrachlorobiphenyl",NULL,Total,NULL,6.4E-09,4.104000000000001E-06,ug/l
+153,407,"3,3',4-Trichlorobiphenyl",NULL,Total,NULL,1.6E-08,4.186E-06,ug/l
+153,408,"3,3',5,5'-Tetrachlorobiphenyl",NULL,Total,NULL,7.335000000000001E-09,4.104000000000001E-06,ug/l
+153,409,"3,3',5-Trichlorobiphenyl",NULL,Total,NULL,3E-09,4.186E-06,ug/l
+153,412,"3,3'-Dichlorobiphenyl",NULL,Total,NULL,7.696499999999999E-07,5.2895E-05,ug/l
+153,416,"3,4,4',5-Tetrachlorobiphenyl",NULL,Extractable,NULL,0.00014769,0.00021531,ug/l
+153,416,"3,4,4',5-Tetrachlorobiphenyl",NULL,Total,NULL,6E-09,4.104000000000001E-06,ug/l
+153,417,"3,4,5-Trichlorobiphenyl",NULL,Total,NULL,4E-09,4.104000000000001E-06,ug/l
+153,418,"3,4',5-Trichlorobiphenyl",NULL,Total,NULL,4.35E-09,4.186E-06,ug/l
+153,420,"3,4'-Dichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,421,"3,4-Dichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,427,"3,5-Dichlorobiphenyl",NULL,Total,NULL,5.029999999999999E-09,4.186E-06,ug/l
+153,431,3-Chlorobiphenyl,NULL,Total,NULL,2.7879999999999996E-08,2.037700000000002E-05,ug/l
+153,462,4-Chlorobiphenyl,NULL,Total,NULL,2.82E-08,1.0846000000000072E-05,ug/l
+153,574,Aroclor (unspecified),NULL,Total,NULL,3.95E-05,0.0149,ug/l
+153,575,Aroclor 1016,NULL,Total,NULL,0.0025,0.2,ug/l
+153,578,Aroclor 1221,NULL,Total,NULL,0.0025,0.2,ug/l
+153,580,Aroclor 1232,NULL,Total,NULL,0.0025,0.2,ug/l
+153,582,Aroclor 1242,NULL,Total,NULL,0.0025,0.2,ug/l
+153,583,Aroclor 1248,NULL,Total,NULL,0.00125,0.2,ug/l
+153,586,Aroclor 1254,NULL,Extractable,NULL,0.02,0.02,ug/l
+153,586,Aroclor 1254,NULL,Total,NULL,0.00125,0.2,ug/l
+153,587,Aroclor 1260,NULL,Total,NULL,0.0025,0.2,ug/l
+153,588,Aroclor 1262,NULL,Total,NULL,0.0025,0.2,ug/l
+153,589,Aroclor 1268,NULL,Total,NULL,0.0025,0.2,ug/l
+153,915,Dichlorobiphenyl,NULL,Total,NULL,8E-08,0.00013410000000000006,ug/l
+153,1107,Heptachlorobiphenyl,NULL,Total,NULL,2.4195E-07,0.000687900000000004,ug/l
+153,1117,Hexachlorobiphenyl,NULL,Total,NULL,2.7934999999999996E-06,0.0007835000000000025,ug/l
+153,1356,Monochlorobiphenyl,NULL,Total,NULL,2.9440000000000004E-08,3.2928000000000014E-05,ug/l
+153,1444,Nonachlorobiphenyl,NULL,Total,NULL,1.77E-08,1.2547500000000034E-05,ug/l
+153,1470,Octachlorobiphenyl,NULL,Total,NULL,2.9174999999999995E-08,0.00017082500000000102,ug/l
+153,1528,PCB-12/13,NULL,Total,NULL,3.9802E-08,4.3907E-06,ug/l
+153,1530,PCB-18/30,NULL,Total,NULL,1.2117E-07,3.8506999999999996E-05,ug/l
+153,1531,PCB-20/28,NULL,Total,NULL,3.4561999999999994E-07,4.5983E-05,ug/l
+153,1533,PCB-21/33,NULL,Total,NULL,1.1055E-07,2.750799999999999E-05,ug/l
+153,1535,PCB-26/29,NULL,Total,NULL,5.7239999999999995E-08,9.234499999999998E-06,ug/l
+153,1537,PCB-40/41/71,NULL,Total,NULL,1.8378999999999998E-07,1.9414999999999993E-05,ug/l
+153,1539,PCB-44/47/65,NULL,Total,NULL,4.0875E-07,0.00015141999999999996,ug/l
+153,1540,PCB-45/51,NULL,Total,NULL,5.355E-08,6.163399999999995E-05,ug/l
+153,1542,PCB-49/69,NULL,Total,NULL,2.5117E-07,4.9235E-05,ug/l
+153,1543,PCB-50/53,NULL,Total,NULL,4.8929999999999995E-08,5.577199999999995E-05,ug/l
+153,1545,PCB-59/62/75,NULL,Total,NULL,3.7309999999999995E-08,1.0444999999999999E-05,ug/l
+153,1546,PCB-61/70/74/76,NULL,Total,NULL,7.9324E-07,3.121899999999999E-05,ug/l
+153,1549,PCB-83/99,NULL,Total,NULL,3.5925999999999995E-07,2.5941999999999997E-05,ug/l
+153,1550,PCB-85/116/117,NULL,Total,NULL,1.0941E-07,6.504499999999999E-06,ug/l
+153,1551,PCB-86/87/97/108/119/125,NULL,Total,NULL,4.0295999999999995E-07,2.1072999999999996E-05,ug/l
+153,1553,PCB-88/91,NULL,Total,NULL,1.011E-07,1.4396999999999996E-05,ug/l
+153,1555,PCB-90/101/113,NULL,Total,NULL,5.6004E-07,5.680499999999999E-05,ug/l
+153,1556,PCB-93/95/98/100/102,NULL,Total,NULL,4.8203E-07,0.00010623399999999996,ug/l
+153,1558,PCB-107/124,NULL,Total,NULL,2.155E-08,8.958E-07,ug/l
+153,1559,PCB-110/115,NULL,Total,NULL,5.880400000000001E-07,3.470199999999999E-05,ug/l
+153,1562,PCB-128/166,NULL,Total,NULL,8.830999999999999E-08,7.9849E-06,ug/l
+153,1563,PCB-129/138/160/163,NULL,Total,NULL,6.7935E-07,0.00016409299999999976,ug/l
+153,1564,PCB-132/153,NULL,Extractable,NULL,0.00021700000000000002,0.00082035,ug/l
+153,1565,PCB-134/143,NULL,Total,NULL,3.531E-08,1.0149399999999983E-05,ug/l
+153,1567,PCB-135/151/154,NULL,Total,NULL,1.1067999999999998E-07,9.204399999999984E-05,ug/l
+153,1570,PCB-138/163,NULL,Extractable,NULL,0.00025419,0.00066481,ug/l
+153,1571,PCB-139/140,NULL,Total,NULL,1.0310000000000001E-08,3.6025999999999988E-06,ug/l
+153,1573,PCB-147/149,NULL,Total,NULL,5.6904E-07,0.00015101999999999987,ug/l
+153,1575,PCB-153/168,NULL,Total,NULL,5.989399999999999E-07,0.00017255099999999974,ug/l
+153,1577,PCB-156/157,NULL,Total,NULL,5.637899999999999E-08,8.997199999999989E-06,ug/l
+153,1580,PCB-171/173,NULL,Total,NULL,3.8890999999999994E-08,2.4115699999999946E-05,ug/l
+153,1583,PCB-180/193,NULL,Extractable,NULL,0.000326,0.000326,ug/l
+153,1583,PCB-180/193,NULL,Total,NULL,2.8655E-07,0.00019147199999999955,ug/l
+153,1585,PCB-183/185,NULL,Total,NULL,8.067899999999999E-08,6.008899999999986E-05,ug/l
+153,1588,PCB-197/200,NULL,Total,NULL,1.4931E-08,7.638599999999981E-06,ug/l
+153,1589,PCB-198/199,NULL,Total,NULL,8.486E-08,4.22799999999999E-05,ug/l
+153,1590,Decachlorobiphenyl,NULL,Extractable,NULL,0.00023184,0.00081428,ug/l
+153,1590,Decachlorobiphenyl,NULL,Total,NULL,1.888E-08,9.436500000000002E-06,ug/l
+153,1628,Pentachlorobiphenyl,NULL,Total,NULL,3.4689999999999993E-06,0.0003093500000000001,ug/l
+153,1706,Polychlorinated biphenyls,NULL,Total,NULL,1.5995E-05,0.002550000000000001,ug/l
+153,1866,Tetrachlorobiphenyl,NULL,Total,NULL,1.222E-06,0.0005067000000000003,ug/l
+153,2474,"2,2'-Dichlorobiphenyl",NULL,Total,NULL,6.015E-08,6.89650000000003E-05,ug/l
+153,2475,"2,3-Dichlorobiphenyl",NULL,Total,NULL,4.87E-09,4.1894999999999994E-06,ug/l
+153,2476,"2,5-Dichlorobiphenyl",NULL,Total,NULL,1E-08,4.104000000000001E-06,ug/l
+153,2477,"2,6-Dichlorobiphenyl",NULL,Total,NULL,6.6650000000000005E-09,4.999E-06,ug/l
+153,2478,"4,4'-Dichlorobiphenyl",NULL,Total,NULL,1.4799999999999998E-07,1.5129999999999999E-05,ug/l
+153,2479,"2,2',3-Trichlorobiphenyl",NULL,Total,NULL,5.0849999999999995E-08,1.7960000000000004E-05,ug/l
+153,2480,"2,3,6-Trichlorobiphenyl",NULL,Total,NULL,3E-09,4.104000000000001E-06,ug/l
+153,2481,"2,3',6-Trichlorobiphenyl",NULL,Total,NULL,1.3489999999999999E-08,1.675000000000005E-05,ug/l
+153,2482,"2,4,5-Trichlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,2483,"2,4',5-Trichlorobiphenyl",NULL,Total,NULL,2.4264999999999997E-07,4.243000000000001E-05,ug/l
+153,2484,"2,4',6-Trichlorobiphenyl",NULL,Total,NULL,3.635E-08,1.6325000000000004E-05,ug/l
+153,2485,"3,4,4'-Trichlorobiphenyl",NULL,Extractable,NULL,5.5378000000000004E-05,0.00024973,ug/l
+153,2485,"3,4,4'-Trichlorobiphenyl",NULL,Total,NULL,1.2020000000000003E-07,9.479500000000001E-06,ug/l
+153,2486,"2,2',3,4-Tetrachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,2487,"2,2',3,4'-Tetrachlorobiphenyl",NULL,Total,NULL,7.705E-08,8.932500000000005E-06,ug/l
+153,2488,"2,2',4,4'-Tetrachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,2489,"2,2',4,5-Tetrachlorobiphenyl",NULL,Total,NULL,6.475E-08,6.592500000000002E-06,ug/l
+153,2490,"2,3,3',4'-Tetrachlorobiphenyl",NULL,Total,NULL,2.0105E-07,1.070500000000003E-05,ug/l
+153,2491,"2,3,4,4'-Tetrachlorobiphenyl",NULL,Total,NULL,9.825E-08,5.2200000000000025E-06,ug/l
+153,2492,"2,3,4',6-Tetrachlorobiphenyl",NULL,Total,NULL,6.1575E-08,1.4490000000000002E-05,ug/l
+153,2493,"2,3',4',5-Tetrachlorobiphenyl",NULL,Total,NULL,1.2604999999999999E-05,1.971E-05,ug/l
+153,2494,"2,3',4',6-Tetrachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,2495,"2,3',5,5'-Tetrachlorobiphenyl",NULL,Total,NULL,7.3500000000000005E-09,4.104000000000001E-06,ug/l
+153,2496,"2,3',4',5'-Tetrachlorobiphenyl",NULL,Total,NULL,1.2604999999999999E-05,1.971E-05,ug/l
+153,2497,"2,2',3,3',6-Pentachlorobiphenyl",NULL,Total,NULL,1.5409999999999998E-07,1.1930000000000001E-05,ug/l
+153,2498,"2,2',3,5,5'-Pentachlorobiphenyl",NULL,Total,NULL,1.0409999999999999E-07,2.427500000000002E-05,ug/l
+153,2499,"2,2',3,3',4,6'-Hexachlorobiphenyl",NULL,Total,NULL,2.1884999999999998E-07,3.6920000000000046E-05,ug/l
+153,2500,"2,2',3,3',5,6'-Hexachlorobiphenyl",NULL,Total,NULL,1.2015000000000001E-05,1.4830999999999999E-05,ug/l
+153,2501,"2,2',3,4,4',5-Hexachlorobiphenyl",NULL,Total,NULL,2.535E-08,4.186E-06,ug/l
+153,2502,"2,2',3,4,5',6-Hexachlorobiphenyl",NULL,Total,NULL,2.6699999999999998E-08,7.553500000000023E-06,ug/l
+153,2503,"2,3,3',4',5,6-Hexachlorobiphenyl",NULL,Total,NULL,1.6018E-05,1.971E-05,ug/l
+153,2504,"2,2',3,3',4,4',6-Heptachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,2505,"2,2',3,3',4,6,6'-Heptachlorobiphenyl",NULL,Total,NULL,2.0294999999999997E-08,1.096600000000005E-05,ug/l
+153,2506,"2,2',3,4,4',5,6'-Heptachlorobiphenyl",NULL,Total,NULL,1.87E-09,4.104000000000001E-06,ug/l
+153,2507,"2,3,3',4,4',5,6-Heptachlorobiphenyl",NULL,Total,NULL,2.28E-08,1.5348500000000085E-05,ug/l
+153,2508,"2,2',3,3',4,4',5,6-Octachlorobiphenyl",NULL,Total,NULL,2.2E-08,1.7725000000000102E-05,ug/l
+153,2509,"2,2',3,3',4,4',5,6'-Octachlorobiphenyl",NULL,Total,NULL,3.27E-08,2.2709000000000138E-05,ug/l
+153,2510,"2,2',3,3',4,4',6,6'-Octachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,2511,"2,2',3,3',4,5,6,6'-Octachlorobiphenyl",NULL,Total,NULL,7.9999E-06,9.8744E-06,ug/l
+153,2512,"2,2',3,3',5,5',6,6'-Octachlorobiphenyl",NULL,Total,NULL,2.3749999999999998E-08,7.696500000000024E-06,ug/l
+153,2513,"2,2',3,4,4',5,5',6-Octachlorobiphenyl",NULL,Total,NULL,5.539999999999999E-08,2.558500000000015E-05,ug/l
+153,2514,"2,2',3,3',4,5,5',6,6'-Nonachlorobiphenyl",NULL,Total,NULL,1.8415E-08,4.186E-06,ug/l
+154,985,Dissolved oxygen (DO),NULL,NULL,NULL,2.5,14.2,mg/l
+154,985,Dissolved oxygen (DO),NULL,NULL,30DADMean,1.4,13.3,mg/l
+154,985,Dissolved oxygen (DO),NULL,NULL,7DADMean,0.9,13.5,mg/l
+154,985,Dissolved oxygen (DO),NULL,NULL,7DADMin,0.3,13.2,mg/l
+154,985,Dissolved oxygen (DO),NULL,NULL,Delta,0.14,5.71,mg/l
+154,985,Dissolved oxygen (DO),NULL,NULL,Maximum,1.5,15.5,mg/l
+154,985,Dissolved oxygen (DO),NULL,NULL,Mean,0.7,13.6,mg/l
+154,985,Dissolved oxygen (DO),NULL,NULL,Median,5.0816,12.897299999999996,mg/l
+154,985,Dissolved oxygen (DO),NULL,NULL,Minimum,0.2,13.3,mg/l
+154,985,Dissolved oxygen (DO),NULL,Dissolved,NULL,2.8,15.100000000000001,mg/l
+154,985,Dissolved oxygen (DO),NULL,None,NULL,4.6259999999999994,16.574,mg/l
+154,985,Dissolved oxygen (DO),NULL,Total,NULL,1.5198,15.181199999999999,mg/l
+154,985,Dissolved oxygen (DO),NULL,Total,Mean,8.0464,16.4272,mg/l
+157,986,Dissolved oxygen saturation,NULL,NULL,NULL,26,142,%
+157,986,Dissolved oxygen saturation,NULL,NULL,30DADMean,62.3845,109.9094,%
+157,986,Dissolved oxygen saturation,NULL,NULL,7DADMean,59.68549999999999,113.74049999999997,%
+157,986,Dissolved oxygen saturation,NULL,NULL,7DADMin,5.61,98.91749999999998,%
+157,986,Dissolved oxygen saturation,NULL,NULL,Delta,1.4,119.94800000000104,%
+157,986,Dissolved oxygen saturation,NULL,NULL,Maximum,0.98,181.9720000000001,%
+157,986,Dissolved oxygen saturation,NULL,NULL,Mean,0.83,126.11899999999973,%
+157,986,Dissolved oxygen saturation,NULL,NULL,Median,45.873,118.2405,%
+157,986,Dissolved oxygen saturation,NULL,NULL,Minimum,0.56,112.09940000000002,%
+157,986,Dissolved oxygen saturation,NULL,Dissolved,NULL,29,134.92800000000005,%
+158,727,Calcium,NULL,Dissolved,NULL,2.34,81.43999999999978,mg/l
+158,727,Calcium,NULL,Total,NULL,3.8842,44.189999999999955,mg/l
+158,727,Calcium,NULL,Total Recoverable,NULL,2.8,74,mg/l
+158,727,Calcium,None,Dissolved,NULL,1.6155000000000002,372.4500000000003,mg/l
+158,727,Calcium,None,Total Recoverable,NULL,2.1509,211.47999999999593,mg/l
+160,1244,Magnesium,NULL,Dissolved,NULL,0.79,408.30000000000655,mg/l
+160,1244,Magnesium,NULL,Total,NULL,1.6,16.4,mg/l
+160,1244,Magnesium,NULL,Total Recoverable,NULL,1,994.0799999999981,mg/l
+160,1244,Magnesium,None,Dissolved,NULL,0.48,1121.2999999999988,mg/l
+160,1244,Magnesium,None,Total Recoverable,NULL,0.9203600000000001,634.6400000000112,mg/l
+161,1775,Salinity,NULL,NULL,NULL,0,34,ppt
+161,1775,Salinity,NULL,NULL,Delta,1.1662000000000003,18.065499999999997,ppt
+161,1775,Salinity,NULL,NULL,Maximum,0.0584,32.7054,ppt
+161,1775,Salinity,NULL,NULL,Mean,0.06100000000000001,29.256999999999998,ppt
+161,1775,Salinity,NULL,NULL,Median,0.0475,30.3275,ppt
+161,1775,Salinity,NULL,NULL,Minimum,0.0392,26.895400000000002,ppt
+161,1775,Salinity,NULL,Total,NULL,0.06,34,ppt
+163,2174,Organic carbon,NULL,Dissolved,NULL,0.48738000000000004,18.1,mg/l
+163,2174,Organic carbon,NULL,Suspended,NULL,0.12,13.29000000000001,mg/l
+163,2174,Organic carbon,NULL,Total,NULL,1,21,mg/l
+163,2174,Organic carbon,NULL,Total Recoverable,NULL,0.7050000000000001,9.674999999999994,mg/l
+164,1827,Sulfate,NULL,Dissolved,NULL,0.20060000000000003,50,mg/l
+164,1827,Sulfate,NULL,"Filtered, field",NULL,0.6,64.95000000000002,mg/l
+164,1827,Sulfate,NULL,"Filtered, lab",NULL,0.31,219,mg/l
+164,1827,Sulfate,NULL,Total,NULL,0.7,49.22099999999997,mg/l
+164,1827,Sulfate,as S,Total,NULL,0.27,1.1119999999999992,mg/l
+164,1827,Sulfate,as SO4,Dissolved,NULL,0.802,0.998,mg/l
+164,1827,Sulfate,as SO4,Total,NULL,0.26480000000000004,34.31999999999971,mg/l
+165,1802,Sodium,NULL,Dissolved,NULL,1.7,780.5599999999686,mg/l
+165,1802,Sodium,NULL,Total,NULL,2.6390000000000002,65.88300000000001,mg/l
+165,1802,Sodium,NULL,Total Recoverable,NULL,2.0619,7700,mg/l
+165,1802,Sodium,None,Dissolved,NULL,1.1813,9390,mg/l
+165,1802,Sodium,None,Extractable,NULL,4.686000000000001,14.73,mg/l
+165,1802,Sodium,None,Total Recoverable,NULL,0.95,8732.000000000011,mg/l
+166,1709,Potassium,NULL,NULL,NULL,4.66,7.6,mg/l
+166,1709,Potassium,NULL,Dissolved,NULL,0.2,134.16999999999825,mg/l
+166,1709,Potassium,NULL,Extractable,NULL,1.299,3.111,mg/l
+166,1709,Potassium,NULL,Total,NULL,0.42408,6.463999999999999,mg/l
+166,1709,Potassium,NULL,Total Recoverable,NULL,0.28,1692.0000000000073,mg/l
+167,1097,"Hardness, Ca, Mg",NULL,NULL,NULL,9.5404,187,mg/l
+167,1097,"Hardness, Ca, Mg",NULL,Dissolved,NULL,187,187,mg/l
+167,1097,"Hardness, Ca, Mg",NULL,Total,NULL,13.690000000000001,89.73,mg/l
+167,1097,"Hardness, Ca, Mg",as CaCO3,NULL,NULL,10.852,206,mg/l
+167,1097,"Hardness, Ca, Mg",as CaCO3,Acid Soluble,NULL,16.904,192.4799999999999,mg/l
+167,1097,"Hardness, Ca, Mg",as CaCO3,Dissolved,NULL,10,1296.800000000003,mg/l
+167,1097,"Hardness, Ca, Mg",as CaCO3,Total,NULL,15,160,mg/l
+167,1097,"Hardness, Ca, Mg",as CaCO3,Total Recoverable,NULL,9.502600000000001,3888.299999999981,mg/l
+167,1098,"Hardness, carbonate",NULL,Dissolved,NULL,22.255,41.36000000000001,mg/l
+167,1098,"Hardness, carbonate",NULL,Total,NULL,19.355000000000004,51.719,mg/l
+167,1099,"Hardness, non-carbonate",NULL,Dissolved,NULL,0,118.09000000000003,mg/l
+167,1099,"Hardness, non-carbonate",NULL,Total,NULL,0,25.399999999999977,mg/l
+168,2982,Conductivity,NULL,NULL,NULL,0.14,120000,uS/cm
+168,2982,Conductivity,NULL,NULL,Maximum,38.3,415.77199999999937,uS/cm
+168,2982,Conductivity,NULL,NULL,Mean,37.4904,338.65,uS/cm
+168,2982,Conductivity,NULL,NULL,Minimum,21.3,283,uS/cm
+168,2982,Conductivity,NULL,Dissolved,NULL,45.03,668.9399999999996,uS/cm
+168,2982,Conductivity,NULL,Total,NULL,3,1162,uS/cm

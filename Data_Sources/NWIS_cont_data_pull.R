@@ -1,0 +1,456 @@
+#' NWIS_cont_data_pull
+#'
+#' This function queries continuous data from the NWIS database and produces AWQMS import files. Temperature, pH, and DO
+#' are queried and IR summary statistics are calculated. THe function outputs three csv files: NWIS Sumamry Stats,
+#' NWIS continuous pH, and NWIS monitoring location information. The function has no outputs, the CSV files serve as
+#' outputs.
+#'
+#' @param start.date Start date of data pull. Format: "yyyy-mm-dd"
+#' @param end.date End date of datapull. Format: "yyyy-mm-dd"
+#' @param project Name of project for AWQMS
+#' @param save_location Folder to save output files to. Sould end with a /
+#' @param stateCD Statecode for datapull. Defaults to 'or'
+#' @export
+#' @examples
+#'\dontrun{
+#'NWIS_cont_data_pull(start.date = '2021-01-01', end.date = '2021-12-31', save_location = "E:/Documents/",
+#'                    project = "Example Project")
+#'}
+#'
+
+
+NWIS_cont_data_pull <- function(start.date, end.date, save_location, project, stateCD = "or", split_file = TRUE){
+
+
+  options(scipen=999)
+
+
+  sites <- dataRetrieval::whatNWISsites(stateCD = stateCD,
+                         hasDataTypeCd=c("dv","uv"))
+
+
+
+
+
+  USGS_stations <- sites$site_no
+  statcds = c("00001", "00002", "00003", "00008")
+  # 00001 = max, 00002 = min, 00003 = mean, 00008 = median
+  pCodes = c("00010", "00400", "00300", "00301")
+  # 00010 = temp, 00400 = ph, 00300 = DO mg/L, 00301 = DO sat
+
+  # this will get you all data. Way too big for 10 years data
+  # my computer runs out of resources to convert from wide to long
+  # need to run each param seperate
+  #
+  # nwis.sum.stats.temp <- readNWISdv(siteNumbers = USGS_stations,
+  #                              parameterCd = pCodes,
+  #                              startDate = start.date,
+  #                              endDate = end.date,
+  #                              statCd = statcds)
+
+  # nwis.sum.stats <- renameNWISColumns(nwis.sum.stats)
+
+
+  # this will get you all data. Way too big for 10 years data
+  # my computer runs out of resources to convert from wide to long
+  # need to run each param seperate
+  #
+  # nwis.sum.stats.temp <- readNWISdv(siteNumbers = USGS_stations,
+  #                              parameterCd = pCodes,
+  #                              startDate = start.date,
+  #                              endDate = end.date,
+  #                              statCd = statcds)
+
+  # nwis.sum.stats <- renameNWISColumns(nwis.sum.stats)
+
+
+  # NWIS temperature --------------------------------------------------------
+
+
+
+print("Query NWIS Temperature begin....")
+    nwis.sum.stats.temp <- dataRetrieval::readNWISdv(siteNumbers = USGS_stations,
+                                    parameterCd = "00010",
+                                    startDate = start.date,
+                                    endDate = end.date,
+                                    statCd = statcds)
+
+    print("Query NWIS Temperature end")
+
+  nwis.sum.stats.temp <- dataRetrieval::renameNWISColumns(nwis.sum.stats.temp)
+
+
+
+  # Calculate 7 day moving average
+  # lag uses 6 because the 7 day moving average is inclusive of the date
+  # If 1 day is missing from period, do not caluclate average
+  temp4ma <- nwis.sum.stats.temp %>%
+    dplyr::arrange(site_no, Date) %>%
+    dplyr::group_by(site_no) %>%
+    dplyr::mutate(startdate = dplyr::lag(Date, 6, order_by = Date),
+           # flag out which result gets a moving average calculated
+           calcma = ifelse(startdate == (Date - 6), 1, 0 )) %>%
+    dplyr::mutate(ma = ifelse(calcma == 1, round(zoo::rollmean(x = Wtemp_Max, 7, align = "right", fill = NA),1) , NA ))
+
+
+
+  nwis.sum.stats.temp.gather <- temp4ma %>%
+    tidyr::gather(Wtemp_Max,
+           Wtemp,
+           Wtemp_Min,
+           ma, key = "stat", value = "result", na.rm = TRUE) %>%
+    dplyr::mutate(qual = ifelse(stat == "Wtemp_Max" | stat == "ma", Wtemp_Max_cd,
+                         ifelse(stat == "Wtemp", Wtemp_cd,
+                                ifelse(stat == "Wtemp_Min", Wtemp_Min_cd, "ERROR" )))) %>%
+    dplyr::select(agency_cd, site_no, Date, stat, result, qual, startdate) %>%
+    dplyr::arrange(site_no, Date)
+
+
+
+
+  nwis.sum.stats.temp.AWQMS <- nwis.sum.stats.temp.gather %>%
+    dplyr::ungroup() %>%
+    dplyr::transmute(CharID = "Temperature, water",
+              Result = result,
+              Unit = "deg C",
+              Method = "THM01",
+              RsltType = "Calculated",
+              Qualcd = qual,
+              StatisticalBasis = dplyr::case_when(stat == "ma" ~"7DMADMax",
+                                                  stat == "Wtemp_Max" ~ "Daily Maximum",
+                                                  stat == "Wtemp" ~ "Daily Mean",
+                                                  stat == "Wtemp_Min" ~ "Daily Minimum",
+                                                  TRUE ~  "ERROR"),
+              RsltTimeBasis = ifelse(StatisticalBasis == "7DMADMax", "7 day", "1 Day" ),
+              DEQ_RsltComment = ifelse(StatisticalBasis == "7DMADMax", "Generated by ORDEQ", "" ),
+              ActivityType = "FMC",
+              SiteID = site_no,
+              SmplColMthd = "ContinuousPrb",
+              SmplColEquip = "Probe/Sensor",
+              SmplDepth = "",
+              SmplDepthUnit = "",
+              SmplColEquipComment = "",
+              Samplers = "",
+              SmplEquipID = "Continuous Probe",
+              Project = project,
+              ActStartDate = Date,
+              ActStartTime = "0:00",
+              ActStartTimeZone = "PST",
+              ActEndDate = Date,
+              ActEndTime = "0:00",
+              ActEndTimeZone = "UTC",
+              AnaStartDate = "",
+              AnaStartTime = "",
+              AnaStartTimeZone = "",
+              AnaEndDate = "",
+              AnaEndTime = "",
+              AnaEndTimeZone = "",
+              ActComment = "",
+              ActivityID = paste0(SiteID, ":", gsub("-","",ActStartDate), ":", ActivityType)
+    ) %>%
+    dplyr::filter(Qualcd != 'P Eqp',
+           Qualcd != 'P Dis',
+           Qualcd != 'P Ssn',
+           Qualcd != 'A e',
+           Qualcd != 'P e')
+
+  class(nwis.sum.stats.temp.AWQMS$SiteID) <- c("NULL", "number")
+
+
+  # NWIS pH -----------------------------------------------------------------
+
+  print("Query NWIS pH begin....")
+
+  # Commenting out due to not using contiuous pH for assessment
+  nwis.cont.ph <- dataRetrieval::readNWISuv(siteNumbers = USGS_stations,
+                                  parameterCd = "00400",
+                                  startDate = start.date,
+                                  endDate = end.date)
+  print("Query NWIS pH end")
+
+
+
+
+  nwis.cont.ph <- dataRetrieval::renameNWISColumns(nwis.cont.ph)
+
+  nwis_ph_results <- nwis.cont.ph %>%
+    #filter out rejected
+    dplyr::filter(pH_Inst_cd != 'P Eqp',
+                  pH_Inst_cd != 'P Dis',
+                  pH_Inst_cd != 'P Ssn',
+                  pH_Inst_cd != 'A e',
+                  pH_Inst_cd != 'P e') %>%
+    dplyr::transmute('Monitoring_Location_ID' = site_no,
+                     "Activity_start_date" = format(dateTime, "%Y/%m/%d"),
+                     'Activity_Start_Time' =format(dateTime, "%H:%M:%S"),
+                     'Activity_Time_Zone' = tz_cd,
+                     'Equipment_ID' = site_no,
+                     'Characteristic_Name' = "pH",
+                     "Result_Value" = pH_Inst,
+                     "Result_Unit" = "pH Units",
+                     "Result_Status_ID" = pH_Inst_cd)
+
+
+  pH_deployments <-   nwis_ph_results %>%
+   dplyr::group_by(Monitoring_Location_ID, Equipment_ID) %>%
+   dplyr::summarise(Activity_start_date_time = min(Activity_start_date),
+                    Activity_end_date_time  = max(Activity_start_date),
+                    Activity_start_end_time_Zone = dplyr::first(Activity_Time_Zone)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(Media = "Water",
+                  Media_subdivision = "Surface Water",
+                  Project_ID = project,
+                  Alternate_Project_ID = "",
+                  Alternate_Project_ID2 = "",
+                  Frequency_on_minutes = "",
+                  Depth_in_m = "")
+
+
+  print("Writing pH files")
+
+
+  openxlsx::write.xlsx(pH_deployments, file = paste0(save_location, "NWIS_continuous_pH_Deployments.xlsx"))
+
+odeqIRtools::data_split_AWQMS(nwis_ph_results, split_on = 'Monitoring_Location_ID', size = 100000, filepath = save_location)
+
+  # NWIS DO conc ------------------------------------------------------------
+
+
+  print("Query NWIS DO begin....")
+  nwis.sum.stats.DO <-dataRetrieval::readNWISdv(siteNumbers = USGS_stations,
+                                  parameterCd = "00300",
+                                  startDate = start.date,
+                                  endDate = end.date,
+                                  statCd = statcds)
+
+  print("Query NWIS DO end")
+
+  nwis.sum.stats.DO <- dataRetrieval::renameNWISColumns(nwis.sum.stats.DO)
+
+
+  # Calculate moving averages. If 1 or more daya are missing from period, do not caluclate average
+  DO4ma <- nwis.sum.stats.DO %>%
+    dplyr::arrange(site_no, Date) %>%
+    dplyr::group_by(site_no) %>%
+    dplyr::mutate(startdate7 = dplyr::lag(Date, 6, order_by = Date),
+           # flag out which result gets a moving average calculated
+           calc7ma = dplyr::case_when(is.na(startdate7) ~ 0,
+                               startdate7 == (Date - lubridate::days(6)) ~ 1,
+                               TRUE ~ 0 ),
+           startdate30 = dplyr::lag(Date, 29, order_by = Date),
+           calc30ma = ifelse(startdate30 == (Date - 29), 1, 0 )) %>%
+    dplyr::mutate(ma.mean7 = ifelse(calc7ma == 1, round(zoo::rollmean(x = DO, 7, align = "right", fill = NA),1) , NA ),
+           ma.mean30 = ifelse(calc30ma == 1, round(zoo::rollmean(x = DO, 30, align = "right", fill = NA),1) , NA ),
+           ma.min7 = ifelse(calc7ma == 1, round(zoo::rollmean(x = DO_Min, 7, align = "right", fill = NA),1) , NA ))
+
+
+  nwis.sum.stats.DO.gather <- DO4ma %>%
+    tidyr::gather(DO_Max, DO, DO_Min, ma.mean7, ma.mean30,ma.min7,   key = "stat", value = "result", na.rm = TRUE) %>%
+    dplyr::mutate(qual = ifelse(stat == "DO_Max", DO_Max_cd,
+                         ifelse(stat == "DO" | stat == "ma.mean7" | stat == "ma.mean30", DO_cd,
+                                ifelse(stat == "DO_Min" | stat == "ma.min7", DO_Min_cd, "ERROR" )))) %>%
+    dplyr::select(agency_cd, site_no, Date, stat, result, qual, startdate7, startdate30 )
+
+
+  nwis.sum.stats.DO.AWQMS <- nwis.sum.stats.DO.gather %>%
+    dplyr::ungroup() %>%
+    dplyr::transmute(CharID = "Dissolved oxygen (DO)",
+              Result = result,
+              Unit = "mg/L",
+              Method = "LUMIN",
+              RsltType = "Calculated",
+              Qualcd = qual,
+              StatisticalBasis = dplyr::case_when(stat == "ma.mean7" ~"7DMADMean",
+                                           stat == "DO_Max" ~"Daily Maximum",
+                                           stat == "DO" ~"Daily Mean",
+                                           stat == "DO_Min" ~ "Daily Minimum",
+                                           stat == "ma.mean30" ~ "30DMADMean",
+                                           stat == "ma.min7" ~ "7DMADMin",
+                                           TRUE ~ "ERROR"),
+              RsltTimeBasis = ifelse(StatisticalBasis == "7DMADMean" | StatisticalBasis == "7DMADMin", "7 day",
+                                     ifelse(StatisticalBasis == "30DMADMean", "30 Day", "1 Day" )),
+              DEQ_RsltComment = ifelse(StatisticalBasis == "7DMADMean" |
+                                         StatisticalBasis == "7DMADMin" |
+                                         StatisticalBasis == "30DMADMean", "Generated by ORDEQ", "" ),
+              ActivityType = "FMC",
+              SiteID = site_no,
+              SmplColMthd = "ContinuousPrb",
+              SmplColEquip = "Probe/Sensor",
+              SmplDepth = "",
+              SmplDepthUnit = "",
+              SmplColEquipComment = "",
+              Samplers = "",
+              SmplEquipID = "Continuous Probe",
+              Project = project,
+              ActStartDate = Date,
+              ActStartTime = "0:00",
+              ActStartTimeZone = "PST",
+              ActEndDate = Date,
+              ActEndTime = "0:00",
+              ActEndTimeZone = "UTC",
+              AnaStartDate = "",
+              AnaStartTime = "",
+              AnaStartTimeZone = "",
+              AnaEndDate = "",
+              AnaEndTime = "",
+              AnaEndTimeZone = "",
+              ActComment = "",
+              ActivityID = paste0(SiteID, ":", gsub("-","",ActStartDate), ":", ActivityType)) %>%
+    dplyr::arrange(SiteID, ActStartDate)%>%
+    dplyr::filter(Qualcd != 'P Eqp',
+           Qualcd != 'P Dis',
+           Qualcd != 'P Ssn',
+           Qualcd != 'A e',
+           Qualcd != 'P e')
+
+  class(nwis.sum.stats.DO.AWQMS$SiteID) <- c("NULL", "number")
+
+
+
+  #write_csv(nwis.sum.stats.DO.gather, "nwis_DO_sum_stats_long.csv")
+
+
+
+  # NWIS DO sat ------------------------------------------------------------
+  #### There does not appear to be any DO sat data in NWIS for Oregon
+  # nwis.sum.stats.DOsat <- readNWISdv(siteNumbers = USGS_stations,
+  #                                 parameterCd = "00301",
+  #                                 startDate = start.date,
+  #                                 endDate = end.date,
+  #                                 statCd = statcds)
+  #
+  #
+  # nwis.sum.stats.DOsat <- renameNWISColumns(nwis.sum.stats.DOsat)
+
+
+  # #list of sites from the sum.stats table
+  # nwis_sum_stat_sites <- unique(nwis.sum.stats$site_no)
+  #
+  # #pull site info from NWIS for sites identified in sum.stats table
+  # nwis_sites <- readNWISsite(nwis_sum_stat_sites)
+
+
+
+
+  # Monitoring station information ------------------------------------------
+
+
+  if (nrow(nwis.sum.stats.DO) > 0 &
+      nrow(nwis_ph_results) > 0) {
+    nwissites <-
+      unique(c(
+        unique(nwis.sum.stats.DO.AWQMS$SiteID),
+        unique(nwis.sum.stats.temp.AWQMS$SiteID),
+        unique(nwis_ph_results$SiteID)
+      ))
+
+  } else if (nrow(nwis.sum.stats.DO) > 0 &
+             nrow(nwis_ph_results) == 0) {
+    nwissites <-
+      unique(c(
+        unique(nwis.sum.stats.DO.AWQMS$SiteID),
+        unique(nwis.sum.stats.temp.AWQMS$SiteID)
+      ))
+
+  } else {
+    nwissites <- unique(nwis.sum.stats.temp.AWQMS$SiteID)
+  }
+
+
+
+  nwissites <- dataRetrieval::readNWISsite(unique(nwissites))
+
+
+  nwis.sites.AWQMS <- nwissites %>%
+    dplyr::left_join(odeqIRtools::county_codes, by = "county_cd") %>%
+    dplyr::transmute(Stationkey = site_no,
+              Desc = station_nm,
+              SiteComments = "",
+              MonLocType = dplyr::case_when(site_tp_cd == "ST" ~'River/Stream',
+                                            site_tp_cd == "LK" ~ "Lake",
+                                            site_tp_cd == "ST-CA" ~"Canal Transport",
+                                            site_tp_cd == "GW" ~ "Well",
+                                            TRUE ~ "ERROR" ),
+              COUNTY = county_nm,
+              STATE = "OR",
+              Country = "US",
+              HUC8 = huc_cd,
+              HUC12 = "",
+              TribalLand = "",
+              TribalName = "",
+              CreateDate = "",
+              T_R_S = "",
+              Lat = dec_lat_va,
+              Long = dec_long_va,
+              Datum = dec_coord_datum_cd,
+              CollMethod = "Interpolation-Digital Map Source",
+              MapScale = map_scale_fc,
+              Comments = "",
+              WellType = ifelse(MonLocType == "Well", "Monitoring", ""),
+              WellForm = "",
+              WellAquiferName = ifelse(MonLocType == "Well", nat_aqfr_cd, ""),
+              WellDepth = ifelse(MonLocType == "Well", well_depth_va, ""),
+              WellDepthUnit = "ft",
+              AltLocID = "",
+              AltLocName = "",
+              EcoRegion3 = "",
+              EcoRegion4 = "",
+              Reachcode = "",
+              GNIS_Name = "",
+              AU_ID = ""
+    )
+
+  # remove NAs
+  nwis.sites.AWQMS[is.na(nwis.sites.AWQMS)] <- ""
+
+
+
+  # write.csv(nwis.sum.stats.DO.AWQMS, "Data Sources/NWIS_Do_sum_stat_AWQMS.csv", row.names = FALSE)
+  # write.csv(nwis.sum.stats.temp.AWQMS, "Data Sources/NWIS_Temp_sum_stat_AWQMS.csv", row.names = FALSE)
+  #
+  # save(nwis.sites.AWQMS, nwis.sum.stats.DO.AWQMS, nwis.sum.stats.temp.AWQMS, file = "Data Sources/NWIS_data.RData")
+  # save.image(file= "Data Sources/NWIS_environment.RData")
+
+
+
+
+  # Write csvs --------------------------------------------------------------
+
+
+
+  # Data_Split <- function(df) {
+  #
+  #   # Max row size of file
+  #   chunk <- 500000
+  #
+  #   n <- nrow(df)
+  #   r  <- rep(1:ceiling(n/chunk),each=chunk)[1:n]
+  #   d <- split(df,r)
+  #
+  #   for(i in 1:length(d)){
+  #
+  #     shortdf <- as.data.frame(d[i])
+  #     names(shortdf) <- names(df)
+  #     write.csv(shortdf, file=paste0("A:/Integrated_Report/DataSources/USGS_NWIS/",deparse(substitute(df)), "-", i, ".csv"))
+  #
+  #   }
+  #
+  # }
+  #
+  # Data_Split(nwis.sites.AWQMS)
+  # Data_Split(nwis.sum.stats.DO.AWQMS)
+  # Data_Split(nwis.sum.stats.temp.AWQMS)
+
+  NWIS_sum_stats_data <- dplyr::bind_rows(nwis.sum.stats.temp.AWQMS
+                         ,nwis.sum.stats.DO.AWQMS)
+
+  if(split_file){
+    odeqIRtools::data_split_AWQMS(NWIS_sum_stats_data, split_on = "SiteID", size = 100000, filepath = save_location)
+  } else {
+  write.csv(NWIS_data, paste0(save_location,"NWIS_sum_stats-", start.date, " - ", end.date, ".csv"), row.names = FALSE)
+  }
+
+  write.csv(nwis.sites.AWQMS, paste0(save_location,"NWIS_Monitoring_Locations.csv"), row.names = FALSE)
+
+
+}
