@@ -1,6 +1,6 @@
 #' This script performs the data validation component of the IR process. Data in InputRaw is checked against the 1st and 
 #' 99th percentiles of all data in AWQMS. Data outside of this range is exported in data_validation_manual_review.csv.
-#' This table should be reviewed and any rejected data should be loaded in the UnusedData table in the IR database.
+#' This table should be reviewed and any rejected data should be identified in the Unused data table in the IR database.
 #' 
 #' Percentiles are calculated using the entire AWQMS dataset. SQL code for generating the validation values can be 
 #' found at \\deqHQ1\WQASSESSMENT\2022IRFiles\Code\Validation.
