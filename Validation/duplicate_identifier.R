@@ -40,7 +40,7 @@ IR_res <- DBI::dbGetQuery(IR.sql, glue_sql(IR_Res_qry, .con = IR.sql))
 
 # Straight Duplicates ---------------------------------------------------------------------------------------------
 
-#These are the value sthat are suspecte duplicates
+#These are the values that are suspected duplicates
 
 straight_duplicates <- IR_res %>%
   filter(AU_ID != '99') %>%
@@ -64,7 +64,7 @@ straight_duplicates <- IR_res %>%
   ungroup() %>%
   arrange(MLocID, SampleStartDate, Char_Name)
 
-#Duplicate result UIDs. These are duplcaute values in every way. Some method of removing duplicates must be found. 
+#Duplicate result UIDs. These are duplicate values in every way. Some method of removing duplicates must be found. 
 dup_same_resuid <- straight_duplicates %>%
   filter(num_resUID == 1 & num_distinct_results == 1)
 
