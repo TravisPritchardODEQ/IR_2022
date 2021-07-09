@@ -23,8 +23,19 @@ if(length(unique(fresh_contact$AU_ID)) == 0) {
 
 # Geometric mean calculations --------------------------------------------
 
-# First split off the watershed units and analyze everything else
+#Analyze by monitoring location 
+#Add column (d) which is a rolling 90 day period dataframe of date and results
+#Calculate geomena if >= 5 samples in 90 day period
+#Number of samples in 90 day period (count_90)
+#String of unique dates in 90 day period
+  #This is used to create ratioanale
+#Comment if geomean is able to be calculated
 
+#Pull it back into main datafrmae with unnest_wider
+
+# Create 2 columns for reviewer assistance
+  #geomean_excursion - If the geomean associated with that day is an excursion of geomean crit
+  #single_sample_excursion- If that day's result is an excursion of the single sample crit
 
 
 fresh_contact_geomeans <- fresh_contact %>%
@@ -75,7 +86,7 @@ fresh_AU_summary_WS <-  fresh_contact_geomeans %>%
             Geomean_Crit = max(Geomean_Crit),
             geomean_over = ifelse(!is.na(Max_Geomean) &
                                     Max_Geomean > Geomean_Crit, 1, 0),
-            geomean_exceed_date_periods = ifelse(geomean_over == 1 ,str_c(na.omit(unique(dates_90[geomean > Geomean_Crit]), collapse = "; ")),NA),
+            geomean_exceed_date_periods = ifelse(geomean_over == 1 ,str_c(na.omit(unique(dates_90[geomean > Geomean_Crit]), collapse = " AND ")),NA),
             ss_exceed_date_periods = str_c(unique(SampleStartDate[Result_cen > SS_Crit]), collapse =  "; ")
   ) %>%
   mutate(IR_category = case_when(geomean_over == 1 ~ "5",
@@ -188,7 +199,7 @@ writeData(wb = wb, sheet = "Other AU categorization", x = fresh_AU_summary_no_WS
 
 
 print("Writing excel doc")
-saveWorkbook(wb, "Parameters/Bacteria/Freshwater bacteria.xlsx", overwrite = TRUE) 
+saveWorkbook(wb, "Parameters/Bacteria/bacteria fresh contact.xlsx", overwrite = TRUE) 
 
 }
 
