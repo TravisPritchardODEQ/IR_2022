@@ -1,6 +1,15 @@
-df <- Bacteria_results
 
 
+fresh_contact_rec <- function(df, write_excel = TRUE){
+
+
+  
+
+# Testing and development settings --------------------------------------------------------------------------------
+
+  
+  #df <- Bacteria_results  
+  #write_excel = TRUE  
 library(runner)
 library(openxlsx)
 
@@ -36,15 +45,21 @@ fresh_contact_geomeans <- fresh_contact %>%
                                                                             TRUE ~ NA_character_) )
   )) %>%
   tidyr::unnest_wider(d) %>%
-  arrange(AU_ID, MLocID, SampleStartDate ) 
-
-# Add data export here --------------------------------------------------------------------------------------------
-
-
+  arrange(AU_ID, MLocID, SampleStartDate )  %>%
+  mutate(geomean_excursion = case_when(is.na(geomean) ~ "no: < 5 samples in 90 day period",
+                                       geomean >  Geomean_Crit ~ "yes",
+                                       TRUE ~ "no"),
+         single_sample_excursion = ifelse(Result_cen > SS_Crit, "yes", "no" ))
+  
 
 
 
 # Categorization --------------------------------------------------------------------------------------------------
+
+
+# Watershed unit categorization -----------------------------------------------------------------------------------
+
+
 fresh_AU_summary_WS <-  fresh_contact_geomeans %>%
   filter(str_detect(AU_ID, "WS", negate = FALSE)) %>%
   arrange(MLocID) %>%
@@ -104,7 +119,7 @@ WS_AU_rollup <- fresh_AU_summary_WS %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code ))
 
 
-# Non- WS units ---------------------------------------------------------------------------------------------------
+# Non- watershed unit categorization ---------------------------------------------------------------------------------------------------
 
 
 
@@ -156,21 +171,30 @@ fresh_AU_summary_no_WS <-  fresh_contact_geomeans %>%
 
 
 # Create excel doc ------------------------------------------------------------------------------------------------
+if(write_excel){
+
 wb <- createWorkbook()
 addWorksheet(wb, sheetName = "Fresh Bacteria Data")
 addWorksheet(wb, sheetName = "WS station categorization")
 addWorksheet(wb, sheetName = "WS AU categorization")
 addWorksheet(wb, sheetName = "Other AU categorization")
 
-writeData(wb = wb, sheet = "Fresh Bacteria Data", x = fresh_contact_geomeans)
-writeData(wb = wb, sheet = "WS station categorization", x = fresh_AU_summary_WS)
-writeData(wb = wb, sheet = "WS AU categorization", x = WS_AU_rollup )
-writeData(wb = wb, sheet = "Other AU categorization", x = fresh_AU_summary_no_WS )
+header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
+
+writeData(wb = wb, sheet = "Fresh Bacteria Data", x = fresh_contact_geomeans, headerStyle = header_st)
+writeData(wb = wb, sheet = "WS station categorization", x = fresh_AU_summary_WS, headerStyle = header_st)
+writeData(wb = wb, sheet = "WS AU categorization", x = WS_AU_rollup, headerStyle = header_st)
+writeData(wb = wb, sheet = "Other AU categorization", x = fresh_AU_summary_no_WS, headerStyle = header_st )
 
 
 print("Writing excel doc")
 saveWorkbook(wb, "Parameters/Bacteria/Freshwater bacteria.xlsx", overwrite = TRUE) 
 
+}
+
+
+
+# Function output list --------------------------------------------------------------------------------------------
 
 
 bacteria_freshwater <-list(fresh_bacteria_data=as.data.frame(fresh_contact_geomeans),
@@ -178,5 +202,5 @@ bacteria_freshwater <-list(fresh_bacteria_data=as.data.frame(fresh_contact_geome
                            ws_au_categorization=as.data.frame(WS_AU_rollup),
                            other_au_categorization=as.data.frame(fresh_AU_summary_no_WS))
 
-#return(template_sheets)
-         
+return(bacteria_freshwater)
+}
