@@ -4,13 +4,21 @@ library(lubridate)
 library(runner)
 
 
+
+fun_temp_analysis <- function(df, write_excel = TRUE){
+
 # Testing ---------------------------------------------------------------------------------------------------------
 
 df <- Results_censored_temp
 
 
 
-# Prelim data prep ------------------------------------------------------------------------------------------------
+
+# Preliminary data prep ------------------------------------------------------------------------------------------------
+
+#calculate in/out critical period
+#calculate in/out spawn period
+#calculate prelim (non-air temp exlcusion) criteria violations
 
 
 temp_analysis <- df %>%
@@ -43,6 +51,11 @@ temp_analysis <- df %>%
   arrange(SampleStartDate, SampleStartTime) %>%
   filter(!is.na(AU_ID))
 
+
+# Air temp exclusion ----------------------------------------------------------------------------------------------
+
+
+
 temp_air_exclusion0 <- air_temp_exclusion(temp_analysis, date_col =  'SampleStartDate') 
 
 temp_air_exclusion <- temp_air_exclusion0 %>%
@@ -52,12 +65,13 @@ temp_air_exclusion <- temp_air_exclusion0 %>%
                                           TRUE ~ Spawn_Violation))
 
 
-# Year Round analysis ---------------------------------------------------------------------------------------------
+# Excursions ---------------------------------------------------------------------------------------------
 
 
 # Watershed Unit --------------------------------------------------------------------------------------------------
 
-
+# watershed unit 3 year excursion rollup
+  # Grouped by mloc
 ws_3_year <- temp_air_exclusion %>%
   filter(str_detect(AU_ID, "WS", negate = FALSE)) %>%
   group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
@@ -76,55 +90,8 @@ ws_3_year <- temp_air_exclusion %>%
   )) %>%
   tidyr::unnest_wider(d)
 
-
-
-
-temp_IR_categories_WS <- ws_3_year %>%
-  group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
-  summarise( Temp_Criteria = first(Temp_Criteria),
-             data_period_start = min(SampleStartDate),
-             data_period_end = max(SampleStartDate),
-             total_valid_excursions = sum(year_round_excursion),
-             total_air_exclusions = sum(year_round_Violation) -sum(year_round_excursion) ,
-             max_3yr_excursions = max(excursions_3yr),
-             max_3yr_results_in_crit_period = max(samples_crit_period),
-             disrinct_years = n_distinct(years(SampleStartDate)),
-             distinct_years_critical_period = length(unique(year(SampleStartDate)[sum(In_crit_period) > .8 * 92])),
-             total_results = n()
-             ) %>%
-  mutate(period = "year round",
-         IR_category = case_when(max_3yr_excursions >= 2 ~ "5",
-                   max_3yr_excursions == 1 ~ "3B",
-                   max_3yr_excursions == 0 & distinct_years_critical_period < 1 ~ "3",
-                   TRUE ~ '2'),
-         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(MLocID, ": ", total_valid_excursions, 
-                                                                " valid excursions of ", Temp_Criteria, 
-                                                                "° criteria. ", total_air_exclusions, 
-                                                                " excursions marked invald due to air temp exclusion rule- ",
-                                                                total_results, " total results"),
-                               max_3yr_excursions == 1 ~ paste0(MLocID, ": Insufficient data-", total_valid_excursions, 
-                                                                " valid excursions of ", Temp_Criteria, 
-                                                                "° criteria. ", total_air_exclusions, 
-                                                                " excursions marked invald due to air temp exclusion rule- ",
-                                                                total_results, " total results"),
-                               max_3yr_excursions == 0 & distinct_years_critical_period < 1 ~ paste0(MLocID, ": Insufficient data: insufficient data collected during critical warm period- ",
-                                                                                                      total_results, " total results"),
-                               TRUE ~ paste0("Attaining- No 7DADM excursions- ",
-                                                                total_results, " total results"))) %>%
-  mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
-
-WS_AU_rollup <- temp_IR_categories_WS %>%
-  ungroup() %>%
-  group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period) %>%
-  summarise(IR_category_AU = max(IR_category),
-            Rationale_AU = str_c(Rationale,collapse =  " ~ " ) ) %>%
-  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
-
-
-# Other unit year round -------------------------------------------------------------------------------------------
-
-
-
+# other unit 3 year excursion rollup
+# Grouped by au_id
 
 other_3_year <- temp_air_exclusion %>%
   filter(str_detect(AU_ID, "WS", negate = TRUE)) %>%
@@ -146,6 +113,60 @@ other_3_year <- temp_air_exclusion %>%
 
 
 
+# Year Round categorization ---------------------------------------------------------------------------------------
+
+
+# Watershed Units -------------------------------------------------------------------------------------------------
+
+
+
+
+temp_IR_categories_WS <- ws_3_year %>%
+  group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  summarise( Temp_Criteria = first(Temp_Criteria),
+             data_period_start = min(SampleStartDate),
+             data_period_end = max(SampleStartDate),
+             total_valid_excursions = sum(year_round_excursion),
+             total_air_exclusions = sum(year_round_Violation) -sum(year_round_excursion) ,
+             max_3yr_excursions = max(excursions_3yr),
+             max_3yr_results_in_crit_period = max(samples_crit_period),
+             disrinct_years = n_distinct(years(SampleStartDate)),
+             distinct_years_sufficient_crit_period = length(unique(year(SampleStartDate)[sum(In_crit_period) > .8 * 92])),
+             total_results = n()
+             ) %>%
+  mutate(period = "year_round",
+         IR_category = case_when(max_3yr_excursions >= 2 ~ "5",
+                   max_3yr_excursions == 1 ~ "3B",
+                   max_3yr_excursions == 0 & distinct_years_sufficient_crit_period < 1 ~ "3",
+                   TRUE ~ '2'),
+         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(MLocID, ": ", total_valid_excursions, 
+                                                                " valid excursions of ", Temp_Criteria, 
+                                                                "° criteria. ", total_air_exclusions, 
+                                                                " excursions marked invald due to air temp exclusion rule- ",
+                                                                total_results, " total results"),
+                               max_3yr_excursions == 1 ~ paste0(MLocID, ": Insufficient data-", total_valid_excursions, 
+                                                                " valid excursions of ", Temp_Criteria, 
+                                                                "° criteria. ", total_air_exclusions, 
+                                                                " excursions marked invald due to air temp exclusion rule- ",
+                                                                total_results, " total results"),
+                               max_3yr_excursions == 0 & distinct_years_sufficient_crit_period < 1 ~ paste0(MLocID, ": Insufficient data: insufficient data collected during critical warm period- ",
+                                                                                                      total_results, " total results"),
+                               TRUE ~ paste0("Attaining- No 7DADM excursions- ",
+                                                                total_results, " total results"))) %>%
+  mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
+
+WS_AU_rollup <- temp_IR_categories_WS %>%
+  ungroup() %>%
+  group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period) %>%
+  summarise(IR_category_AU = max(IR_category),
+            Rationale_AU = str_c(Rationale,collapse =  " ~ " ) ) %>%
+  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
+
+
+# Other unit year round -------------------------------------------------------------------------------------------
+
+
+
 
 temp_IR_categories_other <- other_3_year %>%
   group_by(AU_ID,  Pollu_ID, wqstd_code,  OWRD_Basin) %>%
@@ -157,14 +178,14 @@ temp_IR_categories_other <- other_3_year %>%
              max_3yr_excursions = max(excursions_3yr),
              max_3yr_results_in_crit_period = max(samples_crit_period),
              disrinct_years = n_distinct(years(SampleStartDate)),
-             distinct_years_critical_period = length(unique(year(SampleStartDate)[sum(In_crit_period) > .8 * 92])),
+             distinct_years_sufficient_crit_period = length(unique(year(SampleStartDate)[sum(In_crit_period) > .8 * 92])),
              total_results = n()
            
   ) %>%
-  mutate(period = "year round",
+  mutate(period = "year_round",
          IR_category =  case_when(max_3yr_excursions >= 2 ~ "5",
                                   max_3yr_excursions == 1 ~ "3B",
-                                  max_3yr_excursions == 0 & distinct_years_critical_period < 1 ~ "3",
+                                  max_3yr_excursions == 0 & distinct_years_sufficient_crit_period < 1 ~ "3",
                                   max_3yr_excursions == 1 ~ "3B",
                                   TRUE ~ '2'),
          Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(total_valid_excursions, 
@@ -173,7 +194,7 @@ temp_IR_categories_other <- other_3_year %>%
                                max_3yr_excursions == 1 ~ paste0("Insufficient data-", total_valid_excursions, 
                                                                 " valid excursions of criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule"),
-                               max_3yr_excursions == 0 & distinct_years_critical_period < 1~ paste0("Insufficient data: insufficient data collected during critical warm period"),
+                               max_3yr_excursions == 0 & distinct_years_sufficient_crit_period < 1~ paste0("Insufficient data: insufficient data collected during critical warm period"),
                                TRUE ~ 'Attaining- No 7DADM excursions'))%>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE)) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
@@ -184,8 +205,6 @@ temp_IR_categories_other <- other_3_year %>%
 # Spawning --------------------------------------------------------------------------------------------------------
 
 
-#This is a mess. rEDO THIS.
-
 # Watershed units -------------------------------------------------------------------------------------------------
 
 
@@ -193,22 +212,22 @@ temp_IR_categories_WS_spawn <- ws_3_year %>%
   filter(Spawn_type == "Spawn") %>%
   mutate(spawn_length = as.double(difftime(End_spawn,Start_spawn,unit="days"))) %>%
   group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
-  summarise( Temp_Criteria =13,
+  summarise( Temp_Criteria = 13,
              data_period_start = min(SampleStartDate),
              data_period_end = max(SampleStartDate),
              total_valid_excursions = sum(spawn_excursion),
              total_air_exclusions = sum(Spawn_Violation) -sum(spawn_excursion) ,
              max_3yr_excursions = max(excursions_spawn_3yr),
              max_3yr_results_in_spawn_period = max(samples_spawn),
-             distinct = n_distinct(years(SampleStartDate)),
+             distinct_years = n_distinct(year(SampleStartDate)),
              spawn_period_length = first(spawn_length),
-             distinct_years_critical_period = length(unique(year(SampleStartDate)[sum(In_crit_period) > .8 * spawn_length])),
+             distinct_years_sufficient_spawn_period = n_distinct(unique(year(SampleStartDate)[sum(Spawn_type == "Spawn") > .8 * min(spawn_length)])),
              total_results = n()
   ) %>%
-  mutate(period = "Spawn",
+  mutate(period = "spawn",
          IR_category = case_when(max_3yr_excursions >= 2 ~ "5",
                                  max_3yr_excursions == 1 ~ "3B",
-                                 max_3yr_excursions == 0 & distinct_years_critical_period < 1 ~ "3",
+                                 max_3yr_excursions == 0 & distinct_years_sufficient_spawn_period < 1 ~ "3",
                                  TRUE ~ '2'),
          Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(MLocID, ": ", total_valid_excursions, 
                                                                 " valid excursions of ", Temp_Criteria, 
@@ -220,13 +239,13 @@ temp_IR_categories_WS_spawn <- ws_3_year %>%
                                                                 "° criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule- ",
                                                                 total_results, " total results"),
-                               max_3yr_excursions == 0 & distinct_years_critical_period < 1 ~ paste0(MLocID, ": Insufficient data: insufficient data collected during critical warm period- ",
+                               max_3yr_excursions == 0 & distinct_years_sufficient_spawn_period < 1 ~ paste0(MLocID, ": Insufficient data: insufficient data collected during spawn period- ",
                                                                                                  total_results, " total results"),
-                               TRUE ~ paste0("Attaining- No 7DADM excursions- ",
+                               TRUE ~ paste0(MLocID, ": Attaining- No 7DADM excursions- ",
                                              total_results, " total results"))) %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
 
-WS_AU_rollup <- temp_IR_categories_WS %>%
+WS_AU_rollup_spawn <- temp_IR_categories_WS_spawn %>%
   ungroup() %>%
   group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period) %>%
   summarise(IR_category_AU = max(IR_category),
@@ -241,8 +260,8 @@ WS_AU_rollup <- temp_IR_categories_WS %>%
 temp_IR_categories_other_spawn <- other_3_year %>%
   filter(Spawn_type == "Spawn") %>%
   mutate(spawn_length = as.double(difftime(End_spawn,Start_spawn,unit="days"))) %>%
-  group_by(AU_ID,  Pollu_ID, wqstd_code,  OWRD_Basin) %>%
-  summarise( Temp_Criteria =13,
+  group_by(AU_ID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  summarise( Temp_Criteria = 13,
              data_period_start = min(SampleStartDate),
              data_period_end = max(SampleStartDate),
              total_valid_excursions = sum(spawn_excursion),
@@ -250,23 +269,68 @@ temp_IR_categories_other_spawn <- other_3_year %>%
              max_3yr_excursions = max(excursions_spawn_3yr),
              max_3yr_results_in_spawn_period = max(samples_spawn),
              distinct_years = n_distinct(year(SampleStartDate)),
-             spawn_period_length = max(spawn_length),
-             distinct_years_critical_period = length(unique(year(SampleStartDate)[sum(Spawn_type) > .8 * spawn_length])),
+             spawn_period_length = first(spawn_length),
+             distinct_years_sufficient_spawn_period = n_distinct(unique(year(SampleStartDate)[sum(Spawn_type == "Spawn") > .8 * min(spawn_length)])),
              total_results = n()
   ) %>%
-  mutate(period = "Spawn",
+  mutate(period = "spawn",
          IR_category = case_when(max_3yr_excursions >= 2 ~ "5",
                                  max_3yr_excursions == 1 ~ "3B",
-                                 max_3yr_excursions == 0 & distinct_years_critical_period < 1 ~ "3",
+                                 max_3yr_excursions == 0 & distinct_years_sufficient_spawn_period < 1 ~ "3",
                                  TRUE ~ '2'),
-         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(total_valid_excursions, 
-                                                                " valid excursions of criteria. ", total_air_exclusions, 
-                                                                " excursions marked invald due to air temp exclusion rule"),
+         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0( total_valid_excursions, 
+                                                                " valid excursions of ", Temp_Criteria, 
+                                                                "° criteria. ", total_air_exclusions, 
+                                                                " excursions marked invald due to air temp exclusion rule- ",
+                                                                total_results, " total results"),
                                max_3yr_excursions == 1 ~ paste0("Insufficient data-", total_valid_excursions, 
-                                                                " valid excursions of criteria. ", total_air_exclusions, 
-                                                                " excursions marked invald due to air temp exclusion rule"),
-                               max_3yr_excursions == 0 & distinct_years_critical_period < 1~ paste0("Insufficient data: insufficient data collected during critical warm period"),
-                               TRUE ~ 'Attaining- No 7DADM excursions')) %>%
-  mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
+                                                                " valid excursions of ", Temp_Criteria, 
+                                                                "° criteria. ", total_air_exclusions, 
+                                                                " excursions marked invald due to air temp exclusion rule- ",
+                                                                total_results, " total results"),
+                               max_3yr_excursions == 0 & distinct_years_sufficient_spawn_period < 1 ~ paste0("Insufficient data: insufficient data collected during spawn period- ",
+                                                                                                     total_results, " total results"),
+                               TRUE ~ paste0("Attaining- No 7DADM excursions- ",
+                                             total_results, " total results"))) %>%
+  mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE)) %>%
+  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
 
 
+
+if(write_excel){
+  
+  wb <- createWorkbook()
+  addWorksheet(wb, sheetName = "Temperature Data")
+  addWorksheet(wb, sheetName = "YrRnd WS station cat")
+  addWorksheet(wb, sheetName = "YrRnd WS AU cat")
+  addWorksheet(wb, sheetName = "YrRnd Other AU cat")
+  addWorksheet(wb, sheetName = "Spawn WS station cat")
+  addWorksheet(wb, sheetName = "Spawn WS AU cat")
+  addWorksheet(wb, sheetName = "Spawn Other AU cat")
+  
+  header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
+  
+  writeData(wb = wb, sheet = "Temperature Data", x = temp_air_exclusion, headerStyle = header_st)
+  writeData(wb = wb, sheet = "YrRnd WS station cat", x = temp_IR_categories_WS, headerStyle = header_st)
+  writeData(wb = wb, sheet = "YrRnd WS AU cat", x = WS_AU_rollup , headerStyle = header_st)
+  writeData(wb = wb, sheet = "YrRnd Other AU cat", x = temp_IR_categories_other, headerStyle = header_st )
+  writeData(wb = wb, sheet = "Spawn WS station cat", x = temp_IR_categories_WS_spawn , headerStyle = header_st )
+  writeData(wb = wb, sheet = "Spawn WS AU cat", x = WS_AU_rollup_spawn, headerStyle = header_st )
+  writeData(wb = wb, sheet = "Spawn Other AU cat", x = temp_IR_categories_other_spawn, headerStyle = header_st )
+  
+  print("Writing excel doc")
+  saveWorkbook(wb, "Parameters/Temperature/temperature.xlsx", overwrite = TRUE) 
+  
+}
+
+
+temperature <-list(temperature=as.data.frame(temp_air_exclusion),
+                   year_round_ws_station_categorization=as.data.frame(temp_IR_categories_WS),
+                   year_round_ws_au_categorization=as.data.frame(WS_AU_rollup),
+                   year_round_other_au_categorization=as.data.frame(temp_IR_categories_other),
+                   spawn_ws_station_categorization=as.data.frame(temp_IR_categories_WS_spawn),
+                   spawn_ws_au_categorization=as.data.frame(WS_AU_rollup_spawn),
+                   spawn_other_au_categorization=as.data.frame(temp_IR_categories_other_spawn))
+
+return(temperature)
+}

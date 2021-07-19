@@ -8,7 +8,7 @@ library(openxlsx)
 
 
 temp_data <- function(database) {
-  print("Fetch Chl data from IR database")
+  print("Fetch temp data from IR database")
   #connect to IR database view as a general user
   # import Temperature data
   IR.sql <-   odbcConnect(database)
