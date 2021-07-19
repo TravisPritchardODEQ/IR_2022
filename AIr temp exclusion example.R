@@ -3,7 +3,7 @@
 # Connect to the IR database
 IR.sql <-   DBI::dbConnect(odbc::odbc(), "IR_Dev")
 
-IR_Res_qry <- "SELECT TOP (1000) *
+IR_Res_qry <- "SELECT  *
      
   FROM [IntegratedReport].[dbo].[VW_Temperature]
   "

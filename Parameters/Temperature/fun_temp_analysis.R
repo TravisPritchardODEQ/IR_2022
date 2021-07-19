@@ -309,6 +309,13 @@ if(write_excel){
   addWorksheet(wb, sheetName = "Spawn Other AU cat")
   
   header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
+  freezePane(wb, "Temperature Data", firstRow = TRUE) 
+  freezePane(wb, "YrRnd WS station cat", firstRow = TRUE)
+  freezePane(wb, "YrRnd WS AU cat", firstRow = TRUE)
+  freezePane(wb, "YrRnd Other AU cat", firstRow = TRUE)
+  freezePane(wb, "Spawn WS station cat", firstRow = TRUE)
+  freezePane(wb, "Spawn WS AU cat", firstRow = TRUE)
+  freezePane(wb, "Spawn WS AU cat", firstRow = TRUE)
   
   writeData(wb = wb, sheet = "Temperature Data", x = temp_air_exclusion, headerStyle = header_st)
   writeData(wb = wb, sheet = "YrRnd WS station cat", x = temp_IR_categories_WS, headerStyle = header_st)
