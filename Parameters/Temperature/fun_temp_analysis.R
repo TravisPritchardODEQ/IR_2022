@@ -130,7 +130,7 @@ temp_IR_categories_WS <- ws_3_year %>%
              total_air_exclusions = sum(year_round_Violation) -sum(year_round_excursion) ,
              max_3yr_excursions = max(excursions_3yr),
              max_3yr_results_in_crit_period = max(samples_crit_period),
-             disrinct_years = n_distinct(years(SampleStartDate)),
+             distinct_years = n_distinct(year(SampleStartDate)),
              distinct_years_sufficient_crit_period = length(unique(year(SampleStartDate)[sum(In_crit_period) > .8 * 92])),
              total_results = n()
              ) %>%
@@ -177,7 +177,7 @@ temp_IR_categories_other <- other_3_year %>%
              total_air_exclusions = sum(year_round_Violation) -sum(year_round_excursion) ,
              max_3yr_excursions = max(excursions_3yr),
              max_3yr_results_in_crit_period = max(samples_crit_period),
-             disrinct_years = n_distinct(years(SampleStartDate)),
+             distinct_years = n_distinct(year(SampleStartDate)),
              distinct_years_sufficient_crit_period = length(unique(year(SampleStartDate)[sum(In_crit_period) > .8 * 92])),
              total_results = n()
            
