@@ -199,7 +199,7 @@ writeData(wb = wb, sheet = "Other AU categorization", x = fresh_AU_summary_no_WS
 
 
 print("Writing excel doc")
-saveWorkbook(wb, "Parameters/Bacteria/bacteria fresh contact.xlsx", overwrite = TRUE) 
+saveWorkbook(wb, "Parameters/Bacteria/bacteria freshwater contact.xlsx", overwrite = TRUE) 
 
 }
 
