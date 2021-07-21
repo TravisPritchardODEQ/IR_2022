@@ -2,11 +2,15 @@ library(lubridate)
 library(runner)
 
 
+
+
+
+coast_contact_rec <- function(df, write_excel = TRUE){
 # Testing and development settings --------------------------------------------------------------------------------
 
 
-df <- Bacteria_results
-write_excel = TRUE
+# df <- Bacteria_results
+# write_excel = TRUE
 
 Coastal <- df %>%
   filter(Bacteria_code %in%  c(1, 3),
@@ -242,3 +246,13 @@ if(write_excel){
 }
 
 
+
+bacteria_coast <-list(coast_bacteria_data_ws=as.data.frame(coast_contact_geomeans_WS),
+                      coast_bacteria_data_other=as.data.frame(coast_contact_geomeans_no_WS),
+                      ws_station_categorization=as.data.frame(coast_AU_summary_WS),
+                      ws_au_categorization=as.data.frame(WS_AU_rollup),
+                      other_au_categorization=as.data.frame(coast_AU_summary_no_WS))
+
+return(bacteria_coast)
+
+}
