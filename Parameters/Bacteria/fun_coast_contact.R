@@ -18,6 +18,7 @@ if(length(unique(Coastal$AU_ID)) == 0) {
 
 # NON Watershed unit categorization -----------------------------------------------------------------------------------
 coast_contact_geomeans_no_WS <- Coastal %>%
+  filter(str_detect(AU_ID, "WS", negate = TRUE)) %>%
   mutate(Geomean_Crit = 35,
          SS_Crit = 130 ) %>%
   group_by(AU_ID) %>%
