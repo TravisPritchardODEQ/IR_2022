@@ -13,7 +13,7 @@ ooi_DO_data <- AWQMS_Data_Cont(org = "OOI_(NOSTORETID)",
 
 sdadm <- ooi_DO_data %>%
   
-  mutate(result_conv = Result_Numeric* (1.4/63.9)*1.42905,
+  mutate(result_conv = Result_Numeric* (1.4/63.9)*1.42905, #convert to mg/L
          result_unit = 'mg/l',
          date = ymd(Result_Date),
          month = month(date),  
