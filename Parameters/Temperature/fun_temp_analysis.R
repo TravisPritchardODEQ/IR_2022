@@ -9,7 +9,8 @@ fun_temp_analysis <- function(df, write_excel = TRUE){
 
 # Testing ---------------------------------------------------------------------------------------------------------
 
-df <- Results_censored_temp
+# df <- Results_censored_temp
+# write_excel = TRUE
 
 
 
@@ -19,7 +20,7 @@ df <- Results_censored_temp
 #calculate in/out critical period
 #calculate in/out spawn period
 #calculate prelim (non-air temp exlcusion) criteria violations
-
+print("Begin initial temp analysis")
 
 temp_analysis <- df %>%
   filter(!FishCode %in% c('10','11','22','23')) %>%
@@ -34,9 +35,10 @@ temp_analysis <- df %>%
          Start_spawn = mdy(Start_spawn),
          End_spawn = mdy(End_spawn),
          # If Spawn dates span a calendar year, account for year change in spawn end date
-         End_spawn = if_else(End_spawn < Start_spawn & SampleStartDate >= End_spawn, End_spawn + years(1), # add a year if in spawn period carrying to next year
+         End_spawn = if_else(End_spawn < Start_spawn & SampleStartDate >= End_spawn, 
+                             End_spawn + lubridate::years(1), # add a year if in spawn period carrying to next year
                              End_spawn),
-         Start_spawn = if_else(End_spawn < Start_spawn & SampleStartDate <= End_spawn, Start_spawn - years(1), # subtract a year if in spawn period carrying from previous year
+         Start_spawn = if_else(End_spawn < Start_spawn & SampleStartDate <= End_spawn, Start_spawn - lubridate::years(1), # subtract a year if in spawn period carrying from previous year
                                Start_spawn),
          SampleStartDate = ymd(SampleStartDate), 
          # Flag for results in critical period
@@ -55,7 +57,7 @@ temp_analysis <- df %>%
 # Air temp exclusion ----------------------------------------------------------------------------------------------
 
 
-
+print("Begin air temp exclusion analysis")
 temp_air_exclusion0 <- air_temp_exclusion(temp_analysis, date_col =  'SampleStartDate') 
 
 temp_air_exclusion <- temp_air_exclusion0 %>%
@@ -69,6 +71,7 @@ temp_air_exclusion <- temp_air_exclusion0 %>%
 
 
 # Watershed Unit --------------------------------------------------------------------------------------------------
+
 
 # watershed unit 3 year excursion rollup
   # Grouped by mloc
@@ -117,6 +120,7 @@ other_3_year <- temp_air_exclusion %>%
 
 
 # Watershed Units -------------------------------------------------------------------------------------------------
+print('begin Year Round wastershed unit categorization')
 
 
 
@@ -166,7 +170,7 @@ WS_AU_rollup <- temp_IR_categories_WS %>%
 # Other unit year round -------------------------------------------------------------------------------------------
 
 
-
+print("Begin Year Round Other AU categorization")
 
 temp_IR_categories_other <- other_3_year %>%
   group_by(AU_ID,  Pollu_ID, wqstd_code,  OWRD_Basin) %>%
@@ -207,7 +211,7 @@ temp_IR_categories_other <- other_3_year %>%
 
 # Watershed units -------------------------------------------------------------------------------------------------
 
-
+print("Begin Spawning watershed unit categorization")
 temp_IR_categories_WS_spawn <- ws_3_year %>%
   filter(Spawn_type == "Spawn") %>%
   mutate(spawn_length = as.double(difftime(End_spawn,Start_spawn,unit="days"))) %>%
@@ -255,7 +259,7 @@ WS_AU_rollup_spawn <- temp_IR_categories_WS_spawn %>%
 
 # Spawn other -----------------------------------------------------------------------------------------------------
 
-
+print("Begin spawning other AU categorization")
 
 temp_IR_categories_other_spawn <- other_3_year %>%
   filter(Spawn_type == "Spawn") %>%
@@ -326,7 +330,7 @@ if(write_excel){
   writeData(wb = wb, sheet = "Spawn Other AU cat", x = temp_IR_categories_other_spawn, headerStyle = header_st )
   
   print("Writing excel doc")
-  saveWorkbook(wb, "Parameters/Temperature/temperature.xlsx", overwrite = TRUE) 
+  saveWorkbook(wb, "Parameters/Outputs/temperature.xlsx", overwrite = TRUE) 
   
 }
 

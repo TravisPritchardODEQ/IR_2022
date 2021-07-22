@@ -1,6 +1,6 @@
 
 
-Shell_Harvest <- function(df) {
+Shell_Harvest <- function(df, write_excel = TRUE) {
   
 
 # Testing and setup -----------------------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ Shell_Harvest <- function(df) {
     
     
     print("Writing excel doc")
-    saveWorkbook(wb, "Parameters/Bacteria/bacteria shell harvest.xlsx", overwrite = TRUE) 
+    saveWorkbook(wb, "Parameters/Outputs/bacteria shell harvest.xlsx", overwrite = TRUE) 
     
   }
  

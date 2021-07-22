@@ -5,12 +5,12 @@ library(runner)
 
 
 
-coast_contact_rec <- function(df, write_excel = TRUE){
+coast_contact <- function(df, write_excel = TRUE){
 # Testing and development settings --------------------------------------------------------------------------------
 
 
-# df <- Bacteria_results
-# write_excel = TRUE
+ #df <- Bacteria_results
+ #write_excel = TRUE
 
 Coastal <- df %>%
   filter(Bacteria_code %in%  c(1, 3),
@@ -78,7 +78,7 @@ coast_AU_summary_no_WS <-  coast_contact_geomeans_no_WS %>%
             max.value  = max(Result_cen),
             num_ss_excursions = as.numeric(sum(Result_cen > SS_Crit)),
             max_ss_excursions_90_day = max(ss_count_excur_90, na.rm = TRUE),
-            max_ss_percent_excursion_90_day = ifelse(is.finite(max(percent_excur_90, na.rm = TRUE)),  
+            max_ss_percent_excursion_90_day = ifelse(!all(is.na(percent_excur_90)),  
                                                                 round(max(percent_excur_90, na.rm = TRUE), 2), 
                                                                 NA_real_),
             n_90day_percent_exceed = sum(percent_excur_90 > 0.10, na.rm = TRUE),
@@ -241,7 +241,7 @@ if(write_excel){
   
   
   print("Writing excel doc")
-  saveWorkbook(wb, "Parameters/Bacteria/bacteria coast contact.xlsx", overwrite = TRUE) 
+  saveWorkbook(wb, "Parameters/Outputs/bacteria coast contact.xlsx", overwrite = TRUE) 
   
 }
 

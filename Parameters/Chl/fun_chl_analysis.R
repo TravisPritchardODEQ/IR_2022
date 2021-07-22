@@ -207,7 +207,7 @@ if(write_excel){
   
   
   print("Writing excel doc")
-  saveWorkbook(wb, "Parameters/Chl/chl-a.xlsx", overwrite = TRUE) 
+  saveWorkbook(wb, "Parameters/Outputs/chl-a.xlsx", overwrite = TRUE) 
   
 }
 chl_assessment <- list(chl_raw = as.data.frame(df),
