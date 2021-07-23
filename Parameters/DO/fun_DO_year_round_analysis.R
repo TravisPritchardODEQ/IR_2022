@@ -8,6 +8,14 @@ df <- Results_censored_DO
 write_excel <- TRUE
 
 
+# Variable setup --------------------------------------------------------------------------------------------------
+
+# NUmber of 30-d samples needed in a year to use continuous metrics
+required_crit_30d_periods <- 15
+
+#Number of critical period samples needed to use instataneous metrics
+req_inst_crit_samples <- 8
+
 
 # Year round analysts ---------------------------------------------------------------------------------------------
 
@@ -37,7 +45,7 @@ results_cont_summary <- Results_spawndates %>%
   group_by(AU_ID, year(SampleStartDate)) %>%
   summarise(tot_30d_metrics = n(),
             crit_30d_periods = sum(is.crit)) %>%
-  filter(crit_30d_periods >= 15,
+  filter(crit_30d_periods >= required_crit_30d_periods,
          !is.na(AU_ID)) %>%
   pull(AU_ID) 
 
@@ -47,7 +55,7 @@ results_cont_summary_WS <- Results_spawndates %>%
   group_by(MLocID, year(SampleStartDate)) %>%
   summarise(tot_30d_metrics = n(),
             crit_30d_periods = sum(is.crit)) %>%
-  filter(crit_30d_periods >= 15) %>%
+  filter(crit_30d_periods >= required_crit_30d_periods) %>%
   pull(MLocID) 
 
 
@@ -163,7 +171,7 @@ if(nrow(cont_perc_sat_check) > 0){
   con <- DBI::dbConnect(odbc::odbc(), "IR_Dev")
   
   DOSatQry <- "SELECT [MLocID], [SampleStartDate],[SampleStartTime],[Statistical_Base],[IRResultNWQSunit] as DO_sat
-FROM [IntegratedReport].[dbo].[ResultsRawWater2018]
+FROM [IntegratedReport].[dbo].[ResultsRawWater]
 WHERE   Char_Name = 'Dissolved oxygen saturation' AND 
 MLocID in ({continuous_mon_locs*}) AND 
 Statistical_Base = 'Mean'"
@@ -448,7 +456,7 @@ print("querying the IR database to get data for DO sat calculations ")
 con <- DBI::dbConnect(odbc::odbc(), "IR_Dev")
 
 DOsat_AWQMS <- "SELECT [MLocID], [SampleStartDate],[SampleStartTime],[Statistical_Base],[IRResultNWQSunit] as DO_sat
-FROM [IntegratedReport].[dbo].[ResultsRawWater2018]
+FROM [IntegratedReport].[dbo].[ResultsRawWater]
 WHERE ((Statistical_Base = 'Minimum') AND MLocID in ({instant_mon_locs*}) AND Char_Name = 'Dissolved oxygen saturation') OR 
 ((Statistical_Base IS NULL) AND MLocID in ({instant_mon_locs*}) AND Char_Name = 'Dissolved oxygen saturation')"
 
@@ -527,23 +535,23 @@ yr_round_instant_categories <- Instant_data_analysis_DOS %>%
             num_excursions = sum(Violation, na.rm = TRUE)) %>%
   mutate(period = "year_round") %>%
   mutate(critical_excursions =  binomial_excursions(num_samples, type = "Conventionals")) %>%
-  mutate(IR_category = case_when(num_critical_samples < 8 & num_excursions > 0 ~ "3B",
-                                 num_critical_samples < 8 & num_excursions == 0 ~ "3",
-                                 num_critical_samples >= 8 & num_excursions >= critical_excursions ~ "5",
-                                 num_critical_samples >= 8 & num_excursions < critical_excursions ~ "2",
+  mutate(IR_category = case_when(num_critical_samples < req_inst_crit_samples & num_excursions > 0 ~ "3B",
+                                 num_critical_samples < req_inst_crit_samples & num_excursions == 0 ~ "3",
+                                 num_critical_samples >= req_inst_crit_samples & num_excursions >= critical_excursions ~ "5",
+                                 num_critical_samples >= req_inst_crit_samples & num_excursions < critical_excursions ~ "2",
                                  TRUE ~ "ERROR"),
-         Rationale = case_when(num_critical_samples < 8 & num_excursions > 0 ~ paste0("Insufficient data- ", num_critical_samples, 
+         Rationale = case_when(num_critical_samples < req_inst_crit_samples & num_excursions > 0 ~ paste0("Insufficient data- ", num_critical_samples, 
                                                                                       " samples in critical period is < 8 required. ",
                                                                                       num_excursions, " total excursions. - ",
                                                                                       num_samples, ' total samples.'),
-                               num_critical_samples < 8 & num_excursions == 0 ~ paste0("Insufficient data- ", num_critical_samples, 
+                               num_critical_samples < req_inst_crit_samples & num_excursions == 0 ~ paste0("Insufficient data- ", num_critical_samples, 
                                                                                        " samples in critical period is < 8 required. ",
                                                                                        num_excursions, " total excursions. - ",
                                                                                        num_samples, ' total samples.'),
-                               num_critical_samples >= 8 & num_excursions >= critical_excursions ~ paste0("Imapired- ", num_excursions, " excursions of criteria. ",
+                               num_critical_samples >= req_inst_crit_samples & num_excursions >= critical_excursions ~ paste0("Imapired- ", num_excursions, " excursions of criteria. ",
                                                                                                           critical_excursions, " needed to list. - ",
                                                                                                           num_samples, ' total samples.'),
-                               num_critical_samples >= 8 & num_excursions < critical_excursions ~ paste0("Attaining- ", num_excursions, " excursions of criteria. ",
+                               num_critical_samples >= req_inst_crit_samples & num_excursions < critical_excursions ~ paste0("Attaining- ", num_excursions, " excursions of criteria. ",
                                                                                                          critical_excursions, " needed to list. - ",
                                                                                                          num_samples, ' total samples.'),
                                TRUE ~ "ERROR"))%>%
