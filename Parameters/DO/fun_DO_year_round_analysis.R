@@ -1,5 +1,5 @@
 
-
+library(lubridate)
 
 #For DO- since there is so much going on I'm creating analysis functions that will do both WS and other analysis
 
@@ -31,8 +31,9 @@ Results_spawndates <- df %>%
   filter(!is.null(OWRD_Basin) & DO_code %in% c(2,3,4))
 
 
-# Summarize available data to get a list of AU's to be analyzed using cont. data
+# Summarize available non WS data to get a list of AU's to be analyzed using cont. data
 results_cont_summary <- Results_spawndates %>%
+  filter(str_detect(AU_ID, "WS", negate = TRUE)) %>%
   filter(Statistical_Base == "30DADMean") %>%
   group_by(AU_ID, year(SampleStartDate)) %>%
   summarise(tot_30d_metrics = n(),
@@ -40,6 +41,15 @@ results_cont_summary <- Results_spawndates %>%
   filter(crit_30d_periods >= 15,
          !is.na(AU_ID)) %>%
   pull(AU_ID) 
+
+results_cont_summary_WS <- Results_spawndates %>%
+  filter(str_detect(AU_ID, "WS", negate = FALSE)) %>%
+  filter(Statistical_Base == "30DADMean") %>%
+  group_by(MLocID, year(SampleStartDate)) %>%
+  summarise(tot_30d_metrics = n(),
+            crit_30d_periods = sum(is.crit)) %>%
+  filter(crit_30d_periods >= 15) %>%
+  pull(MLocID) 
 
 
 
@@ -57,12 +67,15 @@ if(AU_type == "other"){
 group1 <- c('AU_ID', 'DO_Class')
 group2 <- c('AU_ID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class')
 inverse <- TRUE
+query_type = 'AU_ID'
+
 
 
 } else if (AU_type == "WS"){
   group1 <- c('AU_ID', 'MLocID', 'DO_Class')
   group2 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class') 
   inverse <- FALSE
+  query_type = 'MLocID'
 }
 
 
@@ -83,13 +96,23 @@ inverse <- TRUE
 # filter down to AUs that are to be evaluated with cont metrics
 # Filter down to only 30-D, 7-Mi, and daily minimums
 # Flag various violations
+  
+  if(AU_type == "other"){  
+  
 continuous_data_analysis <- df %>%
   filter(AU_ID %in% continuous_list) %>%
   filter(Statistical_Base %in% c("30DADMean", "7DADMin", "Minimum")) %>%
   mutate(Violation = ifelse(Statistical_Base == "30DADMean" & IRResultNWQSunit < crit_30D, 1, 
                             ifelse(Statistical_Base == "7DADMin" & IRResultNWQSunit < crit_7Mi, 1, 
                                    ifelse(Statistical_Base == "Minimum" & IRResultNWQSunit < crit_Min, 1, 0 )))) 
-
+  } else if (AU_type == "WS"){
+    continuous_data_analysis <- df %>%
+      filter(MLocID %in% continuous_list) %>%
+      filter(Statistical_Base %in% c("30DADMean", "7DADMin", "Minimum")) %>%
+      mutate(Violation = ifelse(Statistical_Base == "30DADMean" & IRResultNWQSunit < crit_30D, 1, 
+                                ifelse(Statistical_Base == "7DADMin" & IRResultNWQSunit < crit_7Mi, 1, 
+                                       ifelse(Statistical_Base == "Minimum" & IRResultNWQSunit < crit_Min, 1, 0 )))) 
+}
 
 # Other Units -------------------------------------------------------------------------------------------------
 
@@ -119,15 +142,15 @@ continuous_data_categories_other <- continuous_data_analysis %>%
 
 
 # Datatable of results that need percent saturation
-cont_perc_sat_check_other <- continuous_data_categories_other %>%
+cont_perc_sat_check <- continuous_data_categories_other %>%
   filter(AU_ID %in% unique(subset(continuous_data_categories_other, IR_category == "Check percent Sat" )$AU_ID) )
 
 
 # Query Database --------------------------------------------------------------------------------------------------
 
-if(nrow(cont_perc_sat_check_other) > 0){
+if(nrow(cont_perc_sat_check) > 0){
   
-  # List of monitoring locations that need OD sat 
+  # List of monitoring locations that need DO sat 
   # This list is used for the sql query that follows
   continuous_mon_locs <- unique(cont_perc_sat_check$MLocID)
   
@@ -275,7 +298,7 @@ WHERE        (Statistical_Base = 'Mean') AND MLocID in ({continuous_mon_locs*})"
   
   
   # Join DO Sat back into the original data table and recalculate violations
-  yr_round_cont_DO_data_analysis_other <- continuous_data_analysis_other %>%
+  yr_round_cont_DO_data_analysis_other <- continuous_data_analysis %>%
     mutate(Date = as.Date(SampleStartDate)) %>%
     left_join(DO_sat_join, by = c('MLocID', 'Date', 'Statistical_Base')) %>%
     mutate(Violation = case_when(DO_Class == "Cold Water"& Statistical_Base == "30DADMean" & IRResultNWQSunit < crit_30D & 
@@ -346,29 +369,6 @@ yrround_cont_list <- list(data = as.data.frame(yr_round_cont_DO_data_analysis_ot
 
 
 
-# Run the year round continuous function --------------------------------------------------------------------------
-
-year_round_cont_other <- yr_round_cont_function(df, AU_type = "other")
-
-year_round_cont_other_data <- year_round_cont_other[['data']]
-
-year_round_cont_other_categories <- year_round_cont_other[['AU_categories']] %>%
-  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID), "-",Pollu_ID,"-", wqstd_code,"-", period ))
-
-
-year_round_cont_WS <- yr_round_cont_function(df, AU_type = "WS")
-year_round_cont_WS_categories <- year_round_cont_WS[['AU_categories']]
-
-WS_AU_rollup_year_round <- year_round_cont_WS_categories %>%
-  ungroup() %>%
-  #mutate(Rationale = past0(MLocID, ))
-  group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period) %>%
-  summarise(IR_category_AU = max(IR_category),
-            Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
-  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
-
-
-
 
 # Year Round instant ----------------------------------------------------------------------------------------------
 
@@ -395,14 +395,25 @@ yr_round_inst_function <- function(df = Results_spawndates, continuous_list = re
   }
 
 
-
-instant_data_analysis <- Results_spawndates %>%
-  filter(str_detect(AU_ID, "WS", negate = inverse)) %>%
-  filter(!AU_ID %in% results_cont_summary) %>%
-  filter(Statistical_Base %in% c("Minimum", NA)) %>%
-  mutate(Violation_crit = ifelse(IRResultNWQSunit < crit_Instant, 1, 0 ))
-
-
+  if(AU_type == "other"){ 
+    
+    instant_data_analysis <- Results_spawndates %>%
+      filter(str_detect(AU_ID, "WS", negate = inverse)) %>%
+      filter(!AU_ID %in% continuous_list) %>%
+      filter(Statistical_Base %in% c("Minimum", NA)) %>%
+      mutate(Violation_crit = ifelse(IRResultNWQSunit < crit_Instant, 1, 0 ))
+    
+  } else if (AU_type == "WS"){
+    
+    instant_data_analysis <- Results_spawndates %>%
+      filter(str_detect(AU_ID, "WS", negate = inverse)) %>%
+      filter(!MLocID %in% continuous_list) %>%
+      filter(Statistical_Base %in% c("Minimum", NA)) %>%
+      mutate(Violation_crit = ifelse(IRResultNWQSunit < crit_Instant, 1, 0 ))
+    
+  }
+  
+  
 instant_data_categories <- instant_data_analysis %>%
   group_by_at(group1) %>%
   summarise(num_samples = n(),
@@ -497,6 +508,7 @@ instant_DO_sat <- instant_perc_sat_DO %>%
 #Join back in and recalculate violations
 # if do sat could not be calculated, then violation if IRResultNWQSunit < 30D criteria
 Instant_data_analysis_DOS <- Results_spawndates %>%
+  filter(str_detect(AU_ID, "WS", negate = inverse)) %>%
   mutate(act_depth_height = as.character(act_depth_height)) %>%
   filter(!AU_ID %in% results_cont_summary) %>%
   filter(Statistical_Base %in% c("Minimum", NA)) %>%
@@ -516,10 +528,10 @@ yr_round_instant_categories <- Instant_data_analysis_DOS %>%
             num_excursions = sum(Violation, na.rm = TRUE)) %>%
   mutate(period = "year_round") %>%
   mutate(critical_excursions =  binomial_excursions(num_samples, type = "Conventionals")) %>%
-  mutate(IR_category = case_when(num_critical_samples < 8 & num_excursions > 0 ~ "Cat 3B",
-                                 num_critical_samples < 8 & num_excursions == 0 ~ "Cat 3",
-                                 num_critical_samples >= 8 & num_excursions >= critical_excursions ~ "Cat 5",
-                                 num_critical_samples >= 8 & num_excursions < critical_excursions ~ "Cat 2",
+  mutate(IR_category = case_when(num_critical_samples < 8 & num_excursions > 0 ~ "3B",
+                                 num_critical_samples < 8 & num_excursions == 0 ~ "3",
+                                 num_critical_samples >= 8 & num_excursions >= critical_excursions ~ "5",
+                                 num_critical_samples >= 8 & num_excursions < critical_excursions ~ "2",
                                  TRUE ~ "ERROR"),
          Rationale = case_when(num_critical_samples < 8 & num_excursions > 0 ~ paste0(num_critical_samples, 
                                                                                       " samples in critical period is < 8 required. ",
@@ -535,7 +547,8 @@ yr_round_instant_categories <- Instant_data_analysis_DOS %>%
                                num_critical_samples >= 8 & num_excursions < critical_excursions ~ paste0("Attaining: ", num_excursions, " excursions of criteria. ",
                                                                                                          critical_excursions, " needed to list. - ",
                                                                                                          num_samples, ' total samples.'),
-                               TRUE ~ "ERROR"))
+                               TRUE ~ "ERROR"))%>%
+  mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
 
 
 year_rd_inst_list <- list(data = Instant_data_analysis_DOS,
@@ -547,6 +560,28 @@ return(year_rd_inst_list)
 }
 
 
+
+
+
+# Run the year round continuous function --------------------------------------------------------------------------
+
+year_round_cont_other <- yr_round_cont_function(df, AU_type = "other")
+
+year_round_cont_other_data <- year_round_cont_other[['data']]
+
+year_round_cont_other_categories <- year_round_cont_other[['AU_categories']] %>%
+  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID), "-",Pollu_ID,"-", wqstd_code,"-", period ))
+
+
+year_round_cont_WS <- yr_round_cont_function(df, continuous_list = results_cont_summary_WS, AU_type = "WS")
+year_round_cont_WS_categories <- year_round_cont_WS[['AU_categories']]
+
+
+# Run the year round instant function -----------------------------------------------------------------------------
+
+
+
+
 year_round_inst_other <- yr_round_inst_function(df = Results_spawndates, AU_type = "other")
 
 year_round_inst_other_data <- year_round_inst_other[['data']]
@@ -555,11 +590,19 @@ year_round_inst_other_categories <- year_round_inst_other[['categories']] %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID), "-",Pollu_ID,"-", wqstd_code,"-", period ))
 
 
-year_round_inst_WS <- yr_round_inst_function(df, AU_type = "WS")
+year_round_inst_WS <- yr_round_inst_function(df, continuous_list = results_cont_summary_WS, AU_type = "WS")
 year_round_inst_WS_data <- year_round_inst_WS[['data']]
 year_round_inst_WS_categories <- year_round_inst_WS[['categories']]
 
+
+
+# Year round WS unit rollup ---------------------------------------------------------------------------------------
+
+
+
 WS_AU_rollup_year_round <- year_round_inst_WS_categories %>%
+  select(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, period, IR_category, Rationale) %>%
+  bind_rows(select(year_round_cont_WS_categories, AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period, IR_category, Rationale)) %>%
   ungroup() %>%
   #mutate(Rationale = past0(MLocID, ))
   group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period) %>%

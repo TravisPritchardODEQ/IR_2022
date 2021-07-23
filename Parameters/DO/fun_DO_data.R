@@ -1,3 +1,10 @@
+require(rgdal)
+require(RODBC)
+library(tidyverse)
+library(odeqIRtools)
+library(openxlsx)
+
+
 
 
 DO_data <- function(database) {
