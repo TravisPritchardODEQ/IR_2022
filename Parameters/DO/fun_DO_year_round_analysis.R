@@ -1,5 +1,4 @@
 
-library(lubridate)
 
 #For DO- since there is so much going on I'm creating analysis functions that will do both WS and other analysis
 
@@ -343,10 +342,10 @@ yr_round_cont_data_categories_other <- yr_round_cont_DO_data_analysis_other %>%
                                    Sum_7mi_excursions < 2 &
                                    Sum_abs_min_excursions < 2 ~ "2",
                                  TRUE ~ "ERROR"),
-         Rationale = case_when(Sum_30D_excursions >= 2 ~ paste0(Sum_30D_excursions, " valid excursions of 30-D metric"),
-                               Sum_7mi_excursions >= 2 ~ paste0(Sum_7mi_excursions, " valid excursions of 7-mi metric. ",
+         Rationale = case_when(Sum_30D_excursions >= 2 ~ paste0("Impaired- ", Sum_30D_excursions, " valid excursions of 30-D metric"),
+                               Sum_7mi_excursions >= 2 ~ paste0("Impaired- ", Sum_7mi_excursions, " valid excursions of 7-mi metric. ",
                                                                 Sum_30D_excursions, " valid excursions of 30-D metric"),
-                               Sum_abs_min_excursions >= 2 ~ paste0(Sum_abs_min_excursions, " excursions of alternate minimum criteria. ",
+                               Sum_abs_min_excursions >= 2 ~ paste0("Impaired- ", Sum_abs_min_excursions, " excursions of alternate minimum criteria. ",
                                                                     Sum_7mi_excursions, " valid excursions of 7-mi metric. ",
                                                                     Sum_30D_excursions, " valid excursions of 30-D metric"),
                                Sum_30D_excursions < 2 &
@@ -533,18 +532,18 @@ yr_round_instant_categories <- Instant_data_analysis_DOS %>%
                                  num_critical_samples >= 8 & num_excursions >= critical_excursions ~ "5",
                                  num_critical_samples >= 8 & num_excursions < critical_excursions ~ "2",
                                  TRUE ~ "ERROR"),
-         Rationale = case_when(num_critical_samples < 8 & num_excursions > 0 ~ paste0(num_critical_samples, 
+         Rationale = case_when(num_critical_samples < 8 & num_excursions > 0 ~ paste0("Insufficient data- ", num_critical_samples, 
                                                                                       " samples in critical period is < 8 required. ",
                                                                                       num_excursions, " total excursions. - ",
                                                                                       num_samples, ' total samples.'),
-                               num_critical_samples < 8 & num_excursions == 0 ~ paste0(num_critical_samples, 
+                               num_critical_samples < 8 & num_excursions == 0 ~ paste0("Insufficient data- ", num_critical_samples, 
                                                                                        " samples in critical period is < 8 required. ",
                                                                                        num_excursions, " total excursions. - ",
                                                                                        num_samples, ' total samples.'),
-                               num_critical_samples >= 8 & num_excursions >= critical_excursions ~ paste0(num_excursions, " excursions of criteria. ",
+                               num_critical_samples >= 8 & num_excursions >= critical_excursions ~ paste0("Imapired- ", num_excursions, " excursions of criteria. ",
                                                                                                           critical_excursions, " needed to list. - ",
                                                                                                           num_samples, ' total samples.'),
-                               num_critical_samples >= 8 & num_excursions < critical_excursions ~ paste0("Attaining: ", num_excursions, " excursions of criteria. ",
+                               num_critical_samples >= 8 & num_excursions < critical_excursions ~ paste0("Attaining- ", num_excursions, " excursions of criteria. ",
                                                                                                          critical_excursions, " needed to list. - ",
                                                                                                          num_samples, ' total samples.'),
                                TRUE ~ "ERROR"))%>%

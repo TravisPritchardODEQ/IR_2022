@@ -1,4 +1,10 @@
 
+
+# install IR tools ------------------------------------------------------------------------------------------------
+
+devtools::install_github('TravisPritchardODEQ/odeqIRtools', upgrade = 'never')
+
+
 options(dplyr.summarise.inform = FALSE)
 
 
