@@ -1,19 +1,29 @@
 
 
+
+fun_DO_year_round <- function(df, write_excel = TRUE ){
+
+
 #For DO- since there is so much going on I'm creating analysis functions that will do both WS and other analysis
+
+
+
+
 
 # Testing and setup -----------------------------------------------------------------------------------------------
 
-df <- Results_censored_DO
-write_excel <- TRUE
+
+# 
+# df <- Results_censored_DO
+# write_excel <- TRUE
 
 
 # Variable setup --------------------------------------------------------------------------------------------------
 
-# NUmber of 30-d samples needed in a year to use continuous metrics
+# Number of 30-d samples needed in a year to use continuous metrics
 required_crit_30d_periods <- 15
 
-#Number of critical period samples needed to use instataneous metrics
+#Number of critical period samples needed to use instantaneous metrics
 req_inst_crit_samples <- 8
 
 
@@ -377,7 +387,7 @@ yrround_cont_list <- list(data = as.data.frame(yr_round_cont_DO_data_analysis_ot
 
 
 
-# Year Round instant ----------------------------------------------------------------------------------------------
+ # Year Round instant ----------------------------------------------------------------------------------------------
 
 # Analyze year round criteria using instantaneous metrics
 print("Beginning instantaneous analysis")
@@ -514,7 +524,7 @@ instant_DO_sat <- instant_perc_sat_DO %>%
 
 #Join back in and recalculate violations
 # if do sat could not be calculated, then violation if IRResultNWQSunit < 30D criteria
-Instant_data_analysis_DOS <- Results_spawndates %>%
+Instant_data_analysis_DOS <- instant_data_analysis %>%
   filter(str_detect(AU_ID, "WS", negate = inverse)) %>%
   mutate(act_depth_height = as.character(act_depth_height)) %>%
   filter(!AU_ID %in% results_cont_summary) %>%
@@ -581,6 +591,7 @@ year_round_cont_other_categories <- year_round_cont_other[['AU_categories']] %>%
 
 
 year_round_cont_WS <- yr_round_cont_function(df, continuous_list = results_cont_summary_WS, AU_type = "WS")
+year_round_cont_WS_data <- year_round_cont_WS[['data']]
 year_round_cont_WS_categories <- year_round_cont_WS[['AU_categories']]
 
 
@@ -603,6 +614,14 @@ year_round_inst_WS_categories <- year_round_inst_WS[['categories']]
 
 
 
+
+
+# Data combine ----------------------------------------------------------------------------------------------------
+
+cont_data_combined <- bind_rows(year_round_cont_WS_data, year_round_cont_other_data)
+
+inst_data_combined <- bind_rows(year_round_inst_WS_data, year_round_inst_other_data) %>%
+  select(-crit_30D, -crit_7Mi, -crit_Min)
 # Year round WS unit rollup ---------------------------------------------------------------------------------------
 
 
@@ -618,3 +637,59 @@ WS_AU_rollup_year_round <- year_round_inst_WS_categories %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
 
 
+
+
+if(write_excel){
+  
+  wb <- createWorkbook()
+
+  addWorksheet(wb, sheetName = "Yr Rnd Cont Data")
+  addWorksheet(wb, sheetName = "Yr Rnd Instant Data")
+
+  addWorksheet(wb, sheetName = "Yr Rnd Cont WS Station Cat")
+  addWorksheet(wb, sheetName = "Yr Rnd Cont Other AU Cat")
+  
+  addWorksheet(wb, sheetName = "Yr Rnd Instant WS Station Cat")
+  addWorksheet(wb, sheetName = "Yr Rnd Instant Other AU Cat")
+  
+  addWorksheet(wb, sheetName = "Yr Rnd WS AU combined Cat")
+  
+  
+  header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
+  
+  freezePane(wb, "Yr Rnd Cont Data", firstRow = TRUE) 
+  freezePane(wb, "Yr Rnd Instant Data", firstRow = TRUE) 
+ 
+  freezePane(wb, "Yr Rnd Cont WS Station Cat", firstRow = TRUE) 
+  freezePane(wb, "Yr Rnd Cont Other AU Cat", firstRow = TRUE) 
+  freezePane(wb, "Yr Rnd Instant WS Station Cat", firstRow = TRUE) 
+  freezePane(wb, "Yr Rnd Instant Other AU Cat", firstRow = TRUE) 
+  freezePane(wb, "Yr Rnd WS AU combined Cat", firstRow = TRUE) 
+  
+  
+  writeData(wb, "Yr Rnd Cont Data", x = cont_data_combined, headerStyle = header_st) 
+  writeData(wb, "Yr Rnd Instant Data", x = inst_data_combined, headerStyle = header_st) 
+  
+  writeData(wb, "Yr Rnd Cont WS Station Cat", x= year_round_cont_WS_categories,  headerStyle = header_st) 
+  writeData(wb, "Yr Rnd Cont Other AU Cat", x = year_round_cont_other_categories, headerStyle = header_st) 
+  writeData(wb, "Yr Rnd Instant WS Station Cat", x = year_round_inst_WS_categories, headerStyle = header_st) 
+  writeData(wb, "Yr Rnd Instant Other AU Cat", x= year_round_inst_other_categories, headerStyle = header_st) 
+  writeData(wb, "Yr Rnd WS AU combined Cat", x = WS_AU_rollup_year_round, headerStyle = header_st) 
+  
+  print("Writing excel doc")
+  saveWorkbook(wb, "Parameters/Outputs/DO Year Round.xlsx", overwrite = TRUE) 
+  
+  
+}
+
+DO_year_round <- list(Yr_Rnd_cont_data = cont_data_combined,
+                      Yr_Rnd_inst_data = inst_data_combined,
+                      Yr_Rnd_cont_WS_station_cat = year_round_cont_WS_categories,
+                      Yr_Rnd_cont_Other_AU_Cat = year_round_cont_other_categories,
+                      Yr_Rnd_inst_WS_station_cat = year_round_inst_WS_categories,
+                      Yr_Rnd_inst_Other_AU_cat = year_round_inst_other_categories, 
+                      Yr_Rnd_combined_WS_AU_cat = WS_AU_rollup_year_round)
+
+return(DO_year_round)
+
+}
