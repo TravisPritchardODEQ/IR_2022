@@ -5,6 +5,10 @@
 devtools::install_github('TravisPritchardODEQ/odeqIRtools', upgrade = 'never')
 
 
+
+# Set options -----------------------------------------------------------------------------------------------------
+
+options(scipen=999)
 options(dplyr.summarise.inform = FALSE)
 
 
@@ -27,3 +31,7 @@ source('Parameters/Chl/chl-a.R')
 source('Parameters/Temperature/Temperature.R')
 
 
+
+# DO --------------------------------------------------------------------------------------------------------------
+
+source('Parameters/DO/DO.R')
