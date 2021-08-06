@@ -15,6 +15,11 @@
 #' * Statistical_Base
 
 
+validate_data <- function(){
+
+library(tidyverse)
+
+
 Data_validation_values <- read.csv("Validation/Data_validation_values.csv") %>%
   mutate(Char_Speciation = ifelse(Char_Speciation == 'NULL', NA_character_, Char_Speciation ),
          Sample_Fraction = ifelse(Sample_Fraction == 'NULL', NA_character_, Sample_Fraction ),
@@ -30,7 +35,7 @@ Data_validation_values <- read.csv("Validation/Data_validation_values.csv") %>%
 
 #connect to IR database view as a general user
 
-IR.sql <-   DBI::dbConnect(odbc::odbc(), dsn = "IR 2018")
+IR.sql <-   DBI::dbConnect(odbc::odbc(), dsn = "IR_Dev")
 
 
 InputRaw  <-   DBI::dbReadTable(IR.sql, "InputRaw")
@@ -58,6 +63,4 @@ manual_check <- validation %>%
 write.csv(manual_check, "Validation/data_validation_manual_review.csv",
           row.names = FALSE)
 
-
-test <- validation %>%
-  filter(!is.na(validation_result))
+}
