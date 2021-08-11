@@ -231,24 +231,24 @@ Hardness_based_metals <- function(database){
                                   
                                    num_excursions_dissolved_fraction <= critical_excursions ~ "2"
                                    ),
-           Rationale = case_when(percent_3d == 100 ~ paste0("All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
-                                 num_samples <= 2 & criteria_fraction == "Dissolved" & num_excursions_dissolved_fraction >= critical_excursions ~  paste0(num_excursions_dissolved_fraction,
+           Rationale = case_when(percent_3d == 100 ~ paste0("Insufficient data: All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
+                                 num_samples <= 2 & criteria_fraction == "Dissolved" & num_excursions_dissolved_fraction >= critical_excursions ~  paste0("Impaired: ", num_excursions_dissolved_fraction,
                                                                                                                                       " excursion of dissolved fraction results <  criteria with ",
                                                                                                                                       num_samples, " total samples"),
                                  num_samples <= 2 & criteria_fraction == "Total" & num_excursions_all >= critical_excursions ~  paste0(num_excursions_all, " excursions is less than ",
                                                                                                                    critical_excursions, " needed to list- ",
                                                                                                                    num_samples, " total samples"),
-                                 num_samples < 10 & num_excursions_all >= 1 ~ paste0(num_excursions_all,
+                                 num_samples < 10 & num_excursions_all >= 1 ~ paste0("Insufficient data: ", num_excursions_all,
                                                                                       " excursion of criteria with ",
                                                                                       num_samples, " total samples"),
-                                 criteria_fraction == "Dissolved" & num_excursions_total_fraction > 0 & num_Samples_dissolved_fraction == 0 ~ paste0("Only total fraction results available, criteria is 'Dissolved' ",
+                                 criteria_fraction == "Dissolved" & num_excursions_total_fraction > 0 & num_Samples_dissolved_fraction == 0 ~ paste0("Insufficient data: ", "Only total fraction results available, criteria is 'Dissolved' ",
                                                                                                                                                      num_excursions_all, " total excursions of ", 
                                                                                                                                                      num_samples, " total samples"),
-                                 num_samples_crit_excursion_calc < 10 & num_excursions_all == 0 ~ paste0(num_excursions_all,
+                                 num_samples_crit_excursion_calc < 10 & num_excursions_all == 0 ~ paste0("Insufficient data: ", num_excursions_all,
                                                                                                          " excursion of criteria with ",
                                                                                                          num_samples, " total samples"),
                                  
-                                 num_excursions_dissolved_fraction <= critical_excursions ~ paste0(num_excursions_all, " excursions is less than ",
+                                 num_excursions_dissolved_fraction <= critical_excursions ~ paste0("Attaining: ", num_excursions_all, " excursions is less than ",
                                                                                                  critical_excursions, " needed to list- ",
                                                                                                  num_samples, " total samples")
            )) %>%
@@ -261,7 +261,8 @@ Hardness_based_metals <- function(database){
  
   
   AL_Tox_Hard_WS <- AL_tox_harndess_assess_fun(df_data = Results_censored, AU_type = "WS")
-  AL_Tox_Hard_other <- AL_tox_harndess_assess_fun(df_data = Results_censored, AU_type = "other")
+  AL_Tox_Hard_other <- AL_tox_harndess_assess_fun(df_data = Results_censored, AU_type = "other") %>%
+    mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
   
   
   WS_AU_rollup <- AL_Tox_Hard_WS %>%

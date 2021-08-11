@@ -259,25 +259,25 @@ df <- Tox_AL_Censored_data
                                    num_excursions_all >= critical_excursions ~ "5",
                                    num_excursions_all < critical_excursions & num_samples >= 10 ~ "2",
                                    TRUE ~ "ERROR"),
-           Rationale = case_when(percent_3d == 100 &  num_samples_crit_excursion_calc >= 1 ~ paste0("All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
-                                 (num_samples_crit_excursion_calc < 10 | num_samples < 10 | num_sample_days < 10) & num_excursions_all == 1 ~ paste0(num_excursions_all,
+           Rationale = case_when(percent_3d == 100 &  num_samples_crit_excursion_calc >= 1 ~ paste0("Insuffcient data: All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
+                                 (num_samples_crit_excursion_calc < 10 | num_samples < 10 | num_sample_days < 10) & num_excursions_all == 1 ~ paste0("Insuffcient data: ", num_excursions_all,
                                                                                                                                                       " excursion of criteria with ",
                                                                                                                                                       num_samples, " total samples"),
-                                 (Char_Name == "Alkalinity, total" | Char_Name == "Alkalinity, bicarbonate") & num_excursions_all > 0 ~ paste0("Analytical data indicates alkalinity is less than the criterion"),
+                                 (Char_Name == "Alkalinity, total" | Char_Name == "Alkalinity, bicarbonate") & num_excursions_all > 0 ~ paste0("Insuffcient data: ", "Analytical data indicates alkalinity is less than the criterion"),
                                  (num_samples_crit_excursion_calc < 10 | num_samples == 1 | num_sample_days < 10) & 
-                                   num_excursions_all == 0 ~ paste0(num_excursions_all,
+                                   num_excursions_all == 0 ~ paste0("Insuffcient data: ", num_excursions_all,
                                                                     " excursion of criteria with ",
                                                                     num_samples, " total samples"),
-                                 num_samples_crit_excursion_calc == 0 & criteria_fraction == "Total" & num_excursions_all < critical_excursions ~ paste0("Only dissolved fraction results available, criteria is 'Total' ",
+                                 num_samples_crit_excursion_calc == 0 & criteria_fraction == "Total" & num_excursions_all < critical_excursions ~ paste0("Insuffcient data: ", "Only dissolved fraction results available, criteria is 'Total' ",
                                                                                                                                                          num_excursions_all, " total excursions of ", 
                                                                                                                                                          num_samples, " total samples"),
-                                 num_samples_crit_excursion_calc == 0 & criteria_fraction == "Dissolved" & num_excursions_all >= critical_excursions ~ paste0("Only total fraction results available, criteria is 'Dissolved' ",
+                                 num_samples_crit_excursion_calc == 0 & criteria_fraction == "Dissolved" & num_excursions_all >= critical_excursions ~ paste0("Insuffcient data: ", "Only total fraction results available, criteria is 'Dissolved' ",
                                                                                                                                                               num_excursions_all, " total excursions of ", 
                                                                                                                                                               num_samples, " total samples"), 
-                                 num_excursions_all >= critical_excursions ~ paste0(num_excursions_all,
+                                 num_excursions_all >= critical_excursions ~ paste0("Impaired: ", num_excursions_all,
                                                                                     " excursion of criteria with ",
                                                                                     num_samples, " total samples"),
-                                 num_excursions_all < critical_excursions & num_samples >= 10 ~ paste0(num_excursions_all, " excursions is less than ",
+                                 num_excursions_all < critical_excursions & num_samples >= 10 ~ paste0("Attaining: ", num_excursions_all, " excursions is less than ",
                                                                                    critical_excursions, " needed to list- ",
                                                                                    num_samples, " total samples"),
                                  TRUE ~ "ERROR")) %>%
@@ -293,7 +293,9 @@ df <- Tox_AL_Censored_data
 
 # WS --------------------------------------------------------------------------------------------------------------
   AL_Tox_WS <- AL_tox_assess_fun(df_data = Results_tox_AL_analysis, AU_type = "WS")
-  AL_Tox_other <- AL_tox_assess_fun(df_data = Results_tox_AL_analysis, AU_type = "other")
+  
+  AL_Tox_other <- AL_tox_assess_fun(df_data = Results_tox_AL_analysis, AU_type = "other") %>%
+    mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
   
 
   
@@ -311,7 +313,7 @@ df <- Tox_AL_Censored_data
   Results_tox_AL <- list(data =Results_tox_AL_analysis,
                          AL_Tox_WS = AL_Tox_WS,
                          AL_Tox_other = AL_Tox_other,
-                         AL_Tox_WS_rollup = AL_Tox_WS)
+                         AL_Tox_WS_rollup = WS_AU_rollup)
   
   
   return(Results_tox_AL)

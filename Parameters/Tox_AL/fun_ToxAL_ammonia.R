@@ -123,20 +123,20 @@ ToxAL_Ammonia <- function(database){
                                      num_samples_crit_excursion_calc < 10 & num_excursions_all > 0 ~ "3B",
                                      num_samples_crit_excursion_calc < 10 & num_excursions_all == 0 ~ "3",
                                      num_samples_crit_excursion_calc >= 10 &num_excursions_all < critical_excursions~  "2" ),
-             Rationale =  case_when(percent_3d == 100 ~paste0("All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
-                                    num_samples_crit_excursion_calc > 2 & num_excursions_all >= critical_excursions ~   paste0(num_excursions_all,
+             Rationale =  case_when(percent_3d == 100 ~paste0("Insufficient data: ", "All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
+                                    num_samples_crit_excursion_calc > 2 & num_excursions_all >= critical_excursions ~   paste0("Imapired: ",num_excursions_all,
                                                                                                                                " excursion of criteria with ",
                                                                                                                                num_samples, " total samples. ",
                                                                                                                                num_samples_total_fraction, " results of 'total fraction'."),
-                                    num_samples_crit_excursion_calc < 10 & num_excursions_all > 0 ~ paste0(num_excursions_all,
+                                    num_samples_crit_excursion_calc < 10 & num_excursions_all > 0 ~ paste0("Insufficient data: ", num_excursions_all,
                                                                                                            " excursion of criteria with ",
                                                                                                            num_samples, " total samples. ",
                                                                                                            num_samples_total_fraction, " results of 'total fraction'."),
-                                    num_samples_crit_excursion_calc < 10 & num_excursions_all == 0 ~ paste0(num_excursions_all,
+                                    num_samples_crit_excursion_calc < 10 & num_excursions_all == 0 ~ paste0("Insufficient data: ", num_excursions_all,
                                                                                                             " excursion of criteria with ",
                                                                                                             num_samples, " total samples. ",
                                                                                                             num_samples_total_fraction, " results of 'total fraction'."),
-                                    num_samples_crit_excursion_calc >= 10 &num_excursions_all < critical_excursions~  paste0(num_excursions_all, " excursions is less than ",
+                                    num_samples_crit_excursion_calc >= 10 &num_excursions_all < critical_excursions~  paste0("Attaining: ", num_excursions_all, " excursions is less than ",
                                                                                                                              critical_excursions, " needed to list- ",
                                                                                                                              num_samples, " total samples. ",
                                                                                                                              num_samples_total_fraction, " results of 'total fraction'.") )) %>%
@@ -151,7 +151,8 @@ ToxAL_Ammonia <- function(database){
   
   
   AL_tox_Ammonia_WS <- ammonia_cat_fun(Results_censored = Results_censored, AU_type = "WS" )
-  AL_tox_Ammonia_other <- ammonia_cat_fun(Results_censored = Results_censored,AU_type = "other" )
+  AL_tox_Ammonia_other <- ammonia_cat_fun(Results_censored = Results_censored,AU_type = "other" ) %>%
+    mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
   
   WS_AU_rollup <- AL_tox_Ammonia_WS %>%
     select(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, Char_Name, IR_category, Rationale) %>%
