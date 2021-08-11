@@ -21,8 +21,8 @@ turb_assessment <- turb_data %>%
   group_by(AU_ID,  Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise(IR_category = case_when(max(total_excursion_day) > 45 ~ "5",
                                     max(total_excursion_day) <= 45 ~ "2"),
-            Rationale = case_when(max(total_excursion_day) > 45 ~ str_c(year[total_excursion_day > 45], ': ', total_excursion_day, " high turbidity days", collapse = "; "),
-                                  max(total_excursion_day) <= 45 ~ "All years of data show 45 or less high turbidity days per year."))%>%
+            Rationale = case_when(max(total_excursion_day) > 45 ~ str_c("Impaired: ", year[total_excursion_day > 45], ': ', total_excursion_day, " high turbidity days", collapse = "; "),
+                                  max(total_excursion_day) <= 45 ~ "Attaining: All years of data show 45 or less high turbidity days per year."))%>%
   mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE)) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code ))
 
