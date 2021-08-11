@@ -2,7 +2,7 @@
 
 # install IR tools ------------------------------------------------------------------------------------------------
 
-devtools::install_github('TravisPritchardODEQ/odeqIRtools', upgrade = 'never')
+#devtools::install_github('TravisPritchardODEQ/odeqIRtools', upgrade = 'never')
 
 
 
@@ -53,3 +53,10 @@ source("Parameters/Turbidity/turbidity.R")
 
 
 source("Parameters/Tox_HH/HH_Tox.R")
+
+
+
+# Tox_AL ----------------------------------------------------------------------------------------------------------
+
+source("Parameters/Tox_AL/AL_Tox.R")
+
