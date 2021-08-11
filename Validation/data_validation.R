@@ -33,6 +33,9 @@ Data_validation_values <- read.csv("Validation/Data_validation_values.csv") %>%
     
  Data_validation_values[Data_validation_values == "NULL"] <- NA_character_
 
+ 
+ 
+ print("Query InputRaw")
 #connect to IR database view as a general user
 
 IR.sql <-   DBI::dbConnect(odbc::odbc(), dsn = "IR_Dev")
@@ -43,6 +46,7 @@ InputRaw  <-   DBI::dbReadTable(IR.sql, "InputRaw")
 
 DBI::dbDisconnect(IR.sql)
 
+print("Join data to validation valies")
 
 joined <- InputRaw %>%
   mutate(IRWQSUnitName = ifelse(IRWQSUnitName == "mg/L", "mg/l", IRWQSUnitName )) %>%
@@ -59,6 +63,8 @@ validation <- joined %>%
 
 manual_check <- validation %>%
   filter(!is.na(validation_result))
+
+print("Write excel doc at Validation/data_validation_manual_review.csv", )
 
 write.csv(manual_check, "Validation/data_validation_manual_review.csv",
           row.names = FALSE)
