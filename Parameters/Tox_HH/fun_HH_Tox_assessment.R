@@ -6,8 +6,8 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
 # Testing ---------------------------------------------------------------------------------------------------------
 
   
-  df <- Results_censored_tox_HH
-  write_excel = TRUE
+  # df <- Results_censored_tox_HH
+  # write_excel = TRUE
   
   
 
@@ -31,8 +31,9 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
            # Do the summing
            Summed_values = sum(summing_censored_value),
            # Create note on what the summing is based on
-           IR_note = ifelse(has_chlordane == 1, "", paste("result is sum of ", str_c(Char_Name, collapse  = "; ")) ),
-           IR_note = as.character(IR_note))  %>%
+           #IR_note = ifelse(has_chlordane == 1, "", paste("result is sum of ", str_c(Char_Name, collapse  = "; ")) ),
+           #IR_note = as.character(IR_note)
+           )  %>%
     # Keep only the first row. This preserves all the metadata
     filter(row_number() == 1) %>%
     # Change the Char_Name to Endosulfan and the Result_cen column to the summed value
@@ -47,45 +48,46 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
   
   # Sum PCB Data
   #PCB data is identifed by Pollu_ID
-  PCB_data <- df  %>%
-    filter(Pollu_ID == '153') %>%
-    #Identufy the aroclors
-    mutate(is_aroclor = ifelse(chr_uid %in% c('575','578','580','582','583','586','587'), 1, 0 )) %>% #THese are the uid for the Arochlors
-    # Group by org, mloc, date, and depth to identify sampling event
-    group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
-    # Flag of the grouping has an arochlor sample
-    mutate(Has_aroclor = ifelse(any(is_aroclor) == 1, 1, 0)) %>%
-    # Undo the grouping
-    ungroup() %>%
-    # keep the type (aroclor or congener) that has the least amount of non-detects by percentage
-    # Group by the same as above, but add in the is_arochlor flag
-    group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height, is_aroclor) %>%
-    # Calculate the percent nondetect of each group
-    mutate(PCB_summed_percent_nondetect = round(sum(Result_Operator == "<")/n()*100)) %>%
-    #undo the grouping
-    ungroup() %>%
-    # redo the original single sample grouping 
-    group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
-    # remove individual congeners if the group has arochlor data & the aroclors have a lower percentage of nondetects
-    filter((Has_aroclor == 1 & is_aroclor == 1 & PCB_summed_percent_nondetect == min(PCB_summed_percent_nondetect)) | Has_aroclor == 0) %>%
-    # Recalculate the percent censored values
-    mutate(summed_censored_value = ifelse(Result_Operator == "<", 0, Result_cen )) %>%
-    mutate(PCB_summed_percent_nondetect = round(sum(Result_Operator == "<")/n()*100),
-           # Do the summing
-           Summed_values = sum(summed_censored_value),
-           # Create note on what the summing is based on
-           IR_note = ifelse(Has_aroclor ==  1, "PCB - Sum of Aroclors", 
-                            ifelse(Has_aroclor ==  0, "PCB - Sum of congeners", "ERROR" )),
-           Result_Operator = max(Result_Operator)
-    ) %>%
-    # Keep only the first row. This preserves all the metadata
-    filter(row_number() == 1) %>%
-    # Change the Char_Name to Endosulfan and the Result_cen column to the summed value
-    mutate(Char_Name = "PCBs",
-           Result_cen = Summed_values) %>%
-    # get rid of extra columns that were created
-    select(-Summed_values,  -Has_aroclor,  -is_aroclor, -summed_censored_value) %>%
-    mutate(IR_note = as.character(IR_note))
+  
+  # PCB_data <- df  %>%
+  #   filter(Pollu_ID == '153') %>%
+  #   #Identufy the aroclors
+  #   mutate(is_aroclor = ifelse(chr_uid %in% c('575','578','580','582','583','586','587'), 1, 0 )) %>% #THese are the uid for the Arochlors
+  #   # Group by org, mloc, date, and depth to identify sampling event
+  #   group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
+  #   # Flag of the grouping has an arochlor sample
+  #   mutate(Has_aroclor = ifelse(any(is_aroclor) == 1, 1, 0)) %>%
+  #   # Undo the grouping
+  #   ungroup() %>%
+  #   # keep the type (aroclor or congener) that has the least amount of non-detects by percentage
+  #   # Group by the same as above, but add in the is_arochlor flag
+  #   group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height, is_aroclor) %>%
+  #   # Calculate the percent nondetect of each group
+  #   mutate(PCB_summed_percent_nondetect = round(sum(Result_Operator == "<")/n()*100)) %>%
+  #   #undo the grouping
+  #   ungroup() %>%
+  #   # redo the original single sample grouping 
+  #   group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
+  #   # remove individual congeners if the group has arochlor data & the aroclors have a lower percentage of nondetects
+  #   filter((Has_aroclor == 1 & is_aroclor == 1 & PCB_summed_percent_nondetect == min(PCB_summed_percent_nondetect)) | Has_aroclor == 0) %>%
+  #   # Recalculate the percent censored values
+  #   mutate(summed_censored_value = ifelse(Result_Operator == "<", 0, Result_cen )) %>%
+  #   mutate(PCB_summed_percent_nondetect = round(sum(Result_Operator == "<")/n()*100),
+  #          # Do the summing
+  #          Summed_values = sum(summed_censored_value),
+  #          # Create note on what the summing is based on
+  #          IR_note = ifelse(Has_aroclor ==  1, "PCB - Sum of Aroclors", 
+  #                           ifelse(Has_aroclor ==  0, "PCB - Sum of congeners", "ERROR" )),
+  #          Result_Operator = max(Result_Operator)
+  #   ) %>%
+  #   # Keep only the first row. This preserves all the metadata
+  #   filter(row_number() == 1) %>%
+  #   # Change the Char_Name to Endosulfan and the Result_cen column to the summed value
+  #   mutate(Char_Name = "PCBs",
+  #          Result_cen = Summed_values) %>%
+  #   # get rid of extra columns that were created
+  #   select(-Summed_values,  -Has_aroclor,  -is_aroclor, -summed_censored_value) %>%
+  #   mutate(IR_note = as.character(IR_note))
   
   
   
@@ -93,7 +95,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
   results_analysis <- df %>%
     filter(Pollu_ID != 153,
            Pollu_ID != 27) %>%
-    bind_rows(PCB_data, 
+    bind_rows(#PCB_data, 
       Chlordane_data)
   
   
@@ -184,7 +186,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
                                       num_not_3d < 3 ~ "3",
                                       geomean <= crit ~ "2",
                                       TRUE ~ "ERROR"), 
-             Rationale =  case_when(percent_3d == 100 ~ paste0("All results have detection limits above criteria- ", num_samples, " total samples"),
+             Rationale =  case_when(percent_3d == 100 ~ paste0("All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
                                     num_samples >= 3 & geomean > crit ~ paste("Geometric mean of", round(geomean, 7), "above criteria of", crit,  " - ", num_samples, " total samples"),
                                     num_samples < 3 & num_excursions >= 1 ~ paste('Only', num_samples, " samples", 'and', num_excursions, "excursions"), 
                                     num_samples < 3 & num_excursions == 0 ~ paste('Only', num_samples, " samples", 'and', "0", "excursions"),

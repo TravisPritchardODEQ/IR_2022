@@ -108,50 +108,50 @@ df <- Tox_AL_Censored_data
   
   # PCB data ----------------------------------------------------------------
   
-  PCB_data <- df  %>%
-    filter(Pollu_ID == '153') %>%
-    #Identufy the aroclors
-    mutate(is_aroclor = ifelse(chr_uid %in% c('575','578','580','582','583','586','587'), 1, 0 )) %>% #These are the uid for the Arochlors
-    # Group by org, mloc, date, and depth to identify sampling event
-    group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
-    # Flag of the grouping has an arochlor sample
-    mutate(Has_aroclor = ifelse(max(is_aroclor) == 1, 1, 0)) %>%
-    # Undo the grouping
-    ungroup() %>%
-    # keep the type (aroclor or congener) that has the least amount of non-detects by percentage
-    # Group by the same as above, but add in the is_arochlor flag
-    group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height, is_aroclor) %>%
-    # Calculate the percent nondetect of each group
-    mutate(summed_percent_nondetect = round(sum(Result_Operator == "<")/n()*100)) %>%
-    #undo the grouping
-    ungroup() %>%
-    # redo the original single sample grouping 
-    group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
-    # remove individual congeners if the group has arochlor data & the aroclors have a lower percentage of nondetects
-    filter((Has_aroclor == 1 & is_aroclor == 1 & summed_percent_nondetect == min(summed_percent_nondetect)) | Has_aroclor == 0) %>%
-    # Recalculate the percent censored values
-    mutate(summed_censored_value = ifelse(Result_Operator == "<", 0, Result_cen ),
-           is_3d = ifelse(Result_Operator == "<" & IRResultNWQSunit > ifelse(WaterTypeCode == 2, 
-                                                                             pmin(Acute_FW, Chronic_FW, na.rm = TRUE), 
-                                                                             pmin(Acute_SW, Chronic_SW, na.rm = TRUE)), 1, 0)) %>%
-    mutate(summed_percent_nondetect = round(sum(Result_Operator == "<")/n()*100),
-           # Do the summing
-           Summed_values = sum(summed_censored_value),
-           summed_percent_3d = round(sum(is_3d == 1)/n()*100),
-           # Create note on what the summing is based on
-           IR_note = ifelse(Has_aroclor ==  1, "PCB - Sum of Aroclors", 
-                            ifelse(Has_aroclor ==  0, "PCB - Sum of congeners", "ERROR" )),
-           Result_Operator = max(Result_Operator)
-    ) %>%
-    # Keep only the first row. This preserves all the metadata
-    filter(row_number() == 1) %>%
-    # Change the Char_Name to Endosulfan and the Result_cen column to the summed value
-    mutate(Char_Name = "PCBs",
-           Result_cen = Summed_values) %>%
-    # get rid of extra columns that were created
-    select(-Summed_values,  -Has_aroclor,  -is_aroclor, -summed_censored_value, -is_3d) %>%
-    mutate(IR_note = is.character(IR_note))
-  
+  # PCB_data <- df  %>%
+  #   filter(Pollu_ID == '153') %>%
+  #   #Identufy the aroclors
+  #   mutate(is_aroclor = ifelse(chr_uid %in% c('575','578','580','582','583','586','587'), 1, 0 )) %>% #These are the uid for the Arochlors
+  #   # Group by org, mloc, date, and depth to identify sampling event
+  #   group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
+  #   # Flag of the grouping has an arochlor sample
+  #   mutate(Has_aroclor = ifelse(max(is_aroclor) == 1, 1, 0)) %>%
+  #   # Undo the grouping
+  #   ungroup() %>%
+  #   # keep the type (aroclor or congener) that has the least amount of non-detects by percentage
+  #   # Group by the same as above, but add in the is_arochlor flag
+  #   group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height, is_aroclor) %>%
+  #   # Calculate the percent nondetect of each group
+  #   mutate(summed_percent_nondetect = round(sum(Result_Operator == "<")/n()*100)) %>%
+  #   #undo the grouping
+  #   ungroup() %>%
+  #   # redo the original single sample grouping 
+  #   group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
+  #   # remove individual congeners if the group has arochlor data & the aroclors have a lower percentage of nondetects
+  #   filter((Has_aroclor == 1 & is_aroclor == 1 & summed_percent_nondetect == min(summed_percent_nondetect)) | Has_aroclor == 0) %>%
+  #   # Recalculate the percent censored values
+  #   mutate(summed_censored_value = ifelse(Result_Operator == "<", 0, Result_cen ),
+  #          is_3d = ifelse(Result_Operator == "<" & IRResultNWQSunit > ifelse(WaterTypeCode == 2, 
+  #                                                                            pmin(Acute_FW, Chronic_FW, na.rm = TRUE), 
+  #                                                                            pmin(Acute_SW, Chronic_SW, na.rm = TRUE)), 1, 0)) %>%
+  #   mutate(summed_percent_nondetect = round(sum(Result_Operator == "<")/n()*100),
+  #          # Do the summing
+  #          Summed_values = sum(summed_censored_value),
+  #          summed_percent_3d = round(sum(is_3d == 1)/n()*100),
+  #          # Create note on what the summing is based on
+  #          IR_note = ifelse(Has_aroclor ==  1, "PCB - Sum of Aroclors", 
+  #                           ifelse(Has_aroclor ==  0, "PCB - Sum of congeners", "ERROR" )),
+  #          Result_Operator = max(Result_Operator)
+  #   ) %>%
+  #   # Keep only the first row. This preserves all the metadata
+  #   filter(row_number() == 1) %>%
+  #   # Change the Char_Name to Endosulfan and the Result_cen column to the summed value
+  #   mutate(Char_Name = "PCBs",
+  #          Result_cen = Summed_values) %>%
+  #   # get rid of extra columns that were created
+  #   select(-Summed_values,  -Has_aroclor,  -is_aroclor, -summed_censored_value, -is_3d) %>%
+  #   mutate(IR_note = is.character(IR_note))
+  # 
   
   # Put data back together --------------------------------------------------
   
@@ -162,7 +162,7 @@ df <- Tox_AL_Censored_data
     filter(!Pollu_ID %in% c(48,49,50)) %>%
     filter(Pollu_ID != 27) %>%
     bind_rows(endosulfan_data) %>%
-    bind_rows(PCB_data) %>%
+    #(PCB_data) %>%
     bind_rows(DDT_data) %>%
     bind_rows(Chlordane)
   
@@ -274,8 +274,8 @@ df <- Tox_AL_Censored_data
                                  num_samples_crit_excursion_calc == 0 & criteria_fraction == "Dissolved" & num_excursions_all >= critical_excursions ~ paste0("Only total fraction results available, criteria is 'Dissolved' ",
                                                                                                                                                               num_excursions_all, " total excursions of ", 
                                                                                                                                                               num_samples, " total samples"), 
-                                 num_excursions_all >= critical_excursions ~ paste0(num_excursions_all, " excursions is greater than ",
-                                                                                    critical_excursions, " needed to list- ",
+                                 num_excursions_all >= critical_excursions ~ paste0(num_excursions_all,
+                                                                                    " excursion of criteria with ",
                                                                                     num_samples, " total samples"),
                                  num_excursions_all < critical_excursions & num_samples >= 10 ~ paste0(num_excursions_all, " excursions is less than ",
                                                                                    critical_excursions, " needed to list- ",
@@ -283,6 +283,8 @@ df <- Tox_AL_Censored_data
                                  TRUE ~ "ERROR")) %>%
     mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE))
     
+  
+  
   
   return(Results_tox_AL_categories)
   }
@@ -295,9 +297,21 @@ df <- Tox_AL_Censored_data
   
 
   
+  WS_AU_rollup <- AL_Tox_WS %>%
+    select(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, Char_Name, IR_category, Rationale) %>%
+    ungroup() %>%
+    group_by(AU_ID, Char_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+    summarise(IR_category_AU = max(IR_category),
+              Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
+    mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
+  
+  
+  
+  
   Results_tox_AL <- list(data =Results_tox_AL_analysis,
                          AL_Tox_WS = AL_Tox_WS,
-                         AL_Tox_other = AL_Tox_other )
+                         AL_Tox_other = AL_Tox_other,
+                         AL_Tox_WS_rollup = AL_Tox_WS)
   
   
   return(Results_tox_AL)
