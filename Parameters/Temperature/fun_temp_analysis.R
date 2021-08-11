@@ -143,19 +143,19 @@ temp_IR_categories_WS <- ws_3_year %>%
                    max_3yr_excursions == 1 ~ "3B",
                    max_3yr_excursions == 0 & distinct_years_sufficient_crit_period < 1 ~ "3",
                    TRUE ~ '2'),
-         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(MLocID, ": ", total_valid_excursions, 
+         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(MLocID, ": ","Impaired: ", total_valid_excursions, 
                                                                 " valid excursions of ", Temp_Criteria, 
                                                                 "° criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule- ",
                                                                 total_results, " total results"),
-                               max_3yr_excursions == 1 ~ paste0(MLocID, ": Insufficient data-", total_valid_excursions, 
+                               max_3yr_excursions == 1 ~ paste0(MLocID, ": Insufficient data:", total_valid_excursions, 
                                                                 " valid excursions of ", Temp_Criteria, 
                                                                 "° criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule- ",
                                                                 total_results, " total results"),
                                max_3yr_excursions == 0 & distinct_years_sufficient_crit_period < 1 ~ paste0(MLocID, ": Insufficient data: insufficient data collected during critical warm period- ",
                                                                                                       total_results, " total results"),
-                               TRUE ~ paste0("Attaining- No 7DADM excursions- ",
+                               TRUE ~ paste0(MLocID, ": Attaining: No 7DADM excursions- ",
                                                                 total_results, " total results"))) %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
 
@@ -192,14 +192,14 @@ temp_IR_categories_other <- other_3_year %>%
                                   max_3yr_excursions == 0 & distinct_years_sufficient_crit_period < 1 ~ "3",
                                   max_3yr_excursions == 1 ~ "3B",
                                   TRUE ~ '2'),
-         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(total_valid_excursions, 
+         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0("Impaired: ", total_valid_excursions, 
                                                                 " valid excursions of criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule"),
-                               max_3yr_excursions == 1 ~ paste0("Insufficient data-", total_valid_excursions, 
+                               max_3yr_excursions == 1 ~ paste0("Insufficient data:", total_valid_excursions, 
                                                                 " valid excursions of criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule"),
                                max_3yr_excursions == 0 & distinct_years_sufficient_crit_period < 1~ paste0("Insufficient data: insufficient data collected during critical warm period"),
-                               TRUE ~ 'Attaining- No 7DADM excursions'))%>%
+                               TRUE ~ 'Attaining: No 7DADM excursions'))%>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE)) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
 
@@ -233,19 +233,19 @@ temp_IR_categories_WS_spawn <- ws_3_year %>%
                                  max_3yr_excursions == 1 ~ "3B",
                                  max_3yr_excursions == 0 & distinct_years_sufficient_spawn_period < 1 ~ "3",
                                  TRUE ~ '2'),
-         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(MLocID, ": ", total_valid_excursions, 
+         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0(MLocID, ": ", "Impaired: ", total_valid_excursions, 
                                                                 " valid excursions of ", Temp_Criteria, 
                                                                 "° criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule- ",
                                                                 total_results, " total results"),
-                               max_3yr_excursions == 1 ~ paste0(MLocID, ": Insufficient data-", total_valid_excursions, 
+                               max_3yr_excursions == 1 ~ paste0(MLocID, ": Insufficient data:", total_valid_excursions, 
                                                                 " valid excursions of ", Temp_Criteria, 
                                                                 "° criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule- ",
                                                                 total_results, " total results"),
                                max_3yr_excursions == 0 & distinct_years_sufficient_spawn_period < 1 ~ paste0(MLocID, ": Insufficient data: insufficient data collected during spawn period- ",
                                                                                                  total_results, " total results"),
-                               TRUE ~ paste0(MLocID, ": Attaining- No 7DADM excursions- ",
+                               TRUE ~ paste0(MLocID, ": Attaining: No 7DADM excursions- ",
                                              total_results, " total results"))) %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
 
@@ -282,19 +282,19 @@ temp_IR_categories_other_spawn <- other_3_year %>%
                                  max_3yr_excursions == 1 ~ "3B",
                                  max_3yr_excursions == 0 & distinct_years_sufficient_spawn_period < 1 ~ "3",
                                  TRUE ~ '2'),
-         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0( total_valid_excursions, 
+         Rationale = case_when(max_3yr_excursions >= 2 ~ paste0("Impaired: ", total_valid_excursions, 
                                                                 " valid excursions of ", Temp_Criteria, 
                                                                 "° criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule- ",
                                                                 total_results, " total results"),
-                               max_3yr_excursions == 1 ~ paste0("Insufficient data-", total_valid_excursions, 
+                               max_3yr_excursions == 1 ~ paste0("Insufficient data:", total_valid_excursions, 
                                                                 " valid excursions of ", Temp_Criteria, 
                                                                 "° criteria. ", total_air_exclusions, 
                                                                 " excursions marked invald due to air temp exclusion rule- ",
                                                                 total_results, " total results"),
                                max_3yr_excursions == 0 & distinct_years_sufficient_spawn_period < 1 ~ paste0("Insufficient data: insufficient data collected during spawn period- ",
                                                                                                      total_results, " total results"),
-                               TRUE ~ paste0("Attaining- No 7DADM excursions- ",
+                               TRUE ~ paste0("Attaining: No 7DADM excursions- ",
                                              total_results, " total results"))) %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE)) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
