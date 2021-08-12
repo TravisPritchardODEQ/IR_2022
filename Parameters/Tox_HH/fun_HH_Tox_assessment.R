@@ -1,5 +1,5 @@
 library(lubridate)
-
+library(openxlsx)
 fun_Tox_HH_analysis <-function(df, write_excel = TRUE){ 
   
 
@@ -56,7 +56,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
   #   # Group by org, mloc, date, and depth to identify sampling event
   #   group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
   #   # Flag of the grouping has an arochlor sample
-  #   mutate(Has_aroclor = ifelse(any(is_aroclor) == 1, 1, 0)) %>%
+  #   mutate(Has_aroclor = ifelse(any(is_aroclor == 1), 1, 0)) %>%
   #   # Undo the grouping
   #   ungroup() %>%
   #   # keep the type (aroclor or congener) that has the least amount of non-detects by percentage
@@ -89,14 +89,30 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
   #   select(-Summed_values,  -Has_aroclor,  -is_aroclor, -summed_censored_value) %>%
   #   mutate(IR_note = as.character(IR_note))
   
+
+# Arsenic ---------------------------------------------------------------------------------------------------------
+  
+  arsenic_data <- df %>%
+    filter(Pollu_ID == '9') %>%
+    # If have inorganic, keep it
+    mutate(is_inorganic = ifelse(Char_Name == 'Arsenic, Inorganic', 1, 0 )) %>%
+    group_by(OrganizationID, MLocID, SampleStartDate, act_depth_height) %>%
+    mutate(has_inorganic = case_when(any(Char_Name == 'Arsenic, Inorganic') ~ 1,
+                                     !any(Char_Name == 'Arsenic, Inorganic') ~ 0)) %>%
+    ungroup() %>%
+    filter((has_inorganic == 1 & is_inorganic == 1) | has_inorganic == 0) %>%
+    mutate(Crit_Fraction = ifelse(is_inorganic == 0 , "Total", Crit_Fraction)) %>%
+    select(-is_inorganic, -has_inorganic)
   
   
   # Put summed data together
   results_analysis <- df %>%
     filter(Pollu_ID != 153,
-           Pollu_ID != 27) %>%
+           Pollu_ID != 27,
+           Pollu_ID != 9) %>%
     bind_rows(#PCB_data, 
-      Chlordane_data)
+      Chlordane_data,
+      arsenic_data)
   
   
 
@@ -115,9 +131,9 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
                                                ifelse(Sample_Fraction == "Dissolved"  |
                                                         Sample_Fraction == "Filtered, field"  |
                                                         Sample_Fraction == "Filtered, lab"  , "Dissolved", "Error"))) %>%
-    group_by(OrganizationID, MLocID, Char_Name, SampleStartDate, Analytical_method, act_depth_height) %>%
+    group_by(OrganizationID, MLocID, Char_Name, SampleStartDate, act_depth_height) %>%
     # If group has Total fractionin it, mark with a 1. If ony dissolved, mark with 0
-    mutate(Has_Crit_Fraction = ifelse(Crit_Fraction ==  max(Simplified_sample_fraction), 1, 0)) %>%
+    mutate(Has_Crit_Fraction = ifelse(any(Simplified_sample_fraction == Crit_Fraction), 1, 0)) %>%
     # Filter out the results that do not macth criteira fraction, if the group has matching criteria. Also keep where whole group does not match
     ungroup() %>%
     filter((Has_Crit_Fraction == 1 & Simplified_sample_fraction == Crit_Fraction) | Has_Crit_Fraction == 0) %>% 
@@ -127,7 +143,8 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
                                       ifelse(Char_Name == "Arsenic" & Sample_Fraction == "Total" & WaterTypeCode != 2, Result_cen*0.59, Result_cen ))) %>%
     mutate(excursion = ifelse(evaluation_result > crit, 1, 0 )) %>%
     mutate(is.3d = case_when(Result_Operator == "<" & IRResultNWQSunit > crit ~ 1,
-                             TRUE ~ 0 ))
+                             TRUE ~ 0 )) %>%
+    mutate(Crit_Fraction = ifelse(Char_Name == "Arsenic", "Inorganic", Char_Name ))
   
   
 
