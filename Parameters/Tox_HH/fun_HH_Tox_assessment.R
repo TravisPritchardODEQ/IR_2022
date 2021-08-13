@@ -92,6 +92,8 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
 
 # Arsenic ---------------------------------------------------------------------------------------------------------
   
+  #Arenseic criteria is for inorganic. If we have inorganic arsenic on a day, discard non inorganic char name. 
+  
   arsenic_data <- df %>%
     filter(Pollu_ID == '9') %>%
     # If have inorganic, keep it
@@ -124,17 +126,17 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
     mutate(Crit_Fraction = ifelse(is.na(Crit_Fraction), "Total", Crit_Fraction )) %>%
     # Create column for simplfied version of sample fraction
     # THese distinctions came from Sara Krepps
-    mutate(Simplified_sample_fraction = ifelse(Sample_Fraction %in% c("Total", "Extractable",
-                                                                      "Total Recoverable","Total Residual", 
-                                                                      "None", "Volatile", "Semivolatile")  |
-                                                 is.na(Sample_Fraction), 'Total', 
-                                               ifelse(Sample_Fraction == "Dissolved"  |
-                                                        Sample_Fraction == "Filtered, field"  |
-                                                        Sample_Fraction == "Filtered, lab"  , "Dissolved", "Error"))) %>%
+    mutate(Simplified_sample_fraction = case_when(Sample_Fraction %in% c("Total", "Extractable",
+                                                                         "Total Recoverable","Total Residual", 
+                                                                         "None", "Volatile", "Semivolatile")  | is.na(Sample_Fraction) ~ 'Total', 
+                                                  Sample_Fraction == "Dissolved"  |
+                                                    Sample_Fraction == "Filtered, field"  |
+                                                    Sample_Fraction == "Filtered, lab"   ~ "Dissolved", 
+                                                  TRUE ~ "Error")) %>%
     group_by(OrganizationID, MLocID, Char_Name, SampleStartDate, act_depth_height) %>%
-    # If group has Total fractionin it, mark with a 1. If ony dissolved, mark with 0
+    # If group has Total fraction in it, mark with a 1. If ony dissolved, mark with 0
     mutate(Has_Crit_Fraction = ifelse(any(Simplified_sample_fraction == Crit_Fraction), 1, 0)) %>%
-    # Filter out the results that do not macth criteira fraction, if the group has matching criteria. Also keep where whole group does not match
+    # Filter out the results that do not match criteria fraction, if the group has matching criteria. Also keep where whole group does not match
     ungroup() %>%
     filter((Has_Crit_Fraction == 1 & Simplified_sample_fraction == Crit_Fraction) | Has_Crit_Fraction == 0) %>% 
     # Remove results with null evaluation_criteria (indicating a mismatch between water type and criteria (ex freshwater phosporus samples ))
@@ -144,7 +146,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
     mutate(excursion = ifelse(evaluation_result > crit, 1, 0 )) %>%
     mutate(is.3d = case_when(Result_Operator == "<" & IRResultNWQSunit > crit ~ 1,
                              TRUE ~ 0 )) %>%
-    mutate(Crit_Fraction = ifelse(Char_Name == "Arsenic", "Inorganic", Char_Name ))
+    mutate(Crit_Fraction = ifelse(Char_Name == "Arsenic", "Inorganic", Crit_Fraction ))
   
   
 
@@ -206,7 +208,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
              Rationale =  case_when(percent_3d == 100 ~ paste0("All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
                                     num_samples >= 3 & geomean > crit ~ paste("Geometric mean of", round(geomean, 7), "above criteria of", crit,  " - ", num_samples, " total samples"),
                                     num_samples < 3 & num_excursions >= 1 ~ paste('Only', num_samples, " samples", 'and', num_excursions, "excursions"), 
-                                    num_samples < 3 & num_excursions == 0 ~ paste('Only', num_samples, " samples", 'and', "0", "excursions"),
+                                    num_samples < 3 & num_excursions == 0 ~ paste('Only', num_samples, " samples", 'and', num_excursions, "excursions"),
                                     num_not_3d < 3 ~ paste("Only", num_not_3d, 'samples have QL above criteria',   " - ", num_samples, " total samples"),
                                     geomean <= crit ~ paste0("Geometric mean ", geomean, " < criteria (", crit, ")",  " - ", num_samples, " total samples"),
                                     TRUE ~ "ERROR")) %>%
