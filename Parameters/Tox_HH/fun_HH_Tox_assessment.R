@@ -92,7 +92,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
 
 # Arsenic ---------------------------------------------------------------------------------------------------------
   
-  #Arenseic criteria is for inorganic. If we have inorganic arsenic on a day, discard non inorganic char name. 
+  #Arsenic criteria is for inorganic. If we have inorganic arsenic on a day, discard non inorganic char name. 
   
   arsenic_data <- df %>%
     filter(Pollu_ID == '9') %>%
@@ -103,11 +103,15 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
                                      !any(Char_Name == 'Arsenic, Inorganic') ~ 0)) %>%
     ungroup() %>%
     filter((has_inorganic == 1 & is_inorganic == 1) | has_inorganic == 0) %>%
+    #If we don't have inorganic arsenic, then we use the total fraction and apply a conversion factor
+      #If we don't have inorganic, temporarily set the criteria fraction to total so the assessment code works properly
+      #we will set this back to 'inorganic' later
     mutate(Crit_Fraction = ifelse(is_inorganic == 0 , "Total", Crit_Fraction)) %>%
     select(-is_inorganic, -has_inorganic)
   
   
   # Put summed data together
+    #rmeove summed data and then join their datatables back
   results_analysis <- df %>%
     filter(Pollu_ID != 153,
            Pollu_ID != 27,
