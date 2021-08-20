@@ -60,3 +60,9 @@ source("Parameters/Tox_HH/HH_Tox.R")
 
 source("Parameters/Tox_AL/AL_Tox.R")
 
+
+
+# pH --------------------------------------------------------------------------------------------------------------
+
+
+source("Parameters/pH/pH.R")
