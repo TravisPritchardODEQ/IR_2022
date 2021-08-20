@@ -246,25 +246,15 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
     
     wb <- createWorkbook()
     
-    addWorksheet(wb, sheetName = "HH Toxt Data")
-
-    addWorksheet(wb, sheetName = "HH Tox WS Station Cat")
-    addWorksheet(wb, sheetName = "WS AU combined Cat")
-    addWorksheet(wb, sheetName = "HH Tox Other AU Cat")
-
-    
-  
-    
-    
     header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
-    
-    
+
+    addWorksheet(wb, sheetName = "HH Toxt Data")
     freezePane(wb, "HH Toxt Data", firstRow = TRUE) 
-    freezePane(wb, "HH Tox WS Station Cat", firstRow = TRUE) 
-    freezePane(wb, "HH Tox Other AU Cat", firstRow = TRUE) 
-    freezePane(wb, "WS AU combined Cat", firstRow = TRUE) 
-   
     
+    cloneWorksheet(wb, "HH Tox WS Station Cat", clonedSheet =  "HH Toxt Data")
+    cloneWorksheet(wb, "WS AU combined Cat", clonedSheet =  "HH Toxt Data")
+    cloneWorksheet(wb, "HH Tox Other AU Cat", clonedSheet =  "HH Toxt Data")
+
     
     writeData(wb, "HH Toxt Data", x = tox_HH_data, headerStyle = header_st) 
     writeData(wb, "HH Tox WS Station Cat", x = tox_HH_WS_assessments, headerStyle = header_st) 
