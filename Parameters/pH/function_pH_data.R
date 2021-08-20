@@ -12,13 +12,15 @@ cont_ph_raw <- function(database) {
   IR.sql <-   odbcConnect(database)
   
   
-  Results_import_cont <-    sqlFetch(IR.sql, "VW_pHCont") 
-  Results_import_grab <-    sqlFetch(IR.sql, "VW_pH")
+  Results_import_cont <-    sqlFetch(IR.sql, "VW_pHCont") %>%
+    dplyr::filter(!is.na(Result_Numeric))
+  Results_import_grab <-    sqlFetch(IR.sql, "VW_pH")%>%
+    dplyr::filter(!is.na(Result_Numeric))
   
   odbcClose(IR.sql)
   
-  print(paste("Fetched", nrow(Results_import_cont), "results from", length(unique(Results_import_cont$MLocID)), "monitoring locations" ))
-  print(paste("Fetched", nrow(Results_import_grab), "results from", length(unique(Results_import_grab$MLocID)), "monitoring locations" ))
+  print(paste("Fetched", nrow(Results_import_cont), "continuous results from", length(unique(Results_import_cont$MLocID)), "monitoring locations" ))
+  print(paste("Fetched", nrow(Results_import_grab), "grab results from", length(unique(Results_import_grab$MLocID)), "monitoring locations" ))
   
   # Set factors to characters
   Results_import_cont %>% map_if(is.factor, as.character) %>% as_tibble -> Results_import_cont
@@ -46,4 +48,8 @@ cont_ph_raw <- function(database) {
   # 
   # return(Results_censored)
   # 
+  
+  pH_list <- list(pH_cont = Results_import_cont,
+                  ph_grab = Results_import_grab)
+  
 }
