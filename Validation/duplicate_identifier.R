@@ -73,7 +73,7 @@ dup_diff_resuid <- straight_duplicates %>%
   filter(num_resUID > 1 & num_distinct_results == 1) %>%
   arrange(group_num)
 
-# write.xlsx(dup_diff_resuid, file = "Validation/Dupdata/same_date_time_method_result.xlsx")
+write.xlsx(dup_diff_resuid, file = "Validation/Dupdata/same_date_time_method_result.xlsx")
 
 
 
@@ -104,12 +104,12 @@ day_time_dups <- IR_res %>%
   arrange(MLocID, SampleStartDate, Char_Name)
 
 
-# write.xlsx(day_time_dups, file = "Validation/Dupdata/same_date_time_method_diff_result.xlsx")
+write.xlsx(day_time_dups, file = "Validation/Dupdata/same_date_time_method_diff_result.xlsx")
 
 
 # Different Methods -----------------------------------------------------------------------------------------------
 #Keep one with lowest MRL? HIghest DQL?
-#!!!!! Add speciation to group
+
 
 diff_methods <-  IR_res %>%
   filter(AU_ID != '99') %>%
@@ -128,13 +128,14 @@ diff_methods <-  IR_res %>%
   mutate(num_in_group = n(),
          num_distinct_results = n_distinct(IRResultNWQSunit),
          num_resUID = n_distinct(Result_UID),
-         num_analytical_methods = n_distinct(Analytical_method)) %>%
+         num_analytical_methods = n_distinct(Analytical_method),
+         num_orgs = n_distinct(OrganizationID)) %>%
   mutate(group_num =cur_group_id()) %>%
   filter(num_analytical_methods > 1) %>%
   ungroup() %>%
-  arrange(MLocID, SampleStartDate, Char_Name)
+  arrange(group_num, MLocID, SampleStartDate, Char_Name)
 
-# write.xlsx(diff_methods, file = "Validation/Dupdata/diff_method.xlsx")
+write.xlsx(diff_methods, file = "Validation/Dupdata/diff_method.xlsx")
 
 # Different Depths ------------------------------------------------------------------------------------------------
 
@@ -164,7 +165,7 @@ diff_depths <-  IR_res %>%
   arrange(MLocID, SampleStartDate, Char_Name)
 
 
-# write.xlsx(diff_methods, file = "Validation/Dupdata/diff_depths.xlsx")
+write.xlsx(diff_depths, file = "Validation/Dupdata/diff_depths.xlsx")
 
 
 
@@ -195,7 +196,7 @@ diff_time <-  IR_res %>%
   ungroup() %>%
   arrange(MLocID, SampleStartDate, Char_Name)
 
-# write.xlsx(diff_methods, file = "Validation/Dupdata/diff_time.xlsx")
+write.xlsx(diff_methods, file = "Validation/Dupdata/diff_time.xlsx")
 
 
 # cont pH dups ----------------------------------------------------------------------------------------------------
