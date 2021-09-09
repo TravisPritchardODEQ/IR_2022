@@ -20,7 +20,7 @@ IR.sql <-   DBI::dbConnect(odbc::odbc(), "IR_Dev")
 IR_Res_qry <-
   "Select  
 OrganizationID, 
-[MLocID], Activity_Type, [SampleStartDate],[SampleStartTime],[Char_Name], Sample_Fraction,
+[MLocID], Activity_Type, [SampleStartDate],[SampleStartTime],[Char_Name], Sample_Fraction, Char_Speciation,
 Pollu_ID, [Statistical_Base],  Result_UID, [IRResultNWQSunit], AU_ID, act_depth_height, Result_Depth, Analytical_method,
 Result_Unit, QualifierAbbr, wqstd_code
  ,[MDLType]
@@ -57,7 +57,8 @@ straight_duplicates <- IR_res %>%
            Analytical_method,
            Result_Unit,
            wqstd_code,
-           Sample_Fraction) %>%
+           Sample_Fraction,
+           Char_Speciation) %>%
   mutate(num = n(),
             num_distinct_results = n_distinct(IRResultNWQSunit),
             num_resUID = n_distinct(Result_UID)) %>%
@@ -91,7 +92,8 @@ day_time_dups <- IR_res %>%
            Result_Depth,
            Analytical_method,
            wqstd_code,
-           Sample_Fraction) %>%
+           Sample_Fraction,
+           Char_Speciation) %>%
   mutate(num = n(),
          num_distinct_results = n_distinct(IRResultNWQSunit),
          num_resUID = n_distinct(Result_UID)) %>%
@@ -121,7 +123,8 @@ diff_methods <-  IR_res %>%
            act_depth_height,
            Result_Depth,
            wqstd_code,
-           Sample_Fraction) %>%
+           Sample_Fraction,
+           Char_Speciation) %>%
   mutate(num_in_group = n(),
          num_distinct_results = n_distinct(IRResultNWQSunit),
          num_resUID = n_distinct(Result_UID),
@@ -148,7 +151,8 @@ diff_depths <-  IR_res %>%
            Statistical_Base,
            wqstd_code,
            Sample_Fraction,
-           Analytical_method)%>%
+           Analytical_method,
+           Char_Speciation)%>%
   mutate(num_in_group = n(),
          num_distinct_results = n_distinct(IRResultNWQSunit),
          num_resUID = n_distinct(Result_UID),
@@ -180,7 +184,8 @@ diff_time <-  IR_res %>%
            Result_Depth,
            wqstd_code,
            Sample_Fraction,
-           Analytical_method)%>%
+           Analytical_method,
+           Char_Speciation)%>%
   mutate(num_in_group = n(),
          num_distinct_results = n_distinct(IRResultNWQSunit),
          num_resUID = n_distinct(Result_UID),
