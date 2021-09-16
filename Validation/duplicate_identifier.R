@@ -19,19 +19,7 @@ IR.sql <-   DBI::dbConnect(odbc::odbc(), "IR_Dev")
 # Pull selected data from InputRaw.
 IR_Res_qry <-
   "Select  
-OrganizationID, 
-[MLocID], Activity_Type, [SampleStartDate],[SampleStartTime],[Char_Name], Sample_Fraction, Char_Speciation,
-Pollu_ID, [Statistical_Base],  Result_UID, [IRResultNWQSunit], AU_ID, act_depth_height, Result_Depth, Analytical_method,
-Result_Unit, QualifierAbbr, wqstd_code
- ,[MDLType]
- ,[MDLValue]
- ,[MDLUnit]
- ,[MRLType]
- ,[MRLUnit]
- ,[MRLValue]
- ,[URLType]
- ,[URLValue]
- ,[URLUnit]
+*
   FROM [IntegratedReport].[dbo].[InputRaw]" 
 
 IR_res <- DBI::dbGetQuery(IR.sql, glue_sql(IR_Res_qry, .con = IR.sql))
@@ -80,7 +68,28 @@ write.xlsx(dup_diff_resuid, file = "Validation/Dupdata/same_date_time_method_res
 # same day/time/method different result ----------------------------------------------------------------------------------
 
 day_time_dups <- IR_res %>%
-  filter(AU_ID != '99') %>%
+   select(-Lat_DD, 
+         -Long_DD,
+         -HUC12_Name,
+         -ELEV_Ft,
+         -FishCode,
+         -SpawnCode,
+         -WaterTypeCode,
+         -WaterBodyCode,
+         -BacteriaCode,
+         -DO_code,
+         -ben_use_code,
+         -pH_code,
+         -DO_SpawnCode,
+         -OWRD_Basin,
+         -EcoRegion2,
+         -EcoRegion3,
+         -Pollu_ID,
+         -Calc_Crit,
+         -Combine_Result_Cmnts,
+         -Combine_Result,
+         -CASNumber) %>%
+filter(AU_ID != '99') %>%
   mutate(act_depth_height = ifelse(act_depth_height == 'NA', NA, act_depth_height )) %>%
   group_by(MLocID,
            Char_Name,
@@ -93,15 +102,17 @@ day_time_dups <- IR_res %>%
            Analytical_method,
            wqstd_code,
            Sample_Fraction,
-           Char_Speciation) %>%
+           Char_Speciation,
+           Time_Basis) %>%
   mutate(num = n(),
          num_distinct_results = n_distinct(IRResultNWQSunit),
-         num_resUID = n_distinct(Result_UID)) %>%
+         num_resUID = n_distinct(Result_UID),
+         num_activity_ID = n_distinct(act_id)) %>%
   mutate(group_num =cur_group_id()) %>%
   filter(num > 1,
          num_distinct_results > 1) %>%
   ungroup() %>%
-  arrange(MLocID, SampleStartDate, Char_Name)
+  arrange(group_num, MLocID, SampleStartDate, Char_Name)
 
 
 write.xlsx(day_time_dups, file = "Validation/Dupdata/same_date_time_method_diff_result.xlsx")
