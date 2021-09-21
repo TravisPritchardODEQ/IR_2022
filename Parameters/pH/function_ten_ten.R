@@ -30,14 +30,14 @@ pH_assessment <- function(cont_data, grab_data, write_xlsx = TRUE){
   
   pH_assessment_fun <- function(df_cont_data = pH_cont, df_grab_data = pH_grab_no_cont,  AU_type){
     #testing
-    # df_data = pH_cont
-    # AU_type = "WS"
-    # 
+    #  df_data = pH_cont
+    #  AU_type = "other"
+    # # 
     
     
     if(AU_type == "other"){  
-      group1 <- c('AU_ID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Result_Date')
-      group2 <-  c('AU_ID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name')
+      group1 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Result_Date')
+      group2 <-  c('AU_ID',  'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name')
       
       
       inverse <- TRUE
@@ -84,7 +84,8 @@ pH_assessment <- function(cont_data, grab_data, write_xlsx = TRUE){
            pH_violation_high = ifelse(Result_Numeric > pH_Max, 1, 0 ),
            pH_violation_low = ifelse(Result_Numeric < pH_Min, 1, 0 )) %>%
     group_by_at(group1) %>%
-    summarise(grab_num_Samples = n(),
+    summarise(grab_result = first(IRResultNWQSunit),
+              grab_num_Samples = n(),
               grab_num_violation = sum(pH_violation),
               grab_num_violation_high = sum(pH_violation_high),
               grab_num_violation_low = sum(pH_violation_low),
@@ -100,13 +101,13 @@ pH_assessment <- function(cont_data, grab_data, write_xlsx = TRUE){
   cont_pH_categories <- pH_data_together %>%
     group_by_at(group2) %>% 
     summarise(total_continuous_days = n_distinct(Result_Date[!is.na(daily_ten_num_Samples)]),
-              sum_daily_ten_excursion = sum(daily_ten_excursion, na.rm = TRUE),
-              sum_daily_ten_excursion_high = sum(daily_ten_excursion_high, na.rm = TRUE),
-              sum_daily_ten_excursion_low = sum(daily_ten_excursion_low, na.rm = TRUE),
+              sum_daily_ten_excursion = n_distinct(Result_Date[!is.na(daily_ten_num_Samples) & daily_ten_excursion == 1]),
+              sum_daily_ten_excursion_high = n_distinct(Result_Date[!is.na(daily_ten_num_Samples) & daily_ten_excursion_high > 0]),
+              sum_daily_ten_excursion_low = n_distinct(Result_Date[!is.na(daily_ten_num_Samples) & daily_ten_excursion_low > 0]),
               total_grab_days =  n_distinct(Result_Date[!is.na(grab_num_Samples)]),
-              sum_grab_excursions = sum(grab_num_violation, na.rm = TRUE),
-              sum_grab_excursions_high = sum(grab_num_violation_high, na.rm = TRUE),
-              sum_grab_excursions_low = sum(grab_num_violation_low, na.rm = TRUE),
+              sum_grab_excursions = n_distinct(Result_Date[!is.na(grab_num_Samples) & grab_num_violation > 0]),
+              sum_grab_excursions_high = n_distinct(Result_Date[!is.na(grab_num_Samples) & grab_num_violation_high > 0]),
+              sum_grab_excursions_low =  n_distinct(Result_Date[!is.na(grab_num_Samples) & grab_num_violation_low > 0]),
               total_sample_days = total_continuous_days +total_grab_days,
               total_excursions = sum_daily_ten_excursion + sum_grab_excursions) %>%
     mutate(critical_excursions = binomial_excursions(total_continuous_days +total_grab_days, type =  "Conventionals"), 
