@@ -1,0 +1,758 @@
+---
+title: "2022 IR Marine DO analysis"
+output: html_notebook
+---
+
+Oregon's marine dissolved oxygen standard states:
+
+> (6) For ocean waters, no measurable reduction in dissolved oxygen concentration may be\
+>     allowed.
+
+Currently, no marine DO assessment methodology exists. DEQ is in the process of planning and assembling a technical work group to help develop assessment methodology for marine OAH issues.
+
+There are two data sets that the assessment team analyzed. 1. Continuous DO data collected at marine mooring stations (OOI data) and 2. Discrete DO samples collected on cruises along the Newport line. The following in a summary of the analysis performed on the data.
+
+# OOI data
+
+```{r include=FALSE}
+options(scipen=999)
+options(dplyr.summarise.inform = FALSE)
+library(tidyverse)
+library(lubridate)
+library(wql)
+library(zoo)
+library(readxl)
+library(AWQMSdata)
+library(rmarkdown)
+library(knitr)
+library(kableExtra)
+```
+
+Download continuous DO data from AWQMS:
+
+```{r echo=TRUE}
+ooi_DO_data <- AWQMS_Data_Cont(org = "OOI_(NOSTORETID)",
+                          char = "Dissolved oxygen (DO)")
+
+```
+
+```{r echo=FALSE}
+paged_table(ooi_DO_data, options = list(rows.print = 15))
+```
+
+This data represents one station at `r unique(ooi_DO_data$MLocID)` for date range `r min(ooi_DO_data$Result_Date)` - `r max(ooi_DO_data$Result_Date)`.
+
+The first step the assessment team took was to visualize the data. Chan et. al. 2019 defines some conditions for marine DO.
+
+```{r echo=FALSE}
+
+water_status <- data.frame(
+  stringsAsFactors = TRUE,
+  Status = c("Hypoxic","Hypoxic",
+             "Severe Hypoxia","Severe Hypoxia","Suboxic",
+             "Suboxic","Anoxic","Anoxic"),
+  Date = c("1/1/2018","2/1/2021","1/1/2018",
+           "2/1/2021","1/1/2018","2/1/2021",
+           "1/1/2018","2/1/2021"),
+  Value = c(1.4, 1.4, 0.5, 0.5, 0.1, 0.1, 0, 0),
+  units = c("mg/l","mg/l", "mg/l", "mg/l", "mg/l", "mg/l", "mg/l", "mg/l" )
+) %>%
+  mutate(Date = mdy(Date),
+         Value = Value*1.4276) #convert to mg/L
+
+water_status_display <- water_status %>%
+  select(Status, Value, units) %>%
+  distinct()
+
+water_status_display %>%
+  kbl() %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+```{r}
+
+
+ooi_DO_data_graph <- ooi_DO_data %>%
+  mutate(result_conv = Result_Numeric* (1.4/63.9)*1.42905,
+         result_unit = 'ml/l',
+         date = ymd(Result_Date),
+         month = month(date),  
+         yrmon = as.yearmon(date), 
+         year = year(date))
+
+
+
+q <- 
+  ggplot(data = ooi_DO_data_graph) +
+    geom_point(aes(x = date, y = result_conv, color = Depth)) + 
+    labs(title = "Dissolved Oxygen",
+         subtitle = paste0(ooi_DO_data_graph$MLocID[1], ": ", ooi_DO_data_graph$StationDes[1]),
+         caption = paste0("Lat/Long: ",
+                          ooi_DO_data_graph$Lat_DD[1], ", ",ooi_DO_data_graph$Long_DD[1] ),
+         x = element_blank(),
+         y = "mg/L")+
+    theme_bw()+
+  geom_line(data = water_status, 
+            aes(x = Date, y = Value, linetype = Status)) +
+  scale_color_brewer(palette="Paired")
+
+q
+
+```
+
+There appears to be some seasonality to the DO pattern, with regular drops into Severe Hypoxia conditions and occasional drops into Suboxic conditions.
+
+Next, we wanted to see if there was any trend that could be seen in the data. Since there is some obvious seasonality to the data set, the assessment team ran a Seasonal Mann Kendall test on the monthly average DO concentration, using months as the seasonal component. To ensure data completeness we only included months with less than 3 missing days in the data set.
+
+```{r}
+month_average <- ooi_DO_data %>%
+  mutate(result_conv = Result_Numeric* (1.4/63.9)*1.42905, #convert to mg/L
+         result_unit = 'mg/l',
+         date = ymd(Result_Date),
+         month = month(date),  
+         yrmon = as.yearmon(date), 
+         year = year(date),
+         loc_depth = paste0(MLocID, "-", Depth,Depth_Unit )) %>%
+  group_by(MLocID,loc_depth, year, month, Depth) %>%
+  summarise(mon_avg = mean(result_conv),
+            num_days = n_distinct(date),
+            count = n()) %>%
+  ungroup() %>%
+  complete(loc_depth, year, month) 
+
+
+months_exclude <- month_average %>%
+  mutate(mo_days = days_in_month(month),
+         diff = mo_days - num_days,
+         exclude = ifelse(diff > 3 | is.na(mon_avg), "yes", "no")) %>%
+  select(MLocID, loc_depth, year, month, exclude)
+
+
+month_average_assess <- month_average %>%
+  left_join(months_exclude, by = c("loc_depth", "year", "month", "MLocID"))%>%
+  filter(exclude == "no") %>%
+  select(MLocID, loc_depth,  Depth, year, month, mon_avg) %>%
+  mutate(date = paste0(year, "-", month, "-01")) %>%
+  mutate(date = ymd(date)) %>%
+  mutate(variable = as.factor("DO")) %>%
+  select(date, MLocID,loc_depth,  Depth, variable, mon_avg) %>%
+  rename(value = mon_avg,
+         site = MLocID) 
+
+
+
+#Loop through different depths 
+
+#create empty list to accept test results
+kendall_list <- list()
+
+
+for(i in 1:length(unique(month_average_assess$loc_depth))){
+  
+  #select unique site ID and arrange in chronological order
+  #fill in NAs for missing months
+  
+  mo_avg_seamannkenn <- month_average_assess %>%
+    filter(loc_depth == unique(month_average_assess$loc_depth)[i]) %>%
+    mutate(Depth = as.numeric(Depth))
+  
+  #create wqdata format table
+  wqdataframe <- wqData(mo_avg_seamannkenn, c(1, 2, 4), 5:6, site.order = TRUE, type = "long",
+                        time.format = "%y-%m-%d")
+  
+  #create time series
+  timeseries <- tsMake(wqdataframe, focus= wqdataframe$site[1])
+  
+  res <- seaKen(timeseries)
+  
+  #save results as a dataframe and add MLocID and n
+  df <- data.frame(as.list(unclass(res))) %>%
+    mutate(loc_depth = unique(month_average_assess$loc_depth)[i],
+           n = length(timeseries))
+  
+  
+  
+  
+  #bind results list
+  kendall_list[[i]] <- df
+  
+  
+  
+} #end of for loop
+
+#bind results of seasonal mann kendall test to single dataframe
+kendall_results <- bind_rows(kendall_list) 
+
+
+#trend is detected when the tau > critical value and p. value (sl) is <0.10
+#reorder and rename rows for better exporting
+kendall_results <- kendall_results %>%
+  mutate(significance = ifelse(p.value < 0.10 & sen.slope < 0, "Signifigant (-)", 
+                               ifelse(p.value < 0.10 & sen.slope > 0, "Signifigant (+)",
+                                      "No Trend"))) %>%
+  select(loc_depth, significance, p.value, sen.slope)
+
+
+kendall_results %>%
+  kbl() %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+In this data set, there is no significant trend detected. However, this is a limited data set, with only a few years covered. This data represents what was submitted to us. In future assessments, if we have a longer data set, it is possible that a trend may emerge. To visualize the data:
+
+```{r}
+
+station <- ooi_DO_data %>%
+  select(OrganizationID, MLocID, StationDes,Lat_DD, Long_DD, AU_ID ) %>%
+  distinct()
+
+
+#point graph
+mon_avg_graph <- month_average %>%
+  mutate(yearmon = as.Date(paste0(year,"-",month,"-1"))) %>%
+  mutate(moname = month.name[month]) %>%
+  filter(!is.na(mon_avg)) %>%
+  left_join(station, by = "MLocID")
+
+#join trend analysis to data
+mon_avg_graph_trend <- mon_avg_graph %>%
+  left_join(kendall_results, by = "loc_depth") %>%
+  left_join(months_exclude, by = c("loc_depth", "year", "month", "MLocID")) %>%
+  filter(exclude == "no") %>%
+  select(-exclude)
+
+
+
+p <- ggplot(data = mon_avg_graph_trend)+
+  geom_point(aes(x = yearmon, y = mon_avg, color = Depth), size = 2, position = position_dodge(0.15)) +
+  geom_line(aes(x = yearmon, y = mon_avg, color = Depth)) +
+  labs(title = "Average Monthly Dissolved Oxygen",
+       subtitle = paste0(mon_avg_graph$MLocID[1], ": ",mon_avg_graph$StationDes[1] ),
+       caption = paste0("Lat/Long: ",
+                        mon_avg_graph$Lat_DD[1], ", ",mon_avg_graph$Long_DD[1] ),
+       x = element_blank(),
+       y = "mg/L")+
+  theme_bw()
+
+#graph no trend values
+if(mon_avg_graph_trend$significance[1] == "No Trend"){
+  p = p + annotate("text", label = "No Trend", 
+                   x =  as.Date('2020-06-01'),
+                   y = 1.75,
+                   colour = "black", size = 3.5) 
+  
+} #end of no trend if statement
+
+if(mon_avg_graph_trend$significance[1] != "No Trend"){
+  p = p +  annotate("text", label = "Significant Trend (p-value < 0.10)", 
+                    x = ymd('2020-06-01'),
+                    y = 1.7,
+                    colour = "black", size = 3.5) 
+  
+  
+  
+  
+  #plot trend line. This is taken from the coho trends process
+  slope <- kendall_results[kendall_results$MLocID == unique(sdadm_raw_trend$MLocID)[1], "sen.slope"]
+  x.delta <- as.numeric((max(mon_avg_graph$year) - min(mon_avg_graph$year)))/2
+  SK.min <- mean(mon_avg_graph$sdadm, na.rm = TRUE) - x.delta*slope
+  SK.max <- mean(mon_avg_graph$sdadm, na.rm = TRUE) + x.delta*slope
+  
+  p <- p + geom_segment(aes(x = ymd('2018-01-01'), y = SK.min,
+                            xend =ymd('2021-02-01'), yend = SK.max, linetype = "SeasMannKendall Trend"),
+                        size = 1.05, color = "gray49") +
+    scale_linetype_manual(values=c("dotted")) +
+    guides(linetype=guide_legend(title = element_blank(), order = 2))
+  
+  
+}
+
+
+
+#Add hypoxia lines
+
+water_status <- data.frame(
+  stringsAsFactors = TRUE,
+  Status = c("Hypoxic","Hypoxic",
+             "Severe Hypoxia","Severe Hypoxia","Suboxic",
+             "Suboxic","Anoxic","Anoxic"),
+  Date = c("1/1/2018","2/1/2021","1/1/2018",
+           "2/1/2021","1/1/2018","2/1/2021",
+           "1/1/2018","2/1/2021"),
+  Value = c(1.4, 1.4, 0.5, 0.5, 0.1, 0.1, 0, 0)
+) %>%
+  mutate(Date = mdy(Date),
+         Value = Value*1.4276) #convert to mg/L
+
+water_status$Status <- factor(water_status$Status, levels = c("Hypoxic", "Severe Hypoxia", "Suboxic", "Anoxic"))    
+
+p2 <- p +
+  geom_line(data = water_status, 
+            aes(x = Date, y = Value, linetype = Status)) +
+  scale_color_brewer(palette="Paired")
+
+p2
+```
+
+Due to the regular drops into Severe Hypoxia conditions and occasional drops into Suboxic conditions, combined with the lack of a clear downward trend, the data supports this marine assessment unit remaining as category 3B- insufficient data; potential concern.
+
+# Newport Line Data
+
+The second data set we analyzed is ship based discrete DO samples taken along the Newport line. We loaded all the Oregon Territorial Waters (3 miles out) data we could find into AWQMS.
+
+```{r}
+newport_line_awqms <- AWQMS_Data(org = "NOAANEWPORTLINE_(NOSTORETID)",
+                                 char = "Dissolved oxygen (DO)")
+
+```
+
+```{r echo=FALSE}
+paged_table(newport_line_awqms, options = list(rows.print = 15))
+```
+
+This is a much longer dataset and represents `r n_distinct(newport_line_awqms$MLocID)` monitoring locations beginning in `r min(year(newport_line_awqms$SampleStartDate))`at a number of depths.
+
+```{r}
+newport_line_summary <- newport_line_awqms %>%
+  mutate(SampleStartDate = ymd(SampleStartDate),
+         act_depth_height = as.numeric(act_depth_height)) %>%
+  group_by(MLocID) %>%
+  summarise(min_date = min(SampleStartDate),
+            max_date = max(SampleStartDate),
+            min_depth = min(act_depth_height),
+            max_depth = max(act_depth_height),
+            num_depths = n_distinct(act_depth_height)
+            )
+
+
+newport_line_summary %>%
+  kbl() %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+This data set is long enough to approach the question of "Has there been a 'measurable reduction in dissolved oxygen concentration'"?
+
+First the assessment team divided the data into three depth bins:
+
+1.  Upper (≤ 16.667 m)
+
+2.  Mid (\> 16.667 and ≤ 33.334 m)
+
+3.  Bottom (\> 33.334m)
+
+Secondly, the data was divided into time periods, "IR period" representing the current integrated report window (≥ 2016-01-01) and historical data (\< 2016-01-01).
+
+```{r}
+
+newport_line_data <- newport_line_awqms %>%
+  mutate(act_depth_height = as.numeric(act_depth_height)) %>%
+  mutate(depth_position = case_when(act_depth_height <= 16.6667 ~ "Upper",
+                                    act_depth_height <= 16.6667*2 ~ "Mid",
+                                    act_depth_height <= 16.6667*3 ~ "Bottom")) %>%
+  mutate(period = case_when(SampleStartDate < lubridate::ymd("2016-01-01") ~ "Historical",
+                            SampleStartDate >= lubridate::ymd("2016-01-01") ~ "IR Period"))
+
+```
+
+```{r echo=FALSE}
+paged_table(newport_line_data,  options = list(rows.print = 15))
+```
+
+The first analysis we did was to try to determine if the mean historical DO values are significantly different from the current IR data window means.
+
+## NH01
+
+Site NH01 is the most inner site in the Newport line. This location has only 2 results in the "Bottom" depth bin, so we eliminated those from further analysis
+
+```{r}
+newport_line_NH01 <- newport_line_data %>%
+  filter(MLocID == "NH01",
+         depth_position != "Bottom")
+
+```
+
+Next we want to get a sense of the normality of the data:
+
+```{r message=FALSE, warning=FALSE}
+
+ggplot(newport_line_NH01, aes(x=Result_Numeric, fill = depth_position)) + 
+  geom_density(alpha = 0.5) +
+  labs(title = "Dissolved Oxygen Density Plot",
+       subtitle = newport_line_NH01$MLocID[1]) + 
+  theme_bw()
+
+
+```
+
+Due to the data's bimodal distribution we chose to run a 2-sample Wilcoxon test to see if we can detect statistical significance between the two time periods. First we ran the test on the upper portion of the water column.
+
+```{r}
+
+# Get 2 vectors of vector of results, depending on time period 
+NH01_Upper_his <- newport_line_data %>%
+  filter(MLocID == "NH01",
+         depth_position == "Upper",
+         period == 'Historical') %>%
+  pull(Result_Numeric)
+
+
+NH01_Upper_IR <- newport_line_data %>%
+  filter(MLocID == "NH01",
+         depth_position == "Upper",
+         period == 'IR Period') %>%
+  pull(Result_Numeric)
+
+
+
+wilcox.test(NH01_Upper_his, NH01_Upper_IR,  alternative = "two.sided")
+
+
+```
+
+This test, with a p-value of `r round(wilcox.test(NH01_Upper_his, NH01_Upper_IR,  alternative = "two.sided")[["p.value"]], 3)` suggests there is no significant difference between mean DO concentrations in the historical time period and the current IR window.
+
+Next we looked at the Mid level data:
+
+```{r}
+# Get 2 vectors of vector of results, depending on time period 
+NH01_mid_his <- newport_line_data %>%
+  filter(MLocID == "NH01",
+         depth_position == "Mid",
+         period == 'Historical') %>%
+  pull(Result_Numeric)
+
+
+NH01_mid_IR <- newport_line_data %>%
+  filter(MLocID == "NH01",
+         depth_position == "Mid",
+         period == 'IR Period') %>%
+  pull(Result_Numeric)
+
+
+
+wilcox.test(NH01_mid_his, NH01_mid_IR,  alternative = "two.sided")
+
+```
+
+This test, with a p-value of `r round(wilcox.test(NH01_mid_his, NH01_mid_IR,  alternative = "two.sided")[["p.value"]], 3)` suggests there is no significant difference between mean DO concentrations in the historical time period and the current IR window.
+
+A boxplot of this data confirms.
+
+```{r}
+ggplot(newport_line_NH01, aes(x = depth_position, y = Result_Numeric, fill = period)) +
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(title = "Newport Line Dissolved Oxygen",
+       subtitle =newport_line_NH01$MLocID[1],
+       x = "Depth",
+       y = "ml/l")+
+  theme_bw() 
+
+```
+
+However, if we drill down into August specifically, we start to see some statistical differences in means.
+
+```{r}
+NH01_Upper_his_aug <- newport_line_data %>%
+  filter(MLocID == "NH01",
+         depth_position == "Upper",
+         period == 'Historical',
+         month(SampleStartDate) == 8) %>%
+  pull(Result_Numeric)
+
+
+NH01_Upper_IR_aug <- newport_line_data %>%
+  filter(MLocID == "NH01",
+         depth_position == "Upper",
+         period == 'IR Period',
+         month(SampleStartDate) == 8) %>%
+  pull(Result_Numeric)
+
+
+wilcox.test(NH01_Upper_his_aug, NH01_Upper_IR_aug,  alternative = "two.sided")
+
+
+```
+
+This test, with a p-value of 0.0000000000000008103 suggests there is is significant difference between mean DO concentrations in the historical time period and the current IR window in the month of august.
+
+```{r}
+ggplot(filter(newport_line_NH01, month(SampleStartDate) == 8), aes(x = depth_position, y = Result_Numeric, fill = period)) +
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(title = "Newport Line Dissolved Oxygen",
+       subtitle = paste(newport_line_NH01$MLocID[1], "- August"),
+       x = "Depth",
+       y = "ml/l")+
+  theme_bw() 
+
+```
+
+The integrated report window has lower mean do concentrations in both the Upper and Mid portions of the water column.
+
+## NH03
+
+We repeated this same analysis for location NH03.
+
+```{r}
+
+newport_line_NH03 <- newport_line_data %>%
+  filter(MLocID == "NH03")
+```
+
+```{r message=FALSE, warning=FALSE}
+
+
+ggplot(newport_line_NH03, aes(x=Result_Numeric, fill = depth_position)) + 
+  geom_density(alpha = 0.5) +
+  labs(title = "Dissolved Oxygen Density Plot",
+       subtitle = newport_line_NH03$MLocID[1]) + 
+  theme_bw()
+
+
+```
+
+Again, we see a bi-modal distribution so we chose to run a 2-sample Wilcoxon test to see if we can detect statistical significance between the two time periods. First we ran the test on the upper portion of the water column.
+
+```{r}
+
+# Get 2 vectors of vector of results, depending on time period 
+NH03_Upper_his <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Upper",
+         period == 'Historical') %>%
+  pull(Result_Numeric)
+
+
+NH03_Upper_IR <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Upper",
+         period == 'IR Period') %>%
+  pull(Result_Numeric)
+
+
+wilcox.test(NH03_Upper_his, NH03_Upper_IR,  alternative = "two.sided")
+
+```
+
+This test, with a p-value of `r round(wilcox.test(NH03_Upper_his, NH03_Upper_IR,  alternative = "two.sided")[["p.value"]], 3)` suggests there is no significant difference between mean DO concentrations in the historical time period and the current IR window.
+
+Next we looked at the Mid level data:
+
+```{r}
+# Get 2 vectors of vector of results, depending on time period 
+NH03_mid_his <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Mid",
+         period == 'Historical') %>%
+  pull(Result_Numeric)
+
+
+NH03_mid_IR <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Mid",
+         period == 'IR Period') %>%
+  pull(Result_Numeric)
+
+wilcox.test(NH03_mid_his, NH03_mid_IR,  alternative = "two.sided")
+
+```
+
+This test, with a p-value of `r round(wilcox.test(NH03_mid_his, NH03_mid_IR,  alternative = "two.sided")[["p.value"]], 3)` suggests there is a significant difference between mean DO concentrations in the historical time period and the current IR window.
+
+And now for the bottom depth position:
+
+```{r}
+# Get 2 vectors of vector of results, depending on time period 
+NH03_bot_his <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Bottom",
+         period == 'Historical') %>%
+  pull(Result_Numeric)
+
+
+NH03_bot_IR <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Bottom",
+         period == 'IR Period') %>%
+  pull(Result_Numeric)
+
+wilcox.test(NH03_bot_his, NH03_bot_IR,  alternative = "two.sided")
+```
+
+Again, this test, with a p-value of `r round(wilcox.test(NH03_bot_his, NH03_bot_IR,  alternative = "two.sided")[["p.value"]], 3)` suggests there is a significant difference between mean DO concentrations in the historical time period and the current IR window.
+
+The boxplots show that while the means have a slight statistical significant difference, the relative distributions of the DO concentrations is roughly the same.
+
+```{r}
+ggplot(newport_line_NH03, aes(x = depth_position, y = Result_Numeric, fill = period)) +
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(title = "Newport Line Disolved Oxygen",
+       subtitle =newport_line_NH03$MLocID[1],
+       x = "Depth",
+       y = "ml/l")+
+  theme_bw() 
+```
+
+We look again at August specifically.
+
+```{r}
+
+# Get 2 vectors of vector of results, depending on time period 
+NH03_Upper_his_aug <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Upper",
+         period == 'Historical', 
+         month(SampleStartDate) == 8) %>%
+  pull(Result_Numeric)
+
+
+NH03_Upper_IR_aug <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Upper",
+         period == 'IR Period', 
+         month(SampleStartDate) == 8) %>%
+  pull(Result_Numeric)
+
+
+wilcox.test(NH03_Upper_his_aug, NH03_Upper_IR_aug,  alternative = "two.sided")
+```
+
+With a p-value of `r wilcox.test(NH03_Upper_his_aug, NH03_Upper_IR_aug,  alternative = "two.sided")[["p.value"]]` we again see a statistical difference in the upper portion of the water column between historical data and the IR data window.
+
+We see similar results in the mid and bottom level.
+
+Mid Wilcoxon test results:
+
+```{r}
+# Get 2 vectors of vector of results, depending on time period 
+NH03_mid_his_aug <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Mid",
+         period == 'Historical', 
+         month(SampleStartDate) == 8) %>%
+  pull(Result_Numeric)
+
+
+NH03_mid_IR_aug <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Mid",
+         period == 'IR Period', 
+         month(SampleStartDate) == 8) %>%
+  pull(Result_Numeric)
+
+
+wilcox.test(NH03_mid_his_aug, NH03_mid_IR_aug,  alternative = "two.sided")
+```
+
+An d the bottom Wilcoxon test results:
+
+```{r}
+# Get 2 vectors of vector of results, depending on time period 
+NH03_bottom_his_aug <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Bottom",
+         period == 'Historical', 
+         month(SampleStartDate) == 8) %>%
+  pull(Result_Numeric)
+
+
+NH03_bottom_IR_aug <- newport_line_data %>%
+  filter(MLocID == "NH03",
+         depth_position == "Bottom",
+         period == 'IR Period', 
+         month(SampleStartDate) == 8) %>%
+  pull(Result_Numeric)
+
+
+wilcox.test(NH03_bottom_his_aug, NH03_bottom_IR_aug,  alternative = "two.sided")
+```
+
+The p-values for the mid and bottom are `r wilcox.test(NH03_mid_his_aug, NH03_mid_IR_aug,  alternative = "two.sided")[["p.value"]]` and `r wilcox.test(NH03_bottom_his_aug, NH03_bottom_IR_aug,  alternative = "two.sided")[["p.value"]]`, respectively.
+
+The box plot for NH03 in August is as follows.:
+
+```{r}
+ggplot(filter(newport_line_NH03, month(SampleStartDate) == 8), aes(x = depth_position, y = Result_Numeric, fill = period)) +
+  geom_boxplot()+
+  scale_fill_brewer(palette="Dark2")+
+  labs(title = "Newport Line Dissolved Oxygen",
+       subtitle =paste(newport_line_NH03$MLocID[1], "- August"),
+       x = "Depth",
+       y = "ml/l")+
+  theme_bw() 
+
+```
+
+Next, we investigated all the months to see if there were differences in the months.
+
+```{r paged.print=TRUE}
+month_stats <- newport_line_data %>%
+  filter(!(MLocID == "NH01" & depth_position == "Bottom")) %>%
+  mutate(month =  month(SampleStartDate, label = TRUE)) %>%
+  select(MLocID, depth_position, period, month, Result_Numeric) %>%
+  group_by(MLocID, month, depth_position) %>%
+  nest()%>%
+  dplyr::summarise(wilcoxxon_pvalue = purrr::map(data, ~ .x %>%
+                                                   summarise(wilcoxxon_pvalue = wilcox.test(Result_Numeric[period == "Historical"],
+                                                                                            Result_Numeric[period == "IR Period"])[["p.value"]]))) %>%
+  tidyr::unnest_wider(wilcoxxon_pvalue) %>%
+  mutate(statistical_signifigance = case_when(wilcoxxon_pvalue < 0.05 ~ "Signifigant",
+                                              wilcoxxon_pvalue >= 0.05 ~ "No statistical signifigance"))
+
+
+
+```
+
+```{r echo=FALSE}
+paged_table(month_stats,  options = list(rows.print = 15))
+```
+
+```{r echo=FALSE}
+stats_narrative <- month_stats %>%
+  select(-wilcoxxon_pvalue) %>%
+  pivot_wider(names_from = depth_position, values_from = statistical_signifigance)
+
+stats_narrative %>%
+  kbl(caption = "p-value > 0.05 is signifigant") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+                                  
+```
+
+To visualize all the months together:
+
+```{r}
+newport_line_NH01_month <- newport_line_NH01 %>%
+  mutate(month =  month(SampleStartDate, label = TRUE))
+
+ggplot(newport_line_NH01_month, aes(x = depth_position,  y=Result_Numeric, fill = period)) + 
+    geom_boxplot() +
+    labs(title = "Newport Line Disoslved Oxygen",
+         subtitle =newport_line_NH01_month$MLocID[1],
+         x = "Depth",
+         y = "ml/l") +
+    theme_bw() +
+    scale_fill_brewer(palette="Dark2") + 
+    facet_wrap(~month)
+```
+
+and
+
+```{r}
+
+newport_line_NH03_month <- newport_line_NH03 %>%
+  mutate(month =  month(SampleStartDate, label = TRUE))
+
+ggplot(newport_line_NH03_month, aes(x = depth_position,  y=Result_Numeric, fill = period)) + 
+    geom_boxplot() +
+    labs(title = "Newport Line Disoslved Oxygen",
+         subtitle =newport_line_NH03_month$MLocID[1],
+         x = "Depth",
+         y = "ml/l") +
+    theme_bw() +
+    scale_fill_brewer(palette="Dark2") + 
+    facet_wrap(~month)
+```
+
+Given the month to month differences in mean DO levels, the assessment teams concludes this assment unit should ramain categorized as category 3B- insufficient data; potential concern. Hopefully, our work group will be able to help DEQ understand the effects of marine DO, and acidification on fish and wildlife communities, as well as more fully understand long term trends in marine dissolved oxygen in territorial waters.
