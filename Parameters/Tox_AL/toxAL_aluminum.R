@@ -80,7 +80,7 @@ ancillary_data <- Results_ancillary %>%
                                           ifelse(chr_uid == 2174 & Sample_Fraction == "Dissolved", 'DOC', Char_Name ))))) %>%
   mutate(IRResultNWQSunit = ifelse(IRResultNWQSunit == 'ug/l', IRResultNWQSunit / 1000, IRResultNWQSunit),
          Result_Unit = ifelse(IRWQSUnitName == 'ug/l', "mg/L", IRWQSUnitName)) %>%
-  mutate(Simplified_sample_fraction = ifelse(Sample_Fraction %in% c("Total", "Extractable",
+  mutate(Simplified_Sample_fraction = ifelse(Sample_Fraction %in% c("Total", "Extractable",
                                                                     "Total Recoverable","Total Residual",
                                                                     "None", "volatile", "Semivolatile",
                                                                     "Acid Soluble", "Suspended")  |
@@ -89,11 +89,11 @@ ancillary_data <- Results_ancillary %>%
                                                       Sample_Fraction == "Filtered, field"  |
                                                       Sample_Fraction == "Filtered, lab"  , "Dissolved", "Error"))) %>%
   group_by(MLocID,  SampleStartDate,Char_Name,SampleMedia, SampleSubmedia ) %>%
-  mutate(Has_dissolved = ifelse(min(Simplified_sample_fraction) == "Dissolved", 1, 0 )) %>%
+  mutate(Has_dissolved = ifelse(min(Simplified_Sample_fraction) == "Dissolved", 1, 0 )) %>%
   ungroup() %>%
-  filter((Has_dissolved == 1 & Simplified_sample_fraction == "Dissolved") | Has_dissolved == 0) %>%
+  filter((Has_dissolved == 1 & Simplified_Sample_fraction == "Dissolved") | Has_dissolved == 0) %>%
   select(-Has_dissolved) %>%
-  #mutate(Char_Name = paste0(Char_Name, "-", Simplified_sample_fraction)) %>%
+  #mutate(Char_Name = paste0(Char_Name, "-", Simplified_Sample_fraction)) %>%
   group_by(MLocID,  SampleStartDate,Char_Name,SampleMedia, SampleSubmedia ) %>%
   summarise(result = max(IRResultNWQSunit)) %>%
   arrange(MLocID, SampleStartDate) %>%
@@ -128,7 +128,7 @@ ancillary_data <- Results_ancillary %>%
 
 
 Al_fractions <- Results_import_no_NAs %>%
-  mutate(Simplified_sample_fraction = case_when(Sample_Fraction %in% c("Total", "Extractable",
+  mutate(Simplified_Sample_fraction = case_when(Sample_Fraction %in% c("Total", "Extractable",
                                                                     "Total Recoverable","Total Residual",
                                                                     "None", "volatile", "Semivolatile",
                                                                     "Acid Soluble", "Suspended")  ~ 'Total',
@@ -138,14 +138,14 @@ Al_fractions <- Results_import_no_NAs %>%
                                                 Sample_Fraction == "Bioavailable" ~ "Bioavailable",
                                                 TRUE ~ "ERROR")) %>%
   group_by(MLocID, SampleStartDate) %>%
-  mutate(has_bioavailable = case_when(any(Simplified_sample_fraction == "Bioavailable", na.rm = TRUE) ~ 1,
+  mutate(has_bioavailable = case_when(any(Simplified_Sample_fraction == "Bioavailable", na.rm = TRUE) ~ 1,
                                       TRUE ~ 0),
-         has_total = case_when(any(Simplified_sample_fraction == "Total", na.rm = TRUE) ~ 1,
+         has_total = case_when(any(Simplified_Sample_fraction == "Total", na.rm = TRUE) ~ 1,
                                        TRUE ~ 0)) %>%
   ungroup() %>%
-  mutate(keep = case_when(has_bioavailable == 1 & Simplified_sample_fraction == "Bioavailable" ~ 1,
-                          has_bioavailable == 0 & has_total == 1 & Simplified_sample_fraction == "Total" ~ 1,
-                          has_bioavailable == 0 & has_total == 0 & Simplified_sample_fraction == "Dissolved" ~ 1,
+  mutate(keep = case_when(has_bioavailable == 1 & Simplified_Sample_fraction == "Bioavailable" ~ 1,
+                          has_bioavailable == 0 & has_total == 1 & Simplified_Sample_fraction == "Total" ~ 1,
+                          has_bioavailable == 0 & has_total == 0 & Simplified_Sample_fraction == "Dissolved" ~ 1,
                           TRUE ~ 0)) %>%
   arrange(MLocID, SampleStartDate) %>%
   filter(keep == 1) %>%
@@ -184,3 +184,68 @@ al_criteria_excursions <- Al_criteria %>%
   mutate(excursion = case_when(IRResultNWQSunit > Final_CCC ~ 1,
                                IRResultNWQSunit <= Final_CCC ~ 0,
                                TRUE ~ NA_real_))
+
+# this is the data file -------------------------------------------------------------------------------------------
+al_criteria_excursions
+
+
+# Categorization --------------------------------------------------------------------------------------------------
+
+AL_tox_aluminum_assess_fun <- function(df_data = al_criteria_excursions, AU_type){
+
+# Testing ---------------------------------------------------------------------------------------------------------
+df_data = al_criteria_excursions
+
+AU_type = 'WS'
+
+
+# 
+if(AU_type == "other"){  
+  group1 <- c('AU_ID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 
+              'Simplified_Sample_fraction')
+  
+  
+  inverse <- TRUE
+  
+  
+} else if (AU_type == "WS"){
+  group1 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 
+              'Simplified_Sample_fraction')
+  
+  
+  inverse <- FALSE
+}
+
+
+Results_tox_AL_aluminum_cats <- df_data %>%
+  filter(str_detect(AU_ID, "WS", negate = inverse)) %>%
+  group_by_at(group1) %>%
+  #Summarise data
+  summarise(num_samples = n(),
+            percent_3d = round(sum(Result_Operator == "<" & IRResultNWQSunit > Final_CCC )/num_samples * 100),
+            num_fraction_types = n_distinct(Simplified_Sample_fraction),
+            num_samples_bioavailable_fraction =sum(Simplified_Sample_fraction == "Bioavailable"), 
+            num_samples_total_fraction = sum(Simplified_Sample_fraction == "Total"),
+            num_Samples_dissolved_fraction = sum(Simplified_Sample_fraction == "Dissolved"),
+            num_excursions_all = sum(excursion),
+            num_excursions_bioavailable_fraction = sum(excursion[Simplified_Sample_fraction == "Bioavailable"]),
+            num_excursions_total_fraction = sum(excursion[Simplified_Sample_fraction == "Total"]),
+            num_excursions_dissolved_fraction = sum(excursion[Simplified_Sample_fraction == "Dissolved"]),
+            critical_excursions_bioavail = binomial_excursions(num_samples_bioavailable_fraction, type = "Toxics"),
+            num_samples_crit_excursion_3B = num_samples_total_fraction + num_excursions_dissolved_fraction,
+            critical_excursions_3B = binomial_excursions(num_samples_crit_excursion_3B, type = "Toxics")) %>%
+  # Assign categories
+  mutate(IR_category = case_when(percent_3d == 100 ~ "3D",
+                                 num_samples_bioavailable_fraction <= 2  & num_excursions_bioavailable_fraction >= critical_excursions_bioavail ~ "5",
+                                 criteria_fraction == "Total" & num_excursions_all > critical_excursions ~ "5",
+                                 num_samples < 10 & num_excursions_all >= 1 ~ "3B",
+                                 criteria_fraction == "Dissolved" & num_excursions_total_fraction > 0 & num_Samples_dissolved_fraction == 0 ~ "3B",
+                                 num_samples_crit_excursion_calc < 10 & num_excursions_all == 0 ~ "3",
+                                 
+                                 num_excursions_dissolved_fraction <= critical_excursions ~ "2")
+  ),
+
+
+
+}
+

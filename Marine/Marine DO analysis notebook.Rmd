@@ -373,7 +373,7 @@ newport_line_NH01 <- newport_line_data %>%
 
 Next we want to get a sense of the normality of the data:
 
-```{r message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 ggplot(newport_line_NH01, aes(x=Result_Numeric, fill = depth_position)) + 
   geom_density(alpha = 0.5) +
@@ -438,7 +438,7 @@ This test, with a p-value of `r round(wilcox.test(NH01_mid_his, NH01_mid_IR,  al
 
 A boxplot of this data confirms.
 
-```{r}
+```{r echo=FALSE}
 ggplot(newport_line_NH01, aes(x = depth_position, y = Result_Numeric, fill = period)) +
   geom_boxplot()+
   scale_fill_brewer(palette="Dark2")+
@@ -476,7 +476,7 @@ wilcox.test(NH01_Upper_his_aug, NH01_Upper_IR_aug,  alternative = "two.sided")
 
 This test, with a p-value of 0.0000000000000008103 suggests there is is significant difference between mean DO concentrations in the historical time period and the current IR window in the month of august.
 
-```{r}
+```{r echo=FALSE}
 ggplot(filter(newport_line_NH01, month(SampleStartDate) == 8), aes(x = depth_position, y = Result_Numeric, fill = period)) +
   geom_boxplot()+
   scale_fill_brewer(palette="Dark2")+
@@ -500,7 +500,7 @@ newport_line_NH03 <- newport_line_data %>%
   filter(MLocID == "NH03")
 ```
 
-```{r message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 
 ggplot(newport_line_NH03, aes(x=Result_Numeric, fill = depth_position)) + 
@@ -584,7 +584,7 @@ Again, this test, with a p-value of `r round(wilcox.test(NH03_bot_his, NH03_bot_
 
 The boxplots show that while the means have a slight statistical significant difference, the relative distributions of the DO concentrations is roughly the same.
 
-```{r}
+```{r echo=FALSE}
 ggplot(newport_line_NH03, aes(x = depth_position, y = Result_Numeric, fill = period)) +
   geom_boxplot()+
   scale_fill_brewer(palette="Dark2")+
@@ -673,7 +673,7 @@ The p-values for the mid and bottom are `r wilcox.test(NH03_mid_his_aug, NH03_mi
 
 The box plot for NH03 in August is as follows.:
 
-```{r}
+```{r echo=FALSE}
 ggplot(filter(newport_line_NH03, month(SampleStartDate) == 8), aes(x = depth_position, y = Result_Numeric, fill = period)) +
   geom_boxplot()+
   scale_fill_brewer(palette="Dark2")+
@@ -722,7 +722,7 @@ stats_narrative %>%
 
 To visualize all the months together:
 
-```{r}
+```{r echo=FALSE}
 newport_line_NH01_month <- newport_line_NH01 %>%
   mutate(month =  month(SampleStartDate, label = TRUE))
 
@@ -739,7 +739,7 @@ ggplot(newport_line_NH01_month, aes(x = depth_position,  y=Result_Numeric, fill 
 
 and
 
-```{r}
+```{r echo=FALSE}
 
 newport_line_NH03_month <- newport_line_NH03 %>%
   mutate(month =  month(SampleStartDate, label = TRUE))

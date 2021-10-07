@@ -15,7 +15,7 @@
 #' * Statistical_Base
 
 
-validate_data <- function(){
+validate_data <- function(database = "IR_Dev"){
 
 library(tidyverse)
 
@@ -38,11 +38,39 @@ Data_validation_values <- read.csv("Validation/Data_validation_values.csv") %>%
  print("Query InputRaw")
 #connect to IR database view as a general user
 
-IR.sql <-   DBI::dbConnect(odbc::odbc(), dsn = "IR_Dev")
+IR.sql <-   DBI::dbConnect(odbc::odbc(), dsn = database)
 
 
-InputRaw  <-   DBI::dbReadTable(IR.sql, "InputRaw")
-#InputRaw <- DBI::dbFetch(InputRaw)
+getSQL <- function(filepath){
+  con = file(filepath, "r")
+  sql.string <- ""
+  
+  while (TRUE){
+    line <- readLines(con, n = 1)
+    
+    if ( length(line) == 0 ){
+      break
+    }
+    
+    line <- gsub("\\t", " ", line)
+    
+    if(grepl("--",line) == TRUE){
+      line <- paste(sub("--","/*",line),"*/")
+    }
+    
+    sql.string <- paste(sql.string, line)
+  }
+  
+  close(con)
+  return(sql.string)
+}
+
+
+
+IR_Res_qry <- getSQL("Validation/Dupdata/InputRaw limited to data views.sql")
+
+
+InputRaw <- DBI::dbGetQuery(IR.sql, glue_sql(IR_Res_qry, .con = IR.sql))
 
 DBI::dbDisconnect(IR.sql)
 

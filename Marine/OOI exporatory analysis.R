@@ -138,13 +138,20 @@ sdadm_trend <- sdadm %>%
   # 
 
   
-  
+
+# Station info ----------------------------------------------------------------------------------------------------
+
+station <- ooi_DO_data %>%
+  select(OrganizationID, MLocID, StationDes,Lat_DD, Long_DD, AU_ID ) %>%
+  distinct()
+
   
   #point graph
   sdadm_month_average <- sdadm_trend %>%
     mutate(yearmon = as.Date(paste0(year,"-",month,"-1"))) %>%
     mutate(moname = month.name[month]) %>%
-    filter(!is.na(sdadm))
+    filter(!is.na(sdadm)) %>%
+    left_join(station)
   
   
   p <- ggplot(data = sdadm_month_average)+
@@ -156,7 +163,9 @@ sdadm_trend <- sdadm %>%
     #scale_color_brewer(palette="Set1") +
     #coord_cartesian(ylim = c(12,30)) +
     labs(title = "Average Monthly Dissolved Oxygen",
-         subtitle = paste0(ooi_DO_data_graph$MLocID[1], ": ", ooi_DO_data_graph$StationDes[1]),
+         subtitle = paste0(sdadm_month_average$MLocID[1], ": ",sdadm_month_average$StationDes[1] ),
+         caption = paste0("Lat/Long: ",
+                          sdadm_month_average$Lat_DD[1], ", ",sdadm_month_average$Long_DD[1] ),
          x = element_blank(),
          y = "mg/L")+
     theme_bw()
@@ -169,7 +178,7 @@ sdadm_trend <- sdadm %>%
   if(sdadm_month_average$significance[1] == "No Trend"){
     p = p + annotate("text", label = "No Trend", 
                      x =  as.Date('2020-06-01'),
-                     y = 8.0,
+                     y = 1.75,
                      colour = "black", size = 3.5) 
     
   } #end of no trend if statement
@@ -223,9 +232,9 @@ sdadm_trend <- sdadm %>%
     scale_color_brewer(palette="Paired")
   
   
-  # ggsave(p, file=paste("Graphs/",unique(sdadm_raw_trend$MLocID)[j],"- ", Sys.Date(), "- average -.png"), 
-  #        width = 8, height = 5, units = c("in"))
-  # 
+  ggsave(p2, file=paste0("Marine/Graphs/",sdadm_month_average$MLocID[1],"- ", Sys.Date(), "- average.png"),
+         width = 8, height = 5, units = c("in"))
+
   
 
 
@@ -250,6 +259,8 @@ q <-
     #geom_smooth(aes(x = date, y = result_conv, color = Depth), method = "lm") +
     labs(title = "Dissolved Oxygen",
          subtitle = paste0(ooi_DO_data_graph$MLocID[1], ": ", ooi_DO_data_graph$StationDes[1]),
+         caption = paste0("Lat/Long: ",
+                          ooi_DO_data_graph$Lat_DD[1], ", ",ooi_DO_data_graph$Long_DD[1] ),
          x = element_blank(),
          y = "mg/L")+
     theme_bw()+
@@ -260,4 +271,193 @@ q <-
             aes(x = Date, y = Value, linetype = Status)) +
   scale_color_brewer(palette="Paired")
     
+ggsave(q, file=paste0("Marine/Graphs/",ooi_DO_data_graph$MLocID[1],"- ", Sys.Date(), "-raw.png"),
+       width = 8, height = 5, units = c("in"))
+
+
+
+# Newport Line data -----------------------------------------------------------------------------------------------
+
+
+
+newport_line_awqms <- AWQMS_Data(org = "NOAANEWPORTLINE_(NOSTORETID)",
+                                 char = "Dissolved oxygen (DO)")
+
+
+#Deoths range from 0-50 m. Sort into three bins, upper, mid, lower
+newport_line_EDA <- newport_line_awqms %>%
+  mutate(act_depth_height = as.numeric(act_depth_height)) %>%
+  mutate(depth_position = case_when(act_depth_height <= 16.6667 ~ "Upper",
+                                    act_depth_height <= 16.6667*2 ~ "Mid",
+                                    act_depth_height <= 16.6667*3 ~ "Bottom")) %>%
+  # group_by(MLocID, SampleStartDate, depth_position, Result_Unit) %>%
+  # summarise(avg_do = mean(Result_Numeric) ) %>%
+  mutate(period = case_when(SampleStartDate < lubridate::ymd("2016-01-01") ~ "Historical",
+                            SampleStartDate >= lubridate::ymd("2016-01-01") ~ "IR Period"))
+
+ggplot(newport_line_EDA, aes(x=avg_do, color = depth_position)) + 
+  geom_density()
+
+
+upper_historic <- newport_line_EDA %>%
+  filter(depth_position == "Upper",
+         period == 'Historical') %>%
+  pull(avg_do)
+
+upper_IR_Period <- newport_line_EDA %>%
+  filter(depth_position == "Upper",
+         period == 'IR Period') %>%
+  pull(avg_do)
+
+
+wilcox.test(upper_historic, upper_IR_Period, alternative = "two.sided")
+
+
+unique(newport_line_EDA$MLocID)
+
+
+for(i in 1:length(unique(newport_line_EDA$MLocID))){
+  mloc <- unique(newport_line_EDA$MLocID)[i]
+  
+  newport_graph <- newport_line_EDA %>%
+    filter(MLocID == mloc)
+  
+  
+  p <- ggplot(newport_graph, aes(x = depth_position,  y=Result_Numeric, fill = period)) + 
+    geom_boxplot() +
+    labs(title = "Newport Line Disoslved Oxygen",
+         subtitle =NH01$MLocID[1],
+         x = "Depth",
+         y = "ml/l") +
+    theme_bw() +
+    scale_fill_brewer(palette="Dark2")
+  
+  
+  ggsave(p, file=paste0("Marine/Graphs/newport_line-",mloc,"-", Sys.Date(), ".png"),
+         width = 8, height = 5, units = c("in"))
+  
+  
+  
+  
+  
+}
+
+
+
+# Newport monthly average -----------------------------------------------------------------------------------------
+library(lubridate)
+
+newport_line_month_avg <- newport_line_awqms %>%
+  mutate(act_depth_height = as.numeric(act_depth_height),
+         month = month(SampleStartDate, label = TRUE),
+         year = year(SampleStartDate)) %>%
+  mutate(depth_position = case_when(act_depth_height <= 16.6667 ~ "Upper",
+                                    act_depth_height <= 16.6667*2 ~ "Mid",
+                                    act_depth_height <= 16.6667*3 ~ "Bottom")) %>%
+  #group_by(MLocID, month, year, depth_position, Result_Unit) %>%
+  #summarise(avg_do = mean(Result_Numeric) ) %>%
+  mutate(period = case_when(year < 2016 ~ "Historical",
+                            (year >= 2016 ~ "IR Period")))
+
+for(i in 1:length(unique(newport_line_month_avg$MLocID))){
+  mloc <- unique(newport_line_month_avg$MLocID)[i]
+  
+  newport_graph <- newport_line_month_avg %>%
+    filter(MLocID == mloc)
+  
+  
+  p <- ggplot(newport_graph, aes(x = depth_position,  y=Result_Numeric, fill = period)) + 
+    geom_boxplot() +
+    labs(title = "Newport Line Disoslved Oxygen",
+         subtitle =newport_graph$MLocID[1],
+         x = "Depth",
+         y = "ml/l") +
+    theme_bw() +
+    scale_fill_brewer(palette="Dark2") + 
+    facet_wrap(~month)
+  
+  
+  ggsave(p, file=paste0("Marine/Graphs/newport_line-",mloc,"-", Sys.Date(), "-month.png"),
+         width = 8, height = 5, units = c("in"))
+  
+  
+  
+  
+  
+}
+
+
+NHo1_mid_aug_historical <- newport_line_month_avg %>%
+  filter(MLocID == "NH01",
+         month == "Aug",
+         period == 'Historical',
+         depth_position == "Upper") %>%
+  pull(Result_Numeric)
+
+NHo1_mid_aug_IR <- newport_line_month_avg %>%
+  filter(MLocID == "NH01",
+         month == "Aug",
+         period == 'IR Period',
+         depth_position == "Upper") %>%
+  pull(Result_Numeric)
+
+
+wilcox.test(NHo1_mid_aug_historical, NHo1_mid_aug_IR, alternative = "two.sided")
+
+NHo3_mid_aug_historical <- newport_line_month_avg %>%
+  filter(MLocID == "NH03",
+         month == "Aug",
+         period == 'Historical',
+         depth_position == "Upper") %>%
+  pull(Result_Numeric)
+
+NHo3_mid_aug_IR <- newport_line_month_avg %>%
+  filter(MLocID == "NH03",
+         month == "Aug",
+         period == 'IR Period',
+         depth_position == "Upper") %>%
+  pull(Result_Numeric)
+
+
+ wilcox.test(NHo3_mid_aug_historical, NHo3_mid_aug_IR, alternative = "two.sided")[['p.value']]
+
+
+
+# Mid -------------------------------------------------------------------------------------------------------------
+
+
+
+NHo1_mid_aug_historical <- newport_line_month_avg %>%
+  filter(MLocID == "NH01",
+         month == "Aug",
+         period == 'Historical',
+         depth_position == "Mid") %>%
+  pull(Result_Numeric)
+
+NHo1_mid_aug_IR <- newport_line_month_avg %>%
+  filter(MLocID == "NH01",
+         month == "Aug",
+         period == 'IR Period',
+         depth_position == "Mid") %>%
+  pull(Result_Numeric)
+
+
+wilcox.test(NHo1_mid_aug_historical, NHo1_mid_aug_IR, alternative = "two.sided")
+
+NHo3_mid_aug_historical <- newport_line_month_avg %>%
+  filter(MLocID == "NH03",
+         month == "Aug",
+         period == 'Historical',
+         depth_position == "Mid") %>%
+  pull(Result_Numeric)
+
+NHo3_mid_aug_IR <- newport_line_month_avg %>%
+  filter(MLocID == "NH03",
+         month == "Aug",
+         period == 'IR Period',
+         depth_position == "Mid") %>%
+  pull(Result_Numeric)
+
+
+wilcox.test(NHo3_mid_aug_historical, NHo3_mid_aug_IR, alternative = "two.sided")
 
