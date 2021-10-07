@@ -66,6 +66,28 @@ getSQL <- function(filepath){
 }
 
 
+column_order <- c("OrganizationID",  "Lat_DD", "Long_DD", "MonLocType", "HUC12_Name", "ELEV_Ft", 
+                  "AU_ID", "AU_GNIS_Name", "GNIS_Name", "FishCode", "SpawnCode", "WaterTypeCode", "WaterBodyCode", 
+                  "BacteriaCode", "DO_code", "ben_use_code", "pH_code", "DO_SpawnCode", "OWRD_Basin", "EcoRegion2", 
+                  "EcoRegion3",  "Pollu_ID", "Calc_Crit", "Combine_Result_Cmnts", "Combine_Result", 
+                  "act_id", "Activity_Type", "SampleMedia", "SampleSubmedia", "SampleStartDate", "SampleStartTime", 
+                  "SampleStartTZ", "chr_uid",  "Char_Speciation", "Sample_Fraction", "CASNumber", 
+                  "Result_UID", "Result_status", "Result_Numeric",  "ActDepthUnit", "Result_Depth", 
+                  "act_depth_height", "Result_Depth_Unit", "Act_Depth_Top", "Act_Depth_Top_Unit", "Act_Depth_Bottom", 
+                  "Act_Depth_Bottom_Unit", "Time_Basis", "Statistical_Base", "Statistic_N_Value", "act_sam_compnt_name",
+                  "lab_Comments", "General_Comments", "Analytical_method", "QualifierAbbr", "QualifierTxt", "IDLType",
+                  "IDLValue", "IDLUnit", "MDLType", "MDLValue", "MDLUnit", "MRLType", "MRLUnit", "MRLValue", "URLType",
+                  "URLValue", "URLUnit", "TribalLand",  "Result_Unit",  "Result_Type",
+                  "Result", "Reachcode", "Measure",
+                  "MLocID", "StationDes", 
+                  "wqstd_code",
+                  "Char_Name",
+                  "Result_Numeric",
+                  "Result_Operator",
+                  "IRResultNWQSunit",
+                  "IRWQSUnitName",
+                  "p01", "p99", "validation_result", "manual_validation_result")
+
 
 IR_Res_qry <- getSQL("Validation/Dupdata/InputRaw limited to data views.sql")
 
@@ -90,11 +112,12 @@ validation <- joined %>%
          manual_validation_result = "")
 
 manual_check <- validation %>%
-  filter(!is.na(validation_result))
+  filter(!is.na(validation_result)) %>%
+  select(all_of(column_order))
 
-print("Write excel doc at Validation/data_validation_manual_review.csv", )
+print("Validation/data_validation_manual_review.csv" )
 
-write.csv(manual_check, "Validation/data_validation_manual_review.csv",
+write.csv(manual_check, file = "Validation/data_validation_manual_review.csv",
           row.names = FALSE)
 
 }
