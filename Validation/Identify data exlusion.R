@@ -375,14 +375,16 @@ cont_diff_depths_exclude <- cont_diff_depths %>%
                           TRUE ~ 0)) %>%
   filter(keep == 0) %>%
   ungroup() %>%
-  select(ContResUID, Char_Name) %>%
+  select(Result_UID, Char_Name) %>%
   mutate(Data_Review_Comment = "Data exists on the same date/time at shallower depth" )
 
 
 
+# seafet vs YSI ---------------------------------------------------------------------------------------------------
 
+#Keep seafet and seaphox
 
-cont_dupes <- IR_cont_res %>%
+equipment_cont_res <- IR_cont_res %>%
   filter(AU_ID != '99') %>%
   filter(!ContResUID %in% cont_diff_depths_exclude$ContResUID) %>%
   mutate(Depth = ifelse(Depth == 'NA', NA, Depth )) %>%
@@ -392,7 +394,42 @@ cont_dupes <- IR_cont_res %>%
          num_depths = n_distinct(Depth)) %>%
   mutate(group_num =cur_group_id()) %>%
   filter(num_in_group > 1) %>%
+  arrange(group_num) %>%
+  ungroup() %>%
+  group_by(group_num) %>%
+  mutate(has_marine_equip = case_when(any(Equipment_ID %in% c("SeaFET", 'SeapHOx'))  ~ 1,
+                                TRUE ~ 0),
+         is_marine_equip = case_when(Equipment_ID %in% c("SeaFET", "SeapHOx") ~ 1,
+                               TRUE ~ 0))
+
+equipment_cont_res_exclude <- equipment_cont_res %>%
+  filter(has_marine_equip == 1 & is_marine_equip == 0) %>%
+  ungroup() %>%
+  select(ContResUID, Char_Name) %>%
+  mutate(Data_Review_Comment = "Multiple equipment exists at same date/time. More precise instrumentation is available" )
+
+
+
+
+
+cont_dupes <- IR_cont_res %>%
+  filter(AU_ID != '99') %>%
+  # filter(!ContResUID %in% cont_diff_depths_exclude$ContResUID) %>%
+  # filter(!ContResUID %in% equipment_cont_res_exclude$ContResUID) %>%
+  mutate(Depth = ifelse(Depth == 'NA', NA, Depth )) %>%
+  group_by(MLocID, Char_Name,Result_Date, Result_Time) %>%
+  mutate(num_in_group = n(),
+         num_distinct_results = n_distinct(Result_Numeric),
+         num_depths = n_distinct(Depth)) %>%
+  mutate(group_num =cur_group_id()) %>%
+  filter(num_in_group > 1) %>%
   arrange(group_num)
+
+
+continuous_exlude <- cont_diff_depths_exclude %>%
+  bind_rows(equipment_cont_res_exclude)
+
+save(continuous_exlude, file = paste0("Validation/continuous_exlude-", Sys.Date(),".RData"))
 
 
 # By view ---------------------------------------------------------------------------------------------------------
