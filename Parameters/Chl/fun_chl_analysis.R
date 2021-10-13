@@ -19,13 +19,13 @@ chl_assessment <- function(df, write_excel = TRUE){
 chla_data_month_ws <- df %>%
   filter(str_detect(AU_ID, "WS", negate = FALSE)) %>%
   mutate(yearmon = lubridate::floor_date(lubridate::as_date(SampleStartDate), "month")) %>%
-  group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin,  yearmon, Chla_Criteria) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin,  yearmon, Chla_Criteria) %>%
   summarise(month_average = mean(Result_cen, na.rm = TRUE),
             month_n = n() ) %>%
   ungroup()
 
 WS_3mo <- chla_data_month_ws %>%
-  group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin,  Chla_Criteria, month_n) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin,  Chla_Criteria, month_n) %>%
   dplyr::mutate(d = runner(x = data.frame(yearmon  = yearmon,
                                           month_average = month_average,
                                           month = as.yearmon(yearmon, "%m/%Y")),
@@ -47,7 +47,7 @@ WS_category <- WS_3mo %>%
          avg_3mo_excursion = case_when(is.na(avg_3mo) ~ 0,
                                       avg_3mo > Chla_Criteria ~ 1,
                                       TRUE ~ 0 )) %>%
-  group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise(total_n = sum(month_n),
             num_3mo_avg_calculated = sum(!is.na(avg_3mo)),
             num_excur_3mo_avg = sum(avg_3mo_excursion),
