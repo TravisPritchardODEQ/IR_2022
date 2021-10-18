@@ -71,11 +71,11 @@ fresh_contact_geomeans <- fresh_contact %>%
 # Watershed unit categorization -----------------------------------------------------------------------------------
 
 
-fresh_AU_summary_WS <-  fresh_contact_geomeans %>%
+fresh_AU_summary_WS0 <-  fresh_contact_geomeans %>%
   filter(str_detect(AU_ID, "WS", negate = FALSE)) %>%
   arrange(MLocID) %>%
   ungroup() %>%
-  group_by(AU_ID, MLocID, Pollu_ID, wqstd_code ) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code ) %>%
   summarise(OWRD_Basin = first(OWRD_Basin), 
             Max_Geomean = ifelse(!all(is.na(geomean)),max(geomean, na.rm = TRUE),NA),
             max.value  = max(Result_cen),
@@ -117,24 +117,24 @@ fresh_AU_summary_WS <-  fresh_contact_geomeans %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE)) %>%
   select(-geomean_over, -geomean_exceed_date_periods, -ss_exceed_date_periods)
 
-
+fresh_AU_summary_WS <- join_prev_assessments(fresh_AU_summary_WS0, AU_type = "WS")
 
 
 # WS AU rollup ----------------------------------------------------------------------------------------------------
 
-WS_AU_rollup <- fresh_AU_summary_WS %>%
+WS_AU_rollup0 <- fresh_AU_summary_WS %>%
   ungroup() %>%
   group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise(IR_category_AU = max(IR_category),
             Rationale_AU = str_c(Rationale,collapse =  " ~ " ) ) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code ))
 
-
+WS_AU_rollup <- join_prev_assessments(WS_AU_rollup0, AU_type = "Other")
 # Non- watershed unit categorization ---------------------------------------------------------------------------------------------------
 
 
 
-fresh_AU_summary_no_WS <-  fresh_contact_geomeans %>%
+fresh_AU_summary_no_WS0 <-  fresh_contact_geomeans %>%
   filter(!str_detect(AU_ID, "WS")) %>%
   ungroup() %>%
   group_by(AU_ID, Pollu_ID, wqstd_code ) %>%
@@ -179,7 +179,7 @@ fresh_AU_summary_no_WS <-  fresh_contact_geomeans %>%
   select(-geomean_over, -geomean_exceed_date_periods, -ss_exceed_date_periods) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code ))
 
-
+fresh_AU_summary_no_WS <- join_prev_assessments(fresh_AU_summary_no_WS0, AU_type = "Other")
 
 # Create excel doc ------------------------------------------------------------------------------------------------
 if(write_excel){
