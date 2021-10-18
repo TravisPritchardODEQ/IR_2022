@@ -1,3 +1,7 @@
+library(tidyverse)
+library(glue)
+
+
 # Data aggregation ------------------------------------------------------------------------------------------------
 
 options(scipen = 999999)
@@ -35,7 +39,7 @@ getSQL <- function(filepath){
 
 
 
-IR_Res_qry <- getSQL("Validation/Dupdata/InputRaw limited to data views.sql")
+IR_Res_qry <- getSQL("Validation/InputRaw limited to data views.sql")
 
 
 IR_res_db <- DBI::dbGetQuery(IR.sql, glue_sql(IR_Res_qry, .con = IR.sql))
@@ -48,7 +52,7 @@ IR_res_db <- DBI::dbGetQuery(IR.sql, glue_sql(IR_Res_qry, .con = IR.sql))
 IR_res <- IR_res_db 
 
 
-
+aggregateresIDs <- c()
 # Different org ---------------------------------------------------------------------------------------------------
 
 
@@ -73,6 +77,7 @@ diff_orgs <-  IR_res %>%
   filter(num_orgs > 1) %>%
   arrange(group_num)
 
+aggregateresIDs <- c(aggregateresIDs, diff_orgs$Result_UID)
 
 #write.xlsx(diff_orgs, file = "Validation/Dupdata/different_orgs.xlsx")
 
@@ -81,6 +86,7 @@ diff_orgs <-  IR_res %>%
 
 # These get median
 diff_time <-  IR_res %>%
+  filter(!(Result_UID %in% aggregateresIDs)) %>%
   filter(AU_ID != '99') %>%
   mutate(act_depth_height = ifelse(act_depth_height == 'NA', NA, act_depth_height )) %>%
   group_by(MLocID,
@@ -103,6 +109,9 @@ diff_time <-  IR_res %>%
   ungroup() %>%
   arrange(MLocID, SampleStartDate, Char_Name)
 
+
+
+aggregateresIDs <- c(aggregateresIDs, diff_time$Result_UID)
 #write.xlsx(diff_time, file = "Validation/Dupdata/diff_time.xlsx")
 
 
@@ -110,8 +119,9 @@ diff_time <-  IR_res %>%
 #This MUST be run after data duplication is finished
 
 other_agg <- IR_res_db %>%
+  filter(!(Result_UID %in% aggregateresIDs)) %>%
   filter(AU_ID != '99') %>%
-  filter(!Result_UID %in% aggregate_data$Result_UID) %>%
+  #filter(!Result_UID %in% aggregate_data$Result_UID) %>%
   group_by(MLocID,
            Char_Name,
            SampleStartDate,
@@ -151,7 +161,13 @@ aggregate_data <- agg_diff_orgs %>%
   mutate(unit = IRWQSUnitName) %>%
   select(Result_UID, group_num, Char_Name,wqstd_code, mean_result, unit)
 
+test <- aggregate_data %>%
+  filter(Result_UID == 29100763)
+  group_by(Result_UID) %>%
+  summarise(n = n()) %>%
+  filter(n > 1)
 
+save(aggregate_data, file = "Validation/2022_aggregate_data.Rdata")
 
 
 # Test dataset ----------------------------------------------------------------------------------------------------
