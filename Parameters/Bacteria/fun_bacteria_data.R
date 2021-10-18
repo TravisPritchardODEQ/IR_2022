@@ -24,6 +24,7 @@ Bacteria_data <- function(database) {
   # Set factors to characters
   Results_import %>% map_if(is.factor, as.character) %>% as_tibble -> Results_import
   
+  Results_import <- odeqIRtools::data_aggregation(Results_import)
   
 
 # Data censoring --------------------------------------------------------------------------------------------------

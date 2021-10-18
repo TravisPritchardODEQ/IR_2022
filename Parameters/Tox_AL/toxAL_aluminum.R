@@ -242,8 +242,7 @@ Results_tox_AL_aluminum_cats <- df_data %>%
                                  criteria_fraction == "Dissolved" & num_excursions_total_fraction > 0 & num_Samples_dissolved_fraction == 0 ~ "3B",
                                  num_samples_crit_excursion_calc < 10 & num_excursions_all == 0 ~ "3",
                                  
-                                 num_excursions_dissolved_fraction <= critical_excursions ~ "2")
-  ),
+                                 num_excursions_dissolved_fraction <= critical_excursions ~ "2"))
 
 
 

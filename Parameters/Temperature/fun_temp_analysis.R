@@ -2,6 +2,7 @@
 
 library(lubridate)
 library(runner)
+library(odeqIRtools)
 
 
 
@@ -77,7 +78,7 @@ temp_air_exclusion <- temp_air_exclusion0 %>%
   # Grouped by mloc
 ws_3_year <- temp_air_exclusion %>%
   filter(str_detect(AU_ID, "WS", negate = FALSE)) %>%
-  group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   dplyr::mutate(d = runner(x = data.frame(SampleStartDate  = SampleStartDate,
                                           year_round_excursion = year_round_excursion,
                                           spawn_excursion = spawn_excursion),
@@ -126,7 +127,7 @@ print('begin Year Round wastershed unit categorization')
 
 
 temp_IR_categories_WS <- ws_3_year %>%
-  group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise( Temp_Criteria = first(Temp_Criteria),
              data_period_start = min(SampleStartDate),
              data_period_end = max(SampleStartDate),
@@ -159,6 +160,8 @@ temp_IR_categories_WS <- ws_3_year %>%
                                                                 total_results, " total results"))) %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
 
+temp_IR_categories_WS <- join_prev_assessments(temp_IR_categories_WS, AU_type = "WS")
+
 WS_AU_rollup <- temp_IR_categories_WS %>%
   ungroup() %>%
   group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period) %>%
@@ -166,7 +169,7 @@ WS_AU_rollup <- temp_IR_categories_WS %>%
             Rationale_AU = str_c(Rationale,collapse =  " ~ " ) ) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
 
-
+WS_AU_rollup <- join_prev_assessments(WS_AU_rollup, AU_type = "Other")
 # Other unit year round -------------------------------------------------------------------------------------------
 
 
@@ -203,7 +206,7 @@ temp_IR_categories_other <- other_3_year %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE)) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
 
-
+temp_IR_categories_other <- join_prev_assessments(temp_IR_categories_other, AU_type = "Other")
 
 
 # Spawning --------------------------------------------------------------------------------------------------------
@@ -215,7 +218,7 @@ print("Begin Spawning watershed unit categorization")
 temp_IR_categories_WS_spawn <- ws_3_year %>%
   filter(Spawn_type == "Spawn") %>%
   mutate(spawn_length = as.double(difftime(End_spawn,Start_spawn,unit="days"))) %>%
-  group_by(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise( Temp_Criteria = 13,
              data_period_start = min(SampleStartDate),
              data_period_end = max(SampleStartDate),
@@ -249,12 +252,17 @@ temp_IR_categories_WS_spawn <- ws_3_year %>%
                                              total_results, " total results"))) %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
 
+temp_IR_categories_WS_spawn <- join_prev_assessments(temp_IR_categories_WS_spawn, AU_type = "WS")
+
+
 WS_AU_rollup_spawn <- temp_IR_categories_WS_spawn %>%
   ungroup() %>%
   group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period) %>%
   summarise(IR_category_AU = max(IR_category),
             Rationale_AU = str_c(Rationale,collapse =  " ~ " ) ) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
+
+WS_AU_rollup_spawn <- join_prev_assessments(WS_AU_rollup_spawn, AU_type = "Other")
 
 
 # Spawn other -----------------------------------------------------------------------------------------------------
@@ -264,7 +272,7 @@ print("Begin spawning other AU categorization")
 temp_IR_categories_other_spawn <- other_3_year %>%
   filter(Spawn_type == "Spawn") %>%
   mutate(spawn_length = as.double(difftime(End_spawn,Start_spawn,unit="days"))) %>%
-  group_by(AU_ID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  group_by(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise( Temp_Criteria = 13,
              data_period_start = min(SampleStartDate),
              data_period_end = max(SampleStartDate),
@@ -299,7 +307,7 @@ temp_IR_categories_other_spawn <- other_3_year %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE)) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
 
-
+temp_IR_categories_other_spawn <- join_prev_assessments(temp_IR_categories_other_spawn, AU_type = "Other")
 
 if(write_excel){
   
