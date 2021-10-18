@@ -3,7 +3,7 @@
 
 chl_assessment <- function(df, write_excel = TRUE){
 
-#df <- Results_censored_chla
+ # df <- Results_censored_chla
 
 
 
@@ -12,6 +12,7 @@ chl_assessment <- function(df, write_excel = TRUE){
   library(zoo)
   library(runner)
   library(openxlsx)
+  library(odeqIRtools)
 # Watershed units -------------------------------------------------------------------------------------------------
 
 
@@ -59,6 +60,7 @@ WS_category <- WS_3mo %>%
   ungroup() %>%
   mutate(IR_category = case_when(num_excur_3mo_avg >= 1 ~ "5",
                                  num_monthly_excur > critical_excursions_month  ~ "5",
+                                 total_n >= 8 & num_monthly_excur < critical_excursions_month  ~ "2",
                                  num_3mo_avg_calculated == 0 & num_monthly_excur > 0 ~ "3B",
                                  num_3mo_avg_calculated == 0 & num_monthly_excur == 0 ~ "3",
                                  num_3mo_avg_calculated > 0 & num_excur_3mo_avg == 0 ~ "2",
@@ -71,6 +73,12 @@ WS_category <- WS_3mo %>%
                                                                                        num_monthly_excur, " month averages exceed criteria: ",
                                                                                        monthly_excur_month, ": ", 
                                                                                        total_n, " total samples") ,
+                                total_n >= 8 & num_monthly_excur < critical_excursions_month  ~  paste0("Attaining: ",  
+                                                                                                        "< 10% (binomial) monthly ",
+                                                                                                        "averages exceed criteria: ", 
+                                                                                                        num_monthly_excur, 
+                                                                                                        " excursions of ", total_n, 
+                                                                                                        " total samples"),
                                 num_3mo_avg_calculated == 0 & num_monthly_excur > 0 ~  paste0(MLocID, "- Insuffcient data: ", 
                                                                                               num_monthly_excur, " month averages exceed criteria: ",
                                                                                               monthly_excur_month, ". No 3-month averages calculated: ", 
@@ -86,6 +94,8 @@ WS_category <- WS_3mo %>%
          )) %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
 
+WS_category <- odeqIRtools::join_prev_assessments(WS_category, AU_type = 'WS')
+
 
 # WS AU rollup ----------------------------------------------------------------------------------------------------
 
@@ -93,11 +103,11 @@ WS_AU_rollup <- WS_category %>%
   ungroup() %>%
   group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise(IR_category_AU = max(IR_category),
-            Rationale_AU = str_c(Rationale,collapse =  " ~ " ) ) %>%
+            Rationale_AU = str_c(Rationale,collapse =  " ~ " )) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code ))
 
 
-
+WS_AU_rollup <- odeqIRtools::join_prev_assessments(WS_AU_rollup, AU_type = 'Other')
 
 # Other AUs -------------------------------------------------------------------------------------------------------
 
@@ -147,6 +157,7 @@ other_category <- other_3mo %>%
   ungroup() %>%
   mutate(IR_category = case_when(num_excur_3mo_avg >= 1 ~ "5",
                                  num_monthly_excur > critical_excursions_month  ~ "5",
+                                 total_n >= 8 & num_monthly_excur < critical_excursions_month  ~ "2",
                                  num_3mo_avg_calculated == 0 & num_monthly_excur > 0 ~ "3B",
                                  num_3mo_avg_calculated == 0 & num_monthly_excur == 0 ~ "3",
                                  num_3mo_avg_calculated > 0 & num_excur_3mo_avg == 0 ~ "2",
@@ -158,6 +169,12 @@ other_category <- other_3mo %>%
                          num_monthly_excur > critical_excursions_month ~ paste0("Impaired: ", num_monthly_excur, " month averages exceed criteria: ",
                                                                                 monthly_excur_month, ": ", 
                                                                                 total_n, " total samples") ,
+                         total_n >= 8 & num_monthly_excur < critical_excursions_month  ~  paste0("Attaining: ",  
+                                                                                                 "< 10% (binomial) monthly ",
+                                                                                                 "averages exceed criteria: ", 
+                                                                                                 num_monthly_excur, 
+                                                                                                 " excursions of ", total_n, 
+                                                                                                 " total samples"),
                          num_3mo_avg_calculated == 0 & num_monthly_excur > 0 ~  paste0("Insuffcient data: ", 
                                                                                        num_monthly_excur, " month averages exceed criteria: ",
                                                                                        monthly_excur_month, ". No 3-month averages calculated: ", 
@@ -174,7 +191,7 @@ other_category <- other_3mo %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE)) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code ))
 
-
+other_category <- join_prev_assessments(other_category, AU_type = 'Other')
 
 # Write excel docs ------------------------------------------------------------------------------------------------
 
