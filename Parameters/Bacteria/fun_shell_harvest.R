@@ -17,7 +17,7 @@ Shell_Harvest <- function(df, write_excel = TRUE) {
 
   
   shell_harvest <- df %>%
-    filter(Bacteria_code == 2,
+    filter(Bacteria_code == 3,
            Char_Name == "Fecal Coliform") %>%
     rename(median_crit = Geomean_Crit) %>%
     select(-Perc_Crit, -lowest_crit) %>%
@@ -37,7 +37,7 @@ Shell_Harvest <- function(df, write_excel = TRUE) {
   
   shell_harvest_analysis_WS <- shell_harvest %>%
     filter(str_detect(AU_ID, "WS", negate = FALSE)) %>%
-    group_by(MLocID, AU_ID, Pollu_ID, wqstd_code, OWRD_Basin, SS_Crit, median_crit ) %>%
+    group_by(MLocID, AU_ID,AU_GNIS_Name, Pollu_ID, wqstd_code, OWRD_Basin, SS_Crit, median_crit ) %>%
     summarise(num_samples = n(),
               median = ifelse(num_samples >= 5, median(Result_cen), NA ),
               num_SS_exceed = sum(SS_exceed),

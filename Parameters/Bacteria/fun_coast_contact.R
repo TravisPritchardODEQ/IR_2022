@@ -1,5 +1,6 @@
 library(lubridate)
 library(runner)
+library(odeqIRtools)
 
 
 
@@ -68,7 +69,7 @@ coast_contact_geomeans_no_WS <- Coastal %>%
 
 
 
-coast_AU_summary_no_WS <-  coast_contact_geomeans_no_WS %>%
+coast_AU_summary_no_WS0 <-  coast_contact_geomeans_no_WS %>%
   filter(str_detect(AU_ID, "WS", negate = TRUE)) %>%
   arrange(MLocID) %>%
   ungroup() %>%
@@ -111,7 +112,12 @@ coast_AU_summary_no_WS <-  coast_contact_geomeans_no_WS %>%
          ) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code ))
 
+coast_AU_summary_no_WS <-  join_prev_assessments(coast_AU_summary_no_WS0, AU_type = 'Other')
 
+if(nrow(coast_AU_summary_no_WS) != nrow(coast_AU_summary_no_WS0)) {
+  
+  stop("previous assessment join error")
+}
 
 # Watershed unit categorization -----------------------------------------------------------------------------------
 
@@ -121,7 +127,7 @@ coast_contact_geomeans_WS <- Coastal %>%
   filter(str_detect(AU_ID, "WS", negate = FALSE)) %>%
   mutate(Geomean_Crit = 35,
          SS_Crit = 130 ) %>%
-  group_by(MLocID, AU_ID) %>%
+  group_by(MLocID, AU_ID, AU_GNIS_Name) %>%
   arrange(SampleStartDate) %>%
   dplyr::mutate(d = runner(x = data.frame(SampleStartDate  = SampleStartDate,
                                           Result_cen = Result_cen,
@@ -164,11 +170,11 @@ coast_contact_geomeans_WS <- Coastal %>%
 
 
 
-coast_AU_summary_WS <-  coast_contact_geomeans_WS %>%
+coast_AU_summary_WS0 <-  coast_contact_geomeans_WS %>%
   filter(str_detect(AU_ID, "WS", negate = FALSE)) %>%
   arrange(MLocID) %>%
   ungroup() %>%
-  group_by(MLocID, AU_ID, Pollu_ID, wqstd_code, OWRD_Basin ) %>%
+  group_by(MLocID, AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code, OWRD_Basin ) %>%
   summarise(num_Samples = as.numeric(n()),
             Max_Geomean = ifelse(!all(is.na(geomean)),max(geomean, na.rm = TRUE),NA),
             max.value  = max(Result_cen),
@@ -206,14 +212,21 @@ coast_AU_summary_WS <-  coast_contact_geomeans_WS %>%
                                TRUE ~ "ERROR"),
   ) %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
+coast_AU_summary_WS <- join_prev_assessments(coast_AU_summary_WS0, AU_type = "WS")
 
-
-WS_AU_rollup <- coast_AU_summary_WS %>%
+WS_AU_rollup0 <- coast_AU_summary_WS %>%
   ungroup() %>%
   group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise(IR_category_AU = max(IR_category),
             Rationale = str_c(Rationale,collapse =  " ~ " ) ) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code ))
+WS_AU_rollup <- join_prev_assessments(WS_AU_rollup0, AU_type = "Other")
+
+if(nrow(WS_AU_rollup0) != nrow(WS_AU_rollup) |
+   nrow(coast_AU_summary_WS) != nrow(coast_AU_summary_WS0)) {
+  
+  stop("previous assessment join error")
+}
 
 
 if(write_excel){
