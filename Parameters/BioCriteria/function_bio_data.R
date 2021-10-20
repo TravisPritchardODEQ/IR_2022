@@ -8,7 +8,7 @@
   print("Fetch continuous bio taxa data from IR database")
   #connect to IR database view as a general user
   # import bacteria data
-  #database = "IR_Dev" # use for testing 
+  database = "IR_Dev" # use for testing 
   IR.sql <-   odbcConnect(database)
   
   
