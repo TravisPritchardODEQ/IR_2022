@@ -123,10 +123,18 @@ other_3_year <- temp_air_exclusion %>%
 # Watershed Units -------------------------------------------------------------------------------------------------
 print('begin Year Round wastershed unit categorization')
 
+crit_period_check <- ws_3_year %>%
+  mutate(year =  year(SampleStartDate)) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, year) %>%
+  summarise(num_crit = sum(In_crit_period)) %>%
+  ungroup() %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  summarise(distinct_years_sufficient_crit_period = n_distinct(year[num_crit > .8 * 92 ]))
 
 
 
 temp_IR_categories_WS <- ws_3_year %>%
+  left_join(crit_period_check) %>%
   group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise( Temp_Criteria = first(Temp_Criteria),
              data_period_start = min(SampleStartDate),
@@ -136,7 +144,7 @@ temp_IR_categories_WS <- ws_3_year %>%
              max_3yr_excursions = max(excursions_3yr),
              max_3yr_results_in_crit_period = max(samples_crit_period),
              distinct_years = n_distinct(year(SampleStartDate)),
-             distinct_years_sufficient_crit_period = length(unique(year(SampleStartDate)[sum(In_crit_period) > .8 * 92])),
+             distinct_years_sufficient_crit_period = max(distinct_years_sufficient_crit_period),
              total_results = n()
              ) %>%
   mutate(period = "year_round",
@@ -175,7 +183,18 @@ WS_AU_rollup <- join_prev_assessments(WS_AU_rollup, AU_type = "Other")
 
 print("Begin Year Round Other AU categorization")
 
+crit_period_check <- other_3_year %>%
+  mutate(year =  year(SampleStartDate)) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, year) %>%
+  summarise(num_crit = sum(In_crit_period)) %>%
+  ungroup() %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  summarise(distinct_years_sufficient_crit_period = n_distinct(year[num_crit > .8 * 92 ]))
+
+
+
 temp_IR_categories_other <- other_3_year %>%
+  left_join(crit_period_check) %>%
   group_by(AU_ID,  Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise( Temp_Criteria = first(Temp_Criteria),
              data_period_start = min(SampleStartDate),
@@ -185,7 +204,7 @@ temp_IR_categories_other <- other_3_year %>%
              max_3yr_excursions = max(excursions_3yr),
              max_3yr_results_in_crit_period = max(samples_crit_period),
              distinct_years = n_distinct(year(SampleStartDate)),
-             distinct_years_sufficient_crit_period = length(unique(year(SampleStartDate)[sum(In_crit_period) > .8 * 92])),
+             distinct_years_sufficient_crit_period = max(distinct_years_sufficient_crit_period),
              total_results = n()
            
   ) %>%
@@ -215,9 +234,24 @@ temp_IR_categories_other <- join_prev_assessments(temp_IR_categories_other, AU_t
 # Watershed units -------------------------------------------------------------------------------------------------
 
 print("Begin Spawning watershed unit categorization")
+
+crit_period_check <- ws_3_year %>%
+  filter(Spawn_type == "Spawn") %>%
+  mutate(spawn_length = as.double(difftime(End_spawn,Start_spawn,unit="days"))) %>%
+  mutate(year =  year(SampleStartDate)) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code, Spawn_type,spawn_length, OWRD_Basin, year) %>%
+  summarise(num_spawn = sum(Spawn_type == "Spawn")) %>%
+  ungroup() %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  summarise(distinct_years_sufficient_spawn_period = n_distinct(year[num_spawn > .8 * min(spawn_length)]))
+
+
+
+
 temp_IR_categories_WS_spawn <- ws_3_year %>%
   filter(Spawn_type == "Spawn") %>%
   mutate(spawn_length = as.double(difftime(End_spawn,Start_spawn,unit="days"))) %>%
+  left_join(crit_period_check) %>%
   group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise( Temp_Criteria = 13,
              data_period_start = min(SampleStartDate),
@@ -228,7 +262,7 @@ temp_IR_categories_WS_spawn <- ws_3_year %>%
              max_3yr_results_in_spawn_period = max(samples_spawn),
              distinct_years = n_distinct(year(SampleStartDate)),
              spawn_period_length = first(spawn_length),
-             distinct_years_sufficient_spawn_period = n_distinct(unique(year(SampleStartDate)[sum(Spawn_type == "Spawn") > .8 * min(spawn_length)])),
+             distinct_years_sufficient_spawn_period = max(distinct_years_sufficient_spawn_period),
              total_results = n()
   ) %>%
   mutate(period = "spawn",
@@ -269,9 +303,23 @@ WS_AU_rollup_spawn <- join_prev_assessments(WS_AU_rollup_spawn, AU_type = "Other
 
 print("Begin spawning other AU categorization")
 
+
+
+
+crit_period_check <- other_3_year %>%
+  filter(Spawn_type == "Spawn") %>%
+  mutate(spawn_length = as.double(difftime(End_spawn,Start_spawn,unit="days"))) %>%
+  mutate(year =  year(SampleStartDate)) %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code, Spawn_type,spawn_length, OWRD_Basin, year) %>%
+  summarise(num_spawn = sum(Spawn_type == "Spawn")) %>%
+  ungroup() %>%
+  group_by(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+  summarise(distinct_years_sufficient_spawn_period = n_distinct(year[num_spawn > .8 * min(spawn_length)]))
+
 temp_IR_categories_other_spawn <- other_3_year %>%
   filter(Spawn_type == "Spawn") %>%
   mutate(spawn_length = as.double(difftime(End_spawn,Start_spawn,unit="days"))) %>%
+  left_join(crit_period_check) %>%
   group_by(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
   summarise( Temp_Criteria = 13,
              data_period_start = min(SampleStartDate),
@@ -282,7 +330,7 @@ temp_IR_categories_other_spawn <- other_3_year %>%
              max_3yr_results_in_spawn_period = max(samples_spawn),
              distinct_years = n_distinct(year(SampleStartDate)),
              spawn_period_length = first(spawn_length),
-             distinct_years_sufficient_spawn_period = n_distinct(unique(year(SampleStartDate)[sum(Spawn_type == "Spawn") > .8 * min(spawn_length)])),
+             distinct_years_sufficient_spawn_period = max(distinct_years_sufficient_spawn_period),
              total_results = n()
   ) %>%
   mutate(period = "spawn",
