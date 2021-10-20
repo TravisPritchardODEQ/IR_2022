@@ -27,6 +27,8 @@ cont_ph_raw <- function(database) {
   Results_import_grab %>% map_if(is.factor, as.character) %>% as_tibble -> Results_import_grab
   
   
+  Results_import_grab <- odeqIRtools::data_aggregation(Results_import_grab)
+  
   # Data censoring --------------------------------------------------------------------------------------------------
   #LAM commented this out as we don't censor data for pH
   # print("Data censor process")

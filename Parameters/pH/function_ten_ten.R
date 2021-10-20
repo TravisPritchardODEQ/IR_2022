@@ -1,5 +1,6 @@
 ## L.Merrick 8/5/2021 
 #function to assess continuous data using the ten-ten 
+#modifued By Rravis Pritchard to fit the IR process
 
 
 
@@ -36,7 +37,7 @@ pH_assessment <- function(cont_data, grab_data, write_xlsx = TRUE){
     
     
     if(AU_type == "other"){  
-      group1 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Result_Date')
+      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name','GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Result_Date')
       group2 <-  c('AU_ID',  'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name')
       
       
@@ -44,8 +45,8 @@ pH_assessment <- function(cont_data, grab_data, write_xlsx = TRUE){
       
       
     } else if (AU_type == "WS"){
-      group1 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Result_Date' )
-      group2 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name')
+      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Result_Date' )
+      group2 <- c('AU_ID', 'MLocID','AU_GNIS_Name', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name')
       
       inverse <- FALSE
     }
@@ -214,6 +215,8 @@ pH_assessment <- function(cont_data, grab_data, write_xlsx = TRUE){
     mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE))
   
   
+  cont_pH_categories <- join_prev_assessments(cont_pH_categories, AU_type = AU_type)
+  
   ph_assessment_list <- list(data = pH_data_together,
                              assessment = cont_pH_categories)
   
@@ -241,6 +244,7 @@ pH_assessment <- function(cont_data, grab_data, write_xlsx = TRUE){
               Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
     mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
   
+  WS_AU_rollup <- join_prev_assessments(WS_AU_rollup, AU_type = "Other")
   
   pH_list <- list(WS_data = WS_data,
                   WS_categories = WS_categories,
