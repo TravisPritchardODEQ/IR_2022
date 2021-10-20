@@ -1,8 +1,118 @@
-
+library(zoo)
 
 fun_DO_spawn <- function(df, write_excel = TRUE ){
   
-
+  
+  
+  join_prev_assessments_DO <- function(df, AU_type){
+    
+    # test dataset ----------------------------------------------------------------------------------------------------
+    
+    #  df <- yr_round_instant_categories
+    # AU_type <- "Other"
+    
+    if(AU_type == "WS"){
+      
+      
+      df_names <- names(df)
+      
+      WS_GNIS_previous_listings_DO <- WS_GNIS_previous_listings %>%
+        filter(Pollu_ID == '154') %>%
+        separate(Char_Name, c("Char_Name", "DO_Class"), sep = " - ")
+      
+      WS_GNIS_previous_listings_DO_class <-  WS_GNIS_previous_listings_DO %>%
+        filter(!is.na(DO_Class)) %>%
+        rename(GNIS_previous_IR_impairement_class = GNIS_previous_IR_impairement)
+      
+      WS_GNIS_previous_listings_DO_class_no_class <-  WS_GNIS_previous_listings_DO %>%
+        filter(is.na(DO_Class)) %>%
+        select(-DO_Class) %>%
+        rename(GNIS_previous_IR_impairement_no_class = GNIS_previous_IR_impairement)
+      
+      GNIS_join <- df %>%
+        mutate(Char_Name = "Dissolved Oxygen") %>%
+        ungroup() %>%
+        #select(-Char_Name) %>%
+        mutate(AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";"),
+               Pollu_ID = as.character(Pollu_ID),
+               wqstd_code = as.character(wqstd_code)) %>%
+        left_join(WS_GNIS_previous_listings) %>%
+        select(all_of(df_names), GNIS_previous_IR_impairement) 
+      
+      GNIS_join_names <- names(GNIS_join)
+      AU_previous_categories <- distinct(AU_previous_categories)
+      
+      AU_previous_categories_DO <- AU_previous_categories %>%
+        filter(Pollu_ID == '154') %>%
+        separate(Char_Name, c("Char_Name", "DO_Class"), sep = " - ")
+      
+      AU_previous_categories_DO_class <- AU_previous_categories_DO %>%
+        filter(!is.na(DO_Class)) %>%
+        rename(AU_previous_IR_category_class = AU_previous_IR_category)
+      
+      
+      AU_previous_categories_DO_class_no_class <-  AU_previous_categories_DO %>%
+        filter(is.na(DO_Class)) %>%
+        select(-DO_Class) %>%
+        rename(AU_previous_IR_category_no_class = AU_previous_IR_category)
+      
+      overall_join <- GNIS_join %>%
+        ungroup() %>%
+        mutate(Char_Name = "Dissolved Oxygen") %>%
+        #select(-Char_Name) %>%
+        left_join(AU_previous_categories_DO_class)%>%
+        #select(-Char_Name) %>%
+        left_join(AU_previous_categories_DO_class_no_class) %>%
+        mutate(AU_previous_IR_category = case_when(!is.na(AU_previous_IR_category_class) ~ AU_previous_IR_category_class,
+                                                   !is.na(AU_previous_IR_category_no_class) ~ AU_previous_IR_category_no_class)) %>%
+        select(all_of(GNIS_join_names), AU_previous_IR_category)
+      
+      
+    } else {
+      
+      # non-watershed ---------------------------------------------------------------------------------------------------
+      
+      
+      df_names <- names(df)
+      
+      
+      AU_previous_categories_DO <- AU_previous_categories %>%
+        filter(Pollu_ID == '154') %>%
+        separate(Char_Name, c("Char_Name", "DO_Class"), sep = " - ")
+      
+      AU_previous_categories_DO_class <- AU_previous_categories_DO %>%
+        filter(!is.na(DO_Class)) %>%
+        rename(AU_previous_IR_category_class = AU_previous_IR_category)
+      
+      
+      AU_previous_categories_DO_class_no_class <-  AU_previous_categories_DO %>%
+        filter(is.na(DO_Class)) %>%
+        select(-DO_Class) %>%
+        rename(AU_previous_IR_category_no_class = AU_previous_IR_category)
+      
+      overall_join <- df %>%
+        ungroup() %>%
+        mutate(Char_Name = "Dissolved Oxygen") %>%
+        mutate(Pollu_ID = as.character(Pollu_ID),
+               wqstd_code = as.character(wqstd_code),
+               assess_char = paste(Char_Name, "-", DO_Class)) %>%
+        left_join(AU_previous_categories_DO_class) %>%
+        left_join(AU_previous_categories_DO_class_no_class) %>%
+        mutate(AU_previous_IR_category = case_when(!is.na(AU_previous_IR_category_class) ~ AU_previous_IR_category_class,
+                                                   !is.na(AU_previous_IR_category_no_class) ~ AU_previous_IR_category_no_class)) %>%
+        select(all_of(df_names), AU_previous_IR_category)
+      
+    }
+    
+    if(nrow(df) != nrow(overall_join)){
+      
+      stop("Previous IR category join error. Input and output dataframes are not the same length.")
+    }
+    
+    
+    return(overall_join)
+  }
+  
 # Testing and setup -----------------------------------------------------------------------------------------------
 
 
@@ -83,8 +193,8 @@ if(AU_type == "other"){
   
   
 } else if (AU_type == "WS"){
-  group1 <- c('AU_ID', 'MLocID', 'DO_Class')
-  group2 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class') 
+  group1 <- c('AU_ID', 'AU_GNIS_Name', 'MLocID', 'DO_Class')
+  group2 <- c('AU_ID', 'AU_GNIS_Name', 'MLocID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class') 
   inverse <- FALSE
   query_type = 'MLocID'
 }
@@ -308,7 +418,7 @@ WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
               Total_excursions = sum(Violation),
               Sum_7D_excursions = sum(Violation [Statistical_Base == "7DADMean"]),
               Sum_abs_min_excursions = sum(Violation [Statistical_Base == "Minimum"])) %>%
-    mutate(period = "spawning",
+    mutate(period = "Spawn",
            IR_category = case_when(Sum_7D_excursions >= 2 ~ "5",
                                    Sum_abs_min_excursions >= 2 ~ "5",
                                    Sum_7D_excursions < 2 &
@@ -324,7 +434,9 @@ WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
                                    ),
                                  TRUE ~ "ERROR")) %>%
     mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
-    
+  
+  
+  spawn_cont_categories <- join_prev_assessments_DO(spawn_cont_categories, AU_type = AU_type)
     
   spawn_cont_list <- list(data = as.data.frame(spawn_DO_data),
                           AU_categories = spawn_cont_categories)
@@ -357,8 +469,8 @@ spawn_inst_function <- function(df = Results_spawndates, continuous_list = resul
     
     
   } else if (AU_type == "WS"){
-    group1 <- c('AU_ID', 'MLocID', 'DO_Class')
-    group2 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class') 
+    group1 <- c('AU_ID','AU_GNIS_Name',  'MLocID', 'DO_Class')
+    group2 <- c('AU_ID','AU_GNIS_Name',  'MLocID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class') 
     inverse <- FALSE
   }
   
@@ -472,7 +584,7 @@ WHERE        ((Statistical_Base = 'Minimum') AND MLocID in ({instant_mon_locs*})
               critical_excursions = binomial_excursions(total_samples, "Conventionals"),
               Total_dates = n_distinct(SampleStartDate),
               Total_excursions = data.table::uniqueN(SampleStartDate[Violation == 1])) %>%
-    mutate(period = "spawning",
+    mutate(period = "Spawn",
            IR_category = case_when(Total_dates >= req_inst_crit_samples & Total_excursions > critical_excursions ~ "5",
                                    Total_dates < req_inst_crit_samples & Total_excursions > 0 ~ "3B",
                                    Total_dates < req_inst_crit_samples & Total_excursions == 0 ~ "3",
@@ -494,6 +606,7 @@ WHERE        ((Statistical_Base = 'Minimum') AND MLocID in ({instant_mon_locs*})
                                  TRUE ~ "ERROR")) %>%
     mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
   
+  spawn_inst_categories <- join_prev_assessments_DO(spawn_inst_categories, AU_type = AU_type)
   
   spawn_inst_list <- list(data = as.data.frame(DO_sat_data),
                           AU_categories = spawn_inst_categories)

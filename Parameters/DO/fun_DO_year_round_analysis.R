@@ -3,6 +3,120 @@
 
 fun_DO_year_round <- function(df, write_excel = TRUE ){
 
+  
+
+# custom previous join function -----------------------------------------------------------------------------------
+
+  
+  
+  join_prev_assessments_DO <- function(df, AU_type){
+    
+    # test dataset ----------------------------------------------------------------------------------------------------
+    
+    #  df <- yr_round_instant_categories
+    # AU_type <- "Other"
+    
+    if(AU_type == "WS"){
+      
+
+      df_names <- names(df)
+     
+      WS_GNIS_previous_listings_DO <- WS_GNIS_previous_listings %>%
+        filter(Pollu_ID == '154') %>%
+        separate(Char_Name, c("Char_Name", "DO_Class"), sep = " - ")
+      
+      WS_GNIS_previous_listings_DO_class <-  WS_GNIS_previous_listings_DO %>%
+        filter(!is.na(DO_Class)) %>%
+        rename(GNIS_previous_IR_impairement_class = GNIS_previous_IR_impairement)
+      
+      WS_GNIS_previous_listings_DO_class_no_class <-  WS_GNIS_previous_listings_DO %>%
+        filter(is.na(DO_Class)) %>%
+        select(-DO_Class) %>%
+        rename(GNIS_previous_IR_impairement_no_class = GNIS_previous_IR_impairement)
+      
+      GNIS_join <- df %>%
+        mutate(Char_Name = "Dissolved Oxygen") %>%
+        ungroup() %>%
+        #select(-Char_Name) %>%
+        mutate(AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";"),
+               Pollu_ID = as.character(Pollu_ID),
+               wqstd_code = as.character(wqstd_code)) %>%
+        left_join(WS_GNIS_previous_listings) %>%
+        select(all_of(df_names), GNIS_previous_IR_impairement) 
+        
+      GNIS_join_names <- names(GNIS_join)
+      
+      AU_previous_categories_DO <- AU_previous_categories %>%
+        filter(Pollu_ID == '154') %>%
+        separate(Char_Name, c("Char_Name", "DO_Class"), sep = " - ")
+      
+      AU_previous_categories_DO_class <- AU_previous_categories_DO %>%
+        filter(!is.na(DO_Class)) %>%
+        rename(AU_previous_IR_category_class = AU_previous_IR_category)
+      
+      
+      AU_previous_categories_DO_class_no_class <-  AU_previous_categories_DO %>%
+        filter(is.na(DO_Class)) %>%
+        select(-DO_Class) %>%
+        rename(AU_previous_IR_category_no_class = AU_previous_IR_category)
+      
+      overall_join <- GNIS_join %>%
+        ungroup() %>%
+        mutate(Char_Name = "Dissolved Oxygen") %>%
+        #select(-Char_Name) %>%
+        left_join(AU_previous_categories_DO_class)%>%
+        #select(-Char_Name) %>%
+        left_join(AU_previous_categories_DO_class_no_class) %>%
+        mutate(AU_previous_IR_category = case_when(!is.na(AU_previous_IR_category_class) ~ AU_previous_IR_category_class,
+                                                   !is.na(AU_previous_IR_category_no_class) ~ AU_previous_IR_category_no_class)) %>%
+        select(all_of(GNIS_join_names), AU_previous_IR_category)
+        
+        
+    } else {
+      
+      # non-watershed ---------------------------------------------------------------------------------------------------
+      
+      
+      df_names <- names(df)
+      
+      
+      AU_previous_categories_DO <- AU_previous_categories %>%
+        filter(Pollu_ID == '154') %>%
+        separate(Char_Name, c("Char_Name", "DO_Class"), sep = " - ")
+      
+      AU_previous_categories_DO_class <- AU_previous_categories_DO %>%
+        filter(!is.na(DO_Class)) %>%
+        rename(AU_previous_IR_category_class = AU_previous_IR_category)
+      
+      
+      AU_previous_categories_DO_class_no_class <-  AU_previous_categories_DO %>%
+        filter(is.na(DO_Class)) %>%
+        select(-DO_Class) %>%
+        rename(AU_previous_IR_category_no_class = AU_previous_IR_category)
+      
+      overall_join <- df %>%
+        ungroup() %>%
+        mutate(Char_Name = "Dissolved Oxygen") %>%
+        mutate(Pollu_ID = as.character(Pollu_ID),
+               wqstd_code = as.character(wqstd_code),
+               assess_char = paste(Char_Name, "-", DO_Class)) %>%
+        left_join(AU_previous_categories_DO_class) %>%
+        left_join(AU_previous_categories_DO_class_no_class) %>%
+        mutate(AU_previous_IR_category = case_when(!is.na(AU_previous_IR_category_class) ~ AU_previous_IR_category_class,
+                                                   !is.na(AU_previous_IR_category_no_class) ~ AU_previous_IR_category_no_class)) %>%
+        select(all_of(df_names), AU_previous_IR_category)
+      
+    }
+    
+    if(nrow(df) != nrow(overall_join)){
+      
+      stop("Previous IR category join error. Input and output dataframes are not the same length.")
+    }
+    
+    
+    return(overall_join)
+  }
+  
 
 #For DO- since there is so much going on I'm creating analysis functions that will do both WS and other analysis
 
@@ -82,7 +196,7 @@ yr_round_cont_function <- function(df = Results_spawndates, continuous_list = re
   #Setting AU_type to 'WS' will group the analysis by AU_ID and MlocID, and set the filter to only keep WS units (inverse = FALSE)
 if(AU_type == "other"){  
 group1 <- c('AU_ID', 'DO_Class')
-group2 <- c('AU_ID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class')
+group2 <- c('AU_ID', 'AU_GNIS_Name', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class')
 inverse <- TRUE
 query_type = 'AU_ID'
 
@@ -90,7 +204,7 @@ query_type = 'AU_ID'
 
 } else if (AU_type == "WS"){
   group1 <- c('AU_ID', 'MLocID', 'DO_Class')
-  group2 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class') 
+  group2 <- c('AU_ID', 'MLocID','AU_GNIS_Name', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class') 
   inverse <- FALSE
   query_type = 'MLocID'
 }
@@ -167,6 +281,8 @@ cont_perc_sat_check <- continuous_data_categories_other %>%
 
 if(nrow(cont_perc_sat_check) > 0){
   
+  if(AU_type == "WS"){
+  
   # List of monitoring locations that need DO sat 
   # This list is used for the sql query that follows
   continuous_mon_locs <- unique(cont_perc_sat_check$MLocID)
@@ -215,7 +331,57 @@ WHERE        (Statistical_Base = 'Mean') AND MLocID in ({continuous_mon_locs*})"
   
   print("Finished database query")
   
-  
+  } else {
+    # List of monitoring locations that need DO sat 
+    # This list is used for the sql query that follows
+    continuous_mon_locs <- unique(cont_perc_sat_check$AU_ID)
+    
+    
+    # Get data from database --------------------------------------------------
+    
+    print("querying the IR database to get data for DO sat calculations ")
+    
+    # Get DO IR_database to calculate percent sat --------
+    
+    con <- DBI::dbConnect(odbc::odbc(), "IR_Dev")
+    
+    DOSatQry <- "SELECT [MLocID], [SampleStartDate],[SampleStartTime],[Statistical_Base],[IRResultNWQSunit] as DO_sat
+FROM [IntegratedReport].[dbo].[ResultsRawWater]
+WHERE   Char_Name = 'Dissolved oxygen saturation' AND 
+AU_ID in ({continuous_mon_locs*}) AND 
+Statistical_Base = 'Mean'"
+    
+    Dosqry <- glue::glue_sql(DOSatQry, .con = con)
+    DO_sat_AWQMS <- DBI::dbGetQuery(con, Dosqry)
+    
+    
+    Doqry <- "SELECT * 
+FROM            VW_DO
+WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
+    
+    
+    
+    Doqry <- glue::glue_sql(Doqry, .con = con)
+    
+    perc_sat_DO <- DBI::dbGetQuery(con, Doqry)
+    
+    #Get temperature data from database
+    
+    tempqry <- "SELECT * 
+FROM            VW_Temp_4_DO
+WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
+    
+    tempqry <- glue::glue_sql(tempqry, .con = con)
+    
+    perc_sat_temp <-  DBI::dbGetQuery(con, tempqry)
+    
+    # Disconnect from database
+    DBI::dbDisconnect(con)
+    
+    print("Finished database query")
+    
+    
+  }
   # Join --------------------------------------------------------------------
   
   # Pare down table to be used in join
@@ -376,7 +542,7 @@ yr_round_cont_data_categories_other <- yr_round_cont_DO_data_analysis_other %>%
                                TRUE ~ "ERROR")) %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
 
-
+yr_round_cont_data_categories_other <- join_prev_assessments_DO(yr_round_cont_data_categories_other, AU_type = AU_type)
            
 yrround_cont_list <- list(data = as.data.frame(yr_round_cont_DO_data_analysis_other),
                           AU_categories = yr_round_cont_data_categories_other)
@@ -400,14 +566,14 @@ yr_round_inst_function <- function(df = Results_spawndates, continuous_list = re
   #Setting AU_type to 'other' will group the analysis by AU_ID and set the filter to discard WS units (inverse = TRUE)
   #Setting AU_type to 'WS' will group the analysis by AU_ID and MlocID, and set the filter to only keep WS units (inverse = FALSE)
   if(AU_type == "other"){  
-    group1 <- c('AU_ID', 'DO_Class')
-    group2 <- c('AU_ID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class')
+    group1 <- c('AU_ID','Char_Name',  'DO_Class')
+    group2 <- c('AU_ID','Char_Name', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class')
     inverse <- TRUE
     
     
   } else if (AU_type == "WS"){
-    group1 <- c('AU_ID', 'MLocID', 'DO_Class')
-    group2 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class') 
+    group1 <- c('AU_ID','Char_Name', 'MLocID', 'DO_Class')
+    group2 <- c('AU_ID','Char_Name', 'MLocID','AU_GNIS_Name', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class') 
     inverse <- FALSE
   }
 
@@ -568,6 +734,8 @@ yr_round_instant_categories <- Instant_data_analysis_DOS %>%
   mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE))
 
 
+yr_round_instant_categories <- join_prev_assessments_DO(yr_round_instant_categories, AU_type = AU_type)
+
 year_rd_inst_list <- list(data = Instant_data_analysis_DOS,
                           categories =yr_round_instant_categories )
 
@@ -581,7 +749,8 @@ return(year_rd_inst_list)
 
 
 # Run the year round continuous function --------------------------------------------------------------------------
-
+print("Begin year round continuous")
+print("Begin year round continuous- Others")
 year_round_cont_other <- yr_round_cont_function(df, AU_type = "other")
 
 year_round_cont_other_data <- year_round_cont_other[['data']]
@@ -589,7 +758,7 @@ year_round_cont_other_data <- year_round_cont_other[['data']]
 year_round_cont_other_categories <- year_round_cont_other[['AU_categories']] %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID), "-",Pollu_ID,"-", wqstd_code,"-", period ))
 
-
+print("Begin year round continuous- WS")
 year_round_cont_WS <- yr_round_cont_function(df, continuous_list = results_cont_summary_WS, AU_type = "WS")
 year_round_cont_WS_data <- year_round_cont_WS[['data']]
 year_round_cont_WS_categories <- year_round_cont_WS[['AU_categories']]
@@ -598,8 +767,8 @@ year_round_cont_WS_categories <- year_round_cont_WS[['AU_categories']]
 # Run the year round instant function -----------------------------------------------------------------------------
 
 
-
-
+print("Begin year round instant")
+print("Begin year round instant- Others")
 year_round_inst_other <- yr_round_inst_function(df = Results_spawndates, AU_type = "other")
 
 year_round_inst_other_data <- year_round_inst_other[['data']]
@@ -607,7 +776,7 @@ year_round_inst_other_data <- year_round_inst_other[['data']]
 year_round_inst_other_categories <- year_round_inst_other[['categories']] %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID), "-",Pollu_ID,"-", wqstd_code,"-", period ))
 
-
+print("Begin year round instant- WS")
 year_round_inst_WS <- yr_round_inst_function(df, continuous_list = results_cont_summary_WS, AU_type = "WS")
 year_round_inst_WS_data <- year_round_inst_WS[['data']]
 year_round_inst_WS_categories <- year_round_inst_WS[['categories']]
@@ -627,16 +796,16 @@ inst_data_combined <- bind_rows(year_round_inst_WS_data, year_round_inst_other_d
 
 
 WS_AU_rollup_year_round <- year_round_inst_WS_categories %>%
-  select(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, period, IR_category, Rationale) %>%
-  bind_rows(select(year_round_cont_WS_categories, AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period, IR_category, Rationale)) %>%
+  select(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin,DO_Class, period, IR_category, Rationale) %>%
+  bind_rows(select(year_round_cont_WS_categories, AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin,DO_Class, period, IR_category, Rationale)) %>%
   ungroup() %>%
   #mutate(Rationale = past0(MLocID, ))
-  group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin, period) %>%
+  group_by(AU_ID, Pollu_ID, wqstd_code,  OWRD_Basin,DO_Class, period) %>%
   summarise(IR_category_AU = max(IR_category),
             Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code,"-", period ))
 
-
+WS_AU_rollup_year_round <- join_prev_assessments_DO(WS_AU_rollup_year_round, AU_type = "Other")
 
 
 if(write_excel){
