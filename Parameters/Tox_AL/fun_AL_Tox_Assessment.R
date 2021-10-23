@@ -1,14 +1,29 @@
 
 
-TOX_AL_analysis <- function(df){
+TOX_AL_analysis <- function(df, database = "IR_Dev"){
  
 
-# Tetsing ---------------------------------------------------------------------------------------------------------
+# Testing ---------------------------------------------------------------------------------------------------------
 
-df <- Tox_AL_Censored_data  
+#df <- Tox_AL_Censored_data 
+#database <- "IR_Dev"
    
-  # Pull data out for summing -----------------------------------------------
+
+
+# pollutant rename ------------------------------------------------------------------------------------------------
+  #open connection to database
+  con <- DBI::dbConnect(odbc::odbc(), database)
   
+  #Build query language to get Pentachlorophenol data out. this grabs the IR 2018 db view [dbo].[VW_Pentachlorophenol]
+  
+  db_qry <- glue::glue_sql( "SELECT distinct [Pollu_ID]
+      ,[Pollutant_DEQ WQS] as Char_Name
+  FROM [IntegratedReport].[dbo].[LU_Pollutant]", .con = con)
+  
+  # Send query to database and return with the data
+  Char_rename <-  DBI::dbGetQuery(con, db_qry)
+  
+ # Pull data out for summing -----------------------------------------------
   
   # DDT ---------------------------------------------------------------------
   
@@ -213,16 +228,14 @@ df <- Tox_AL_Censored_data
     # AU_type = 'WS'
     # 
     if(AU_type == "other"){  
-      group1 <- c('AU_ID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 
-                  'Simplified_sample_fraction')
+      group1 <- c('AU_ID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code')
       
       group2 <- c('AU_ID', 'Char_Name')
       inverse <- TRUE
       
       
     } else if (AU_type == "WS"){
-      group1 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 
-                  'Simplified_sample_fraction')
+      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code')
       
       group2 <- c('AU_ID', 'MLocID', 'Char_Name')
       inverse <- FALSE
@@ -249,11 +262,12 @@ df <- Tox_AL_Censored_data
                                                        ifelse(Char_Name == "Arsenic", num_samples, 
                                                               num_Samples_dissolved_fraction + (num_samples_total_fraction - num_excursions_total_fraction ) )), 
               critical_excursions = binomial_excursions(num_samples_crit_excursion_calc, type = "Toxics")) %>%
+    left_join(Char_rename) %>%
     # Assign categories
     mutate(IR_category = case_when(percent_3d == 100 &  num_samples_crit_excursion_calc >= 1 ~ "3D",
                                    num_excursions_all >= critical_excursions ~ "5",
                                    (num_samples_crit_excursion_calc < 10 | num_samples < 10 | num_sample_days < 10) & num_excursions_all == 1 ~ "3B",
-                                   (Char_Name == "Alkalinity, total" | Char_Name == "Alkalinity, bicarbonate") & num_excursions_all > 0 ~ "3B",
+                                   (Pollu_ID == 5 ) & num_excursions_all > 0 ~ "3B",
                                    (num_samples_crit_excursion_calc < 10 | num_samples < 10 | num_sample_days < 10) & num_excursions_all == 0 ~ "3",
                                    num_samples_crit_excursion_calc == 0 & criteria_fraction == "Total" & num_excursions_all < critical_excursions ~ "3",
                                    num_samples_crit_excursion_calc == 0 & criteria_fraction == "Dissolved" & num_excursions_all >= critical_excursions ~ "3B", 
@@ -266,7 +280,7 @@ df <- Tox_AL_Censored_data
                                  (num_samples_crit_excursion_calc < 10 | num_samples < 10 | num_sample_days < 10) & num_excursions_all == 1 ~ paste0("Insuffcient data: ", num_excursions_all,
                                                                                                                                                       " excursion of criteria with ",
                                                                                                                                                       num_samples, " total samples"),
-                                 (Char_Name == "Alkalinity, total" | Char_Name == "Alkalinity, bicarbonate") & num_excursions_all > 0 ~ paste0("Insuffcient data: ", "Analytical data indicates alkalinity is less than the criterion"),
+                                 (Pollu_ID == 5 ) & num_excursions_all > 0 ~ paste0("Insuffcient data: ", "Analytical data indicates alkalinity is less than the criterion"),
                                  (num_samples_crit_excursion_calc < 10 | num_samples == 1 | num_sample_days < 10) & 
                                    num_excursions_all == 0 ~ paste0("Insuffcient data: ", num_excursions_all,
                                                                     " excursion of criteria with ",
@@ -285,7 +299,7 @@ df <- Tox_AL_Censored_data
     mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE))
     
   
-  
+  Results_tox_AL_categories <- join_prev_assessments(Results_tox_AL_categories, AU_type = AU_type)
   
   return(Results_tox_AL_categories)
   }
@@ -301,7 +315,7 @@ df <- Tox_AL_Censored_data
 
   
   WS_AU_rollup <- AL_Tox_WS %>%
-    select(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, Char_Name, IR_category, Rationale) %>%
+    select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, Char_Name, IR_category, Rationale) %>%
     ungroup() %>%
     group_by(AU_ID, Char_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
     summarise(IR_category_AU = max(IR_category),

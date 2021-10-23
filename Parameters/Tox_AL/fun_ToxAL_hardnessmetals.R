@@ -189,16 +189,14 @@ Hardness_based_metals <- function(database){
     # AU_type = 'WS'
     # 
     if(AU_type == "other"){  
-      group1 <- c('AU_ID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 
-                  'Simplfied_Sample_Fraction')
+      group1 <- c('AU_ID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name')
       
     
       inverse <- TRUE
       
       
     } else if (AU_type == "WS"){
-      group1 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 
-                  'Simplfied_Sample_Fraction')
+      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' )
       
 
       inverse <- FALSE
@@ -222,20 +220,20 @@ Hardness_based_metals <- function(database){
               critical_excursions = binomial_excursions(num_samples_crit_excursion_calc, type = "Toxics")) %>%
     # Assign categories
     mutate(IR_category = case_when(percent_3d == 100 ~ "3D",
-                                   num_samples <= 2 & criteria_fraction == "Dissolved" & num_excursions_dissolved_fraction >= critical_excursions ~ "5",
-                                   num_samples <= 2 & criteria_fraction == "Total" & num_excursions_all >= critical_excursions ~ "5",
-                                   criteria_fraction == "Total" & num_excursions_all > critical_excursions ~ "5",
+                                   num_samples >= 2 & criteria_fraction == "Dissolved" & num_excursions_dissolved_fraction >= critical_excursions ~ "5",
+                                   num_samples >= 2 & criteria_fraction == "Total" & num_excursions_all >= critical_excursions ~ "5",
                                    num_samples < 10 & num_excursions_all >= 1 ~ "3B",
                                    criteria_fraction == "Dissolved" & num_excursions_total_fraction > 0 & num_Samples_dissolved_fraction == 0 ~ "3B",
                                    num_samples_crit_excursion_calc < 10 & num_excursions_all == 0 ~ "3",
                                   
-                                   num_excursions_dissolved_fraction <= critical_excursions ~ "2"
+                                   num_samples >= 10 & num_excursions_dissolved_fraction < critical_excursions ~ "2"
                                    ),
            Rationale = case_when(percent_3d == 100 ~ paste0("Insufficient data: All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
-                                 num_samples <= 2 & criteria_fraction == "Dissolved" & num_excursions_dissolved_fraction >= critical_excursions ~  paste0("Impaired: ", num_excursions_dissolved_fraction,
-                                                                                                                                      " excursion of dissolved fraction results <  criteria with ",
+                                 
+                                 num_samples >= 2 & criteria_fraction == "Dissolved" & num_excursions_dissolved_fraction >= critical_excursions ~  paste0("Impaired: ", num_excursions_dissolved_fraction,
+                                                                                                                                      " excursion of dissolved fraction results. ",
                                                                                                                                       num_samples, " total samples"),
-                                 num_samples <= 2 & criteria_fraction == "Total" & num_excursions_all >= critical_excursions ~  paste0(num_excursions_all, " excursions is less than ",
+                                 num_samples >= 2 & criteria_fraction == "Total" & num_excursions_all >= critical_excursions ~  paste0(num_excursions_all, " excursions is less than ",
                                                                                                                    critical_excursions, " needed to list- ",
                                                                                                                    num_samples, " total samples"),
                                  num_samples < 10 & num_excursions_all >= 1 ~ paste0("Insufficient data: ", num_excursions_all,
@@ -248,13 +246,13 @@ Hardness_based_metals <- function(database){
                                                                                                          " excursion of criteria with ",
                                                                                                          num_samples, " total samples"),
                                  
-                                 num_excursions_dissolved_fraction <= critical_excursions ~ paste0("Attaining: ", num_excursions_all, " excursions is less than ",
+                                 num_samples >= 10 & num_excursions_dissolved_fraction < critical_excursions ~ paste0("Attaining: ", num_excursions_all, " excursions is less than ",
                                                                                                  critical_excursions, " needed to list- ",
                                                                                                  num_samples, " total samples")
            )) %>%
     mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE))
              
-          
+  Results_tox_AL_HBM_cats <- join_prev_assessments(Results_tox_AL_HBM_cats, AU_type = AU_type)     
   return(Results_tox_AL_HBM_cats)
   
   }

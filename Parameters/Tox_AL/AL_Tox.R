@@ -11,6 +11,7 @@ source("parameters/Tox_AL/fun_ToxAL_Pentachlorophenol_assessment.R")
 source("parameters/Tox_AL/fun_ToxAL_copper_data.R")
 source("parameters/Tox_AL/fun_ToxAL_hardnessmetals.R")
 source("parameters/Tox_AL/fun_ToxAL_ammonia.R")
+source('Parameters/Tox_AL/toxAL_aluminum.R')
 
 
 
@@ -45,6 +46,11 @@ tox_AL_penta_cat <- TOX_AL_penta_analysis(tox_AL_penta_data)
 
 tox_AL_Ammonia <- ToxAL_Ammonia("IR_Dev")
 
+
+# Aluminum --------------------------------------------------------------------------------------------------------
+
+tox_AL_aluminum  <- aluminum_assessment("IR_Dev") 
+
 # Pull data together for export -----------------------------------------------------------------------------------
 
 
@@ -68,6 +74,10 @@ tox_AL_Ammonia_WS_cats       <- tox_AL_Ammonia[["AL_tox_Ammonia_WS"]]
 tox_AL_Ammonia_WS_rollup     <- tox_AL_Ammonia[["AL_tox_Ammonia_WS_rollup"]]
 
 
+tox_AL_Aluminum_data       <-  tox_AL_aluminum[['data']]
+tox_AL_Aluminum_other_cats <-  tox_AL_aluminum[['AL_Tox_AL_other']]
+tox_AL_Aluminum_WS_cats    <-  tox_AL_aluminum[['AL_Tox_AL_WS']]
+tox_AL_Aluminum_WS_rollup  <-  tox_AL_aluminum[['AL_Tox_AL_WS_rollup']]
 
 # Write excel doc -------------------------------------------------------------------------------------------------
 library(openxlsx)
@@ -92,6 +102,11 @@ addWorksheet(wb, sheetName = "tox_AL_Ammonia_other_cats"      )
 addWorksheet(wb, sheetName = "tox_AL_Ammonia_WS_cats"      )   
 addWorksheet(wb, sheetName = "tox_AL_Ammonia_WS_rollup"  )  
 
+addWorksheet(wb, sheetName =  'tox_AL_Aluminum_data'           )   
+addWorksheet(wb, sheetName =  'tox_AL_Aluminum_other_cats'      )   
+addWorksheet(wb, sheetName =  'tox_AL_Aluminum_WS_cats'      )   
+addWorksheet(wb, sheetName =  'tox_AL_Aluminum_WS_rollup'       )  
+
 header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
 
 freezePane(wb, "tox_AL_data"                , firstRow = TRUE)
@@ -112,7 +127,10 @@ freezePane(wb, "tox_AL_Ammonia_other_cats"  , firstRow = TRUE)
 freezePane(wb, "tox_AL_Ammonia_WS_cats"     , firstRow = TRUE)
 freezePane(wb, "tox_AL_Ammonia_WS_rollup"   , firstRow = TRUE) 
 
-
+freezePane(wb,  'tox_AL_Aluminum_data'       , firstRow = TRUE)
+freezePane(wb,  'tox_AL_Aluminum_other_cats' , firstRow = TRUE)
+freezePane(wb,  'tox_AL_Aluminum_WS_cats'    , firstRow = TRUE)
+freezePane(wb,  'tox_AL_Aluminum_WS_rollup'  , firstRow = TRUE) 
 
 writeData(wb = wb, sheet = "tox_AL_data"                , x = tox_AL_data, headerStyle = header_st)
 writeData(wb = wb, sheet = "tox_AL_other_cats"          , x = tox_AL_other_cats , headerStyle = header_st)
@@ -131,6 +149,11 @@ writeData(wb = wb, sheet = "tox_AL_Ammonia_data"        , x = tox_AL_Ammonia_dat
 writeData(wb = wb, sheet = "tox_AL_Ammonia_other_cats"  , x = tox_AL_Ammonia_other_cats, headerStyle = header_st) 
 writeData(wb = wb, sheet = "tox_AL_Ammonia_WS_cats"     , x = tox_AL_Ammonia_WS_cats, headerStyle = header_st)
 writeData(wb = wb, sheet = "tox_AL_Ammonia_WS_rollup"   , x = tox_AL_Ammonia_WS_rollup, headerStyle = header_st)
+
+writeData(wb = wb, sheet =  'tox_AL_Aluminum_data'        , x = tox_AL_Aluminum_data, headerStyle = header_st)
+writeData(wb = wb, sheet =  'tox_AL_Aluminum_other_cats'  , x = tox_AL_Aluminum_other_cats,    headerStyle = header_st) 
+writeData(wb = wb, sheet =  'tox_AL_Aluminum_WS_cats'     , x = tox_AL_Aluminum_WS_cats,   headerStyle = header_st)
+writeData(wb = wb, sheet =  'tox_AL_Aluminum_WS_rollup'   , x = tox_AL_Aluminum_WS_rollup,   headerStyle = header_st)
 
 print("Writing excel doc")
 saveWorkbook(wb, "Parameters/Outputs/Tox_AL.xlsx", overwrite = TRUE) 
