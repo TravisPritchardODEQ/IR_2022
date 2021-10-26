@@ -65,8 +65,10 @@ tox_AL_hard_other_cats       <- Tox_AL_hardness_cat[['AL_Tox_Hard_other']]
 tox_AL_hard_WS_cats          <- Tox_AL_hardness_cat[["AL_Tox_Hard_WS"]]
 tox_AL_hard_WS_rollup        <- Tox_AL_hardness_cat[["AL_Tox_Hard_WS_rollup"]]
 
-tox_AL_penta_data            <- tox_AL_penta_cat[["data"]]
-tox_AL_penta_cats            <- tox_AL_penta_cat[["penta_cats"]] 
+tox_AL_penta_data             <- tox_AL_penta_cat[["data"]]
+tox_AL_penta_other_cats       <- tox_AL_penta_cat[["AL_tox_Penta_other"]] 
+tox_AL_penta_WS_cats          <- tox_AL_penta_cat[["AL_tox_Penta_WS"]]
+tox_AL_penta_WS_rollup        <- tox_AL_penta_cat[["AL_tox_Penta_WS_rollup"]]
 
 tox_AL_Ammonia_data          <- tox_AL_Ammonia[["data"]]
 tox_AL_Ammonia_other_cats    <- tox_AL_Ammonia[["AL_tox_Ammonia_other"]]
@@ -94,8 +96,11 @@ addWorksheet(wb, sheetName = "tox_AL_hard_other_cats" )
 addWorksheet(wb, sheetName = "tox_AL_hard_WS_cats"    ) 
 addWorksheet(wb, sheetName = "tox_AL_hard_WS_rollup"  )
 
-addWorksheet(wb, sheetName = "tox_AL_penta_data"      )   
-addWorksheet(wb, sheetName = "tox_AL_penta_cats"      )   
+addWorksheet(wb, sheetName = 'tox_AL_penta_data'       )
+addWorksheet(wb, sheetName = 'tox_AL_penta_other_cats' )
+addWorksheet(wb, sheetName = 'tox_AL_penta_WS_cats'    )
+addWorksheet(wb, sheetName = 'tox_AL_penta_WS_rollup'  )
+
 
 addWorksheet(wb, sheetName = "tox_AL_Ammonia_data"      )   
 addWorksheet(wb, sheetName = "tox_AL_Ammonia_other_cats"      )   
@@ -112,15 +117,18 @@ header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
 freezePane(wb, "tox_AL_data"                , firstRow = TRUE)
 freezePane(wb, "tox_AL_other_cats"          , firstRow = TRUE)
 freezePane(wb, "tox_AL_WS_cats"             , firstRow = TRUE)
-freezePane(wb, "tox_AL_WS_rollup"      , firstRow = TRUE)
+freezePane(wb, "tox_AL_WS_rollup"      ,    firstRow = TRUE)
 
 freezePane(wb, "tox_AL_hard_data"           , firstRow = TRUE)
 freezePane(wb, "tox_AL_hard_other_cats"     , firstRow = TRUE)
 freezePane(wb, "tox_AL_hard_WS_cats"        , firstRow = TRUE)
 freezePane(wb, "tox_AL_hard_WS_rollup"      , firstRow = TRUE)
 
-freezePane(wb, "tox_AL_penta_data"          , firstRow = TRUE)
-freezePane(wb, "tox_AL_penta_cats"          , firstRow = TRUE)
+freezePane(wb,  'tox_AL_penta_data'       ,        firstRow = TRUE)
+freezePane(wb,  'tox_AL_penta_other_cats' ,        firstRow = TRUE)
+freezePane(wb,  'tox_AL_penta_WS_cats'    , firstRow = TRUE)
+freezePane(wb,  'tox_AL_penta_WS_rollup'  , firstRow = TRUE)
+
 
 freezePane(wb, "tox_AL_Ammonia_data"        , firstRow = TRUE)
 freezePane(wb, "tox_AL_Ammonia_other_cats"  , firstRow = TRUE)
@@ -142,8 +150,11 @@ writeData(wb = wb, sheet = "tox_AL_hard_other_cats"     , x = tox_AL_hard_other_
 writeData(wb = wb, sheet = "tox_AL_hard_WS_cats"        , x = tox_AL_hard_WS_cats, headerStyle = header_st)
 writeData(wb = wb, sheet = "tox_AL_hard_WS_rollup"      , x = tox_AL_hard_WS_rollup, headerStyle = header_st)
 
-writeData(wb = wb, sheet = "tox_AL_penta_data"          , x = tox_AL_penta_data, headerStyle = header_st)
-writeData(wb = wb, sheet = "tox_AL_penta_cats"          , x = tox_AL_penta_cats, headerStyle = header_st)
+writeData(wb = wb, sheet =   'tox_AL_penta_data'      , x = tox_AL_penta_data      , headerStyle = header_st)
+writeData(wb = wb, sheet =   'tox_AL_penta_other_cats', x = tox_AL_penta_other_cats, headerStyle = header_st)
+writeData(wb = wb, sheet =   'tox_AL_penta_WS_cats'   , x = tox_AL_penta_WS_cats   , headerStyle = header_st)
+writeData(wb = wb, sheet =   'tox_AL_penta_WS_rollup' , x = tox_AL_penta_WS_rollup , headerStyle = header_st)
+
 
 writeData(wb = wb, sheet = "tox_AL_Ammonia_data"        , x = tox_AL_Ammonia_data, headerStyle = header_st)
 writeData(wb = wb, sheet = "tox_AL_Ammonia_other_cats"  , x = tox_AL_Ammonia_other_cats, headerStyle = header_st) 
@@ -156,4 +167,4 @@ writeData(wb = wb, sheet =  'tox_AL_Aluminum_WS_cats'     , x = tox_AL_Aluminum_
 writeData(wb = wb, sheet =  'tox_AL_Aluminum_WS_rollup'   , x = tox_AL_Aluminum_WS_rollup,   headerStyle = header_st)
 
 print("Writing excel doc")
-saveWorkbook(wb, "Parameters/Outputs/Tox_AL.xlsx", overwrite = TRUE) 
+saveWorkbook(wb, "Parameters/Outputs/Tox_AL2.xlsx", overwrite = TRUE) 

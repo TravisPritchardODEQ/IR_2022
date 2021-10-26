@@ -15,7 +15,7 @@ options(dplyr.summarise.inform = FALSE)
 
 # Data Validation -------------------------------------------------------------------------------------------------
 # Create data validation table ------------------------------------------------------------------------------------
-
+# Only needs to be done at beginnning ofthe process
 source('Validation/data_validation.R')
 validate_data()
 

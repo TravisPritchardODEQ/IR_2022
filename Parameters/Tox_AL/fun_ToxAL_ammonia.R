@@ -70,7 +70,7 @@ ToxAL_Ammonia <- function(database){
   ammonia_data <- Results_import %>%
     left_join(spread, by = c('MLocID', 'SampleStartDate', 'Result_Depth')) %>%
     filter(!is.na(pH) & !is.na(Temp)) %>%
-    mutate(crit = ifelse(FishCode %in% c("XXXXX", "YYYYY"), 0.7249 * (0.0114 / (1 + 10^7204-pH)) + (1.6181 / (1 + 10 ^(pH-7204)) * min(51.93, 23.13*10^(0.036*(20-Temp)))),  
+    mutate(crit = ifelse(FishCode %in% c(11, 21, 99), 0.7249 * (0.0114 / (1 + 10^7204-pH)) + (1.6181 / (1 + 10 ^(pH-7204)) * min(51.93, 23.13*10^(0.036*(20-Temp)))),  
                          pmin((0.275/(1 + 10 ^ (7.204 - pH))) + (39.0/ (1 + 10 ^(pH - 7.204 ))) , 
                               0.7249 * ((0.0114/ ( 1 + 10^(7.204 - pH))) + (1.6181 / (1 + 10 ^ (pH - 7.204))) * (23.12*10^(0.036*(20-Temp))))) )  
     )
@@ -89,14 +89,14 @@ ToxAL_Ammonia <- function(database){
     
     
     if(AU_type == "other"){  
-      group1 <- c('AU_ID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Crit_fraction' )
+      group1 <- c('AU_ID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Crit_fraction' )
       
       group2 <- c('AU_ID', 'Char_Name')
       inverse <- TRUE
       
       
     } else if (AU_type == "WS"){
-      group1 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Crit_fraction')
+      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Crit_fraction')
       
       group2 <- c('AU_ID', 'MLocID', 'Char_Name')
       inverse <- FALSE
@@ -142,7 +142,7 @@ ToxAL_Ammonia <- function(database){
                                                                                                                              num_samples_total_fraction, " results of 'total fraction'.") )) %>%
       mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE))
     
-             
+    Results_tox_Ammonia_categories <- join_prev_assessments(Results_tox_Ammonia_categories, AU_type = AU_type)
              
   
              return(Results_tox_Ammonia_categories)
@@ -155,13 +155,13 @@ ToxAL_Ammonia <- function(database){
     mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
   
   WS_AU_rollup <- AL_tox_Ammonia_WS %>%
-    select(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, Char_Name, IR_category, Rationale) %>%
+    select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, Char_Name, IR_category, Rationale) %>%
     ungroup() %>%
     group_by(AU_ID, Char_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
     summarise(IR_category_AU = max(IR_category),
               Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
     mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
-  
+  WS_AU_rollup <- join_prev_assessments(WS_AU_rollup, AU_type = 'other')
     
   AL_ammonia_list <- list(data = Results_censored,
                           AL_tox_Ammonia_WS =AL_tox_Ammonia_WS,

@@ -573,8 +573,8 @@ WHERE        ((Statistical_Base = 'Minimum') AND MLocID in ({instant_mon_locs*})
     mutate(DO_concentration = IRResultNWQSunit,
            DO_sat = ifelse(is.na(DO_sat), DOSat_calc(DO_concentration, Temp_res, ELEV_Ft ), DO_sat ),
            DO_sat = ifelse(DO_sat > 100, 100, DO_sat )) %>%
-    mutate(Violation = case_when(is.na(DO_sat) & DO_concentration > crit_spawn ~ 1,
-                                 !is.na(DO_sat) &  DO_concentration > crit_spawn & DO_sat < 95 ~ 1,
+    mutate(Violation = case_when(is.na(DO_sat) & DO_concentration < crit_spawn ~ 1,
+                                 !is.na(DO_sat) &  DO_concentration < crit_spawn & DO_sat < 95 ~ 1,
                                  TRUE ~ 0))
   
   

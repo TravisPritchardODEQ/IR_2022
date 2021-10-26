@@ -167,16 +167,14 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
     # AU_type = 'WS'
     # 
     if(AU_type == "other"){  
-      group1 <- c('AU_ID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 
-                  'Simplified_sample_fraction', 'Crit_Fraction')
+      group1 <- c('AU_ID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 'Crit_Fraction')
       
       group2 <- c('AU_ID', 'Char_Name')
       inverse <- TRUE
       
       
     } else if (AU_type == "WS"){
-      group1 <- c('AU_ID', 'MLocID', 'GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 
-                   'Simplified_sample_fraction', 'Crit_Fraction')
+      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 'Crit_Fraction')
       
       group2 <- c('AU_ID', 'MLocID', 'Char_Name')
       inverse <- FALSE
@@ -207,18 +205,19 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
                                       num_samples < 3 & num_excursions >= 1 ~ "3B",
                                       num_samples < 3 & num_excursions == 0 ~ "3",
                                       num_not_3d < 3 ~ "3",
-                                      geomean <= crit ~ "2",
+                                      geomean < crit ~ "2",
                                       TRUE ~ "ERROR"), 
              Rationale =  case_when(percent_3d == 100 ~ paste0("All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
                                     num_samples >= 3 & geomean > crit ~ paste("Geometric mean of", round(geomean, 7), "above criteria of", crit,  " - ", num_samples, " total samples"),
                                     num_samples < 3 & num_excursions >= 1 ~ paste('Only', num_samples, " samples", 'and', num_excursions, "excursions"), 
                                     num_samples < 3 & num_excursions == 0 ~ paste('Only', num_samples, " samples", 'and', num_excursions, "excursions"),
                                     num_not_3d < 3 ~ paste("Only", num_not_3d, 'samples have QL above criteria',   " - ", num_samples, " total samples"),
-                                    geomean <= crit ~ paste0("Geometric mean ", geomean, " < criteria (", crit, ")",  " - ", num_samples, " total samples"),
+                                    geomean < crit ~ paste0("Geometric mean ", geomean, " < criteria (", crit, ")",  " - ", num_samples, " total samples"),
                                     TRUE ~ "ERROR")) %>%
         arrange(AU_ID, Char_Name) %>%
       mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE))
     
+    tox_HH_assessment <- join_prev_assessments(tox_HH_assessment, AU_type = AU_type)
     
     return(tox_HH_assessment)
     
@@ -232,13 +231,13 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
  
   
   WS_AU_rollup <- tox_HH_WS_assessments %>%
-    select(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code, Char_Name, OWRD_Basin,  IR_category, Rationale) %>%
+    select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code, Char_Name, OWRD_Basin,  IR_category, Rationale) %>%
     group_by(AU_ID, Pollu_ID, wqstd_code, Char_Name, OWRD_Basin) %>%
     summarise(IR_category_AU = max(IR_category),
               Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
     mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
   
-  
+  WS_AU_rollup <- join_prev_assessments(WS_AU_rollup, AU_type = "other")
   
   
   if(write_excel){

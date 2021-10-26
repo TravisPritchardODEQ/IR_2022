@@ -7,7 +7,7 @@ library(odeqIRtools)
 
 
 turb_data <- function(database) {
-  print("Fetch Chl data from IR database")
+  print("Fetch Turbidity  data from IR database")
   #connect to IR database view as a general user
   # import Temperature data
   IR.sql <-   odbcConnect(database)

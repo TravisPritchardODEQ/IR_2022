@@ -297,6 +297,8 @@ Results_tox_AL_aluminum_cats <- df_data %>%
                                    
                                  
                                 )
+Results_tox_AL_aluminum_cats <- join_prev_assessments(Results_tox_AL_aluminum_cats, AU_type = AU_type)
+
 }
 
 AL_Tox_AL_WS <- AL_tox_aluminum_assess_fun(df_data = al_criteria_excursions, AU_type = "WS")
@@ -312,7 +314,7 @@ WS_AU_rollup <- AL_Tox_AL_WS %>%
             Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
 
-
+WS_AU_rollup <- join_prev_assessments(WS_AU_rollup, AU_type = 'other')
 
 Results_tox_Al_AL <- list(data =     al_criteria_excursions,
                           AL_Tox_AL_WS = AL_Tox_AL_WS,

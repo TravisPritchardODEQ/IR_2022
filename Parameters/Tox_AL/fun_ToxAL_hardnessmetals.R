@@ -264,14 +264,14 @@ Hardness_based_metals <- function(database){
   
   
   WS_AU_rollup <- AL_Tox_Hard_WS %>%
-    select(AU_ID, MLocID, GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, Char_Name, IR_category, Rationale) %>%
+    select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, Char_Name, IR_category, Rationale) %>%
     ungroup() %>%
     group_by(AU_ID, Char_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
     summarise(IR_category_AU = max(IR_category),
               Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
     mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
   
-  
+  WS_AU_rollup <- join_prev_assessments(WS_AU_rollup, AU_type = 'other')
   Results_tox_hard_AL <- list(data = Results_censored,
                               AL_Tox_Hard_WS = AL_Tox_Hard_WS,
                               AL_Tox_Hard_other = AL_Tox_Hard_other,

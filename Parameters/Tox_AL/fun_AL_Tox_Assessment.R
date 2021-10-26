@@ -321,7 +321,7 @@ TOX_AL_analysis <- function(df, database = "IR_Dev"){
     summarise(IR_category_AU = max(IR_category),
               Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
     mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
-  
+  WS_AU_rollup <- join_prev_assessments(WS_AU_rollup, AU_type = 'other')
   
   
   

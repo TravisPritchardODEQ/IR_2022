@@ -154,11 +154,11 @@ fresh_AU_summary_no_WS0 <-  fresh_contact_geomeans %>%
             geomean_exceed_date_periods = ifelse(geomean_over == 1 ,str_c(na.omit(unique(dates_90[geomean > Geomean_Crit]), collapse = "; ")),NA),
             ss_exceed_date_periods = str_c(unique(SampleStartDate[Result_cen > SS_Crit]), collapse =  "; ")) %>%
   mutate(IR_category = case_when(geomean_over == 1 ~ "5",
-                                 num_Samples >= 5 & num_ss_excursions > critical_excursions ~  "5",
+                                 num_Samples >= 5 & num_ss_excursions >= critical_excursions ~  "5",
                                  is.na(Max_Geomean) & max.value < SS_Crit & num_Samples < 5 ~ "3",
                                  is.na(Max_Geomean) & max.value > SS_Crit & num_Samples < 5 ~ "3B",
                                  !is.na(Max_Geomean) & Max_Geomean <= Geomean_Crit ~ "2",
-                                 is.na(Max_Geomean) & num_Samples >= 5 & num_ss_excursions <= critical_excursions ~ "2",
+                                 is.na(Max_Geomean) & num_Samples >= 5 & num_ss_excursions < critical_excursions ~ "2",
                                  TRUE ~ "ERROR"),
          Rationale = case_when(geomean_over == 1 ~ paste0("Impaired: Geomeans at ", mlocs_geomean_exceed, " exceed criteria value of ", Geomean_Crit, " for time periods ",geomean_exceed_date_periods, "- ",num_Samples, " total samples"  ),
                                num_Samples >= 5 & num_ss_excursions > critical_excursions ~  paste0("Impaired: Single samples exceed criteria value of ",
