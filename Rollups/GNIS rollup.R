@@ -6,12 +6,7 @@ library(openxlsx)
 # Load in rollup function -----------------------------------------------------------------------------------------
 
 source('Rollups/GNIS_Rollup_function.R')
-# Load in previous assessment conclusions -------------------------------------------------------------------------
-
-
-previous_WS_GNIS_assessments <- odeqIRtools::WS_GNIS_previous_listings
-
-
+source('Rollups/poll_asses_join.R')
 
 # Bring in assessments --------------------------------------------------------------------------------------------
 
@@ -21,85 +16,25 @@ previous_WS_GNIS_assessments <- odeqIRtools::WS_GNIS_previous_listings
 
 ### Year round ------------------------------------------------------------------------------------------------------
 
-Year_rnd_temp_prev_cat <- previous_WS_GNIS_assessments %>%
-  filter(Pollu_ID == 132,
-         wqstd_code == 12,
-         period == 'year_round') %>%
-  select(-Char_Name)
 
 
 temp_yr_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessments-corrected crit periods.xlsx',
-                                sheet = 'YrRnd WS station cat') 
+                                sheet = 'YrRnd WS station cat') %>%
+  GNIS_rollup(periods = TRUE) %>%
+  join_pollu_assess()
 
-temp_yr_WS_station_GNIS_rollup <- temp_yr_WS_station %>%
-  mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE),
-         AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
-  group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code, period) %>%
-  summarise(stations =  paste(MLocID, collapse = "; "),
-            GNIS_IR_category = max(IR_category)) %>%
-  full_join(Year_rnd_temp_prev_cat, by = c("AU_ID", "AU_GNIS", "Pollu_ID", "wqstd_code", "period")) %>%
-  mutate(GNIS_IR_category = case_when(is.na(GNIS_IR_category) ~ "Unassessed",
-                                      TRUE ~as.character(GNIS_IR_category)),
-         GNIS_previous_IR_impairement = case_when(is.na(GNIS_previous_IR_impairement) ~ "Not previously listed",
-                                                  TRUE ~ GNIS_previous_IR_impairement)) %>%
-  separate(AU_GNIS, c(NA, "AU_GNIS_Name"),sep = ";") %>%
-  arrange(AU_ID, AU_GNIS_Name) 
+
 
 
 # ## Spawning -----------------------------------------------------------------------------------------------------
 
-Spawn_temp_prev_cat <- previous_WS_GNIS_assessments %>%
-  filter(Pollu_ID == 132,
-         wqstd_code == 12,
-         period == 'Spawn') %>%
-  mutate(period = "spawn") %>%
-  select(-Char_Name)
 
 
-temp_spawm_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessments-corrected crit periods.xlsx',
-                                sheet = 'Spawn WS station cat') 
+temp_spawn_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessments-corrected crit periods.xlsx',
+                                sheet = 'Spawn WS station cat') %>%
+  GNIS_rollup(periods = TRUE) %>%
+  join_pollu_assess()
 
-
-
-temp_spawn_WS_station_GNIS_rollup <- temp_spawm_WS_station %>%
-  mutate(IR_category = factor(IR_category, levels=c("3", "3B", "2", "5" ), ordered=TRUE),
-         AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
-  group_by(AU_ID, AU_GNIS,  Pollu_ID, wqstd_code, period) %>%
-  summarise(stations =  paste(MLocID, collapse = "; "),
-            GNIS_IR_category = max(IR_category)) %>%
-  full_join(Spawn_temp_prev_cat, by = c("AU_ID", "AU_GNIS", "Pollu_ID", "wqstd_code", "period")) %>%
-  mutate(GNIS_IR_category = case_when(is.na(GNIS_IR_category) ~ "Unassessed",
-                                      TRUE ~as.character(GNIS_IR_category)),
-         GNIS_previous_IR_impairement = case_when(is.na(GNIS_previous_IR_impairement) ~ "Not previously listed",
-                                                  TRUE ~ GNIS_previous_IR_impairement)) %>%
-  separate(AU_GNIS, c(NA, "AU_GNIS_Name"),sep = ";") %>%
-  arrange(AU_ID, AU_GNIS_Name) 
- 
-
-temp_WS_station_GNIS_rollup <- temp_yr_WS_station_GNIS_rollup %>%
-  bind_rows(temp_spawn_WS_station_GNIS_rollup) %>%
-  ungroup() %>%
-  mutate(GNIS_final_IR_category = case_when(GNIS_IR_category == "Unassessed" ~ GNIS_previous_IR_impairement,
-                                            GNIS_previous_IR_impairement == 'Not previously listed' ~ GNIS_IR_category,
-                                            GNIS_IR_category == '2' ~ '2',
-                                            GNIS_IR_category == '5' ~ '5',
-                                            grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement == 'Not previously listed' ~ GNIS_IR_category,
-                                            grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement != 'Not previously listed' ~ GNIS_previous_IR_impairement,
-  )) %>%
-  mutate(GNIS_final_IR_category = str_remove(GNIS_final_IR_category, 'Category ')) %>%
-  mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("3", "3B", "2", "5", '4A' ), ordered=TRUE)) %>%
-  group_by(AU_ID, period) %>%
-  mutate(AU_final_status = max(GNIS_final_IR_category)) %>%
-  ungroup() %>%
-  mutate(GNIS_remove_impairment = case_when(GNIS_final_IR_category == 2 & GNIS_previous_IR_impairement %in% c("Category 5", "Category 4A") ~ "Yes",
-                                            TRUE ~ "No"
-                                            ),
-         AU_delist = case_when(AU_final_status == 2 & GNIS_previous_IR_impairement != 'Not previously listed' ~ "Yes",
-                               GNIS_previous_IR_impairement == 'Not previously listed' ~ "Not Applicable",
-                               TRUE ~ "No"
-                               ))%>%
-  ungroup() %>%
-  arrange(AU_ID, AU_GNIS_Name) 
 
 #write.xlsx(temp_WS_station_GNIS_rollup, file = 'Rollups/Rollup outputs/temperature_GNIS_rollup.xlsx')
 
@@ -115,16 +50,157 @@ bacteria_fresh_WS_station <- read.xlsx('Rollups/Rollup Assessment/bacteria fresh
 
 
 bacteria_fresh_WS_station_GNIS_rollup <- GNIS_rollup(bacteria_fresh_WS_station)
+bacteria_fresh_WS_station_GNIS_rollup <- join_pollu_assess(bacteria_fresh_WS_station_GNIS_rollup)
 
-write.xlsx(bacteria_fresh_WS_station_GNIS_rollup, file = 'Rollups/Rollup outputs/bacteria_fresh_GNIS_rollup.xlsx')
+#write.xlsx(bacteria_fresh_WS_station_GNIS_rollup, file = 'Rollups/Rollup outputs/bacteria_fresh_GNIS_rollup.xlsx')
 
 
 ### Coastal Contact -------------------------------------------------------------------------------------------------
 
-bacteria_fresh_WS_station <- read.xlsx('Rollups/Rollup Assessment/bacteria coast contact.xlsx',
-                                       sheet = 'WS station categorization') 
+bacteria_coast_WS_station <- read.xlsx('Rollups/Rollup Assessment/bacteria coast contact.xlsx',
+                                       sheet = 'WS station categorization')  %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
 
 
-bacteria_coast_WS_station_GNIS_rollup <- GNIS_rollup(bacteria_fresh_WS_station)
 
-write.xlsx(bacteria_coast_WS_station_GNIS_rollup, file = 'Rollups/Rollup outputs/bacteria_coast_GNIS_rollup.xlsx')
+#write.xlsx(bacteria_coast_WS_station_GNIS_rollup, file = 'Rollups/Rollup outputs/bacteria_coast_GNIS_rollup.xlsx')
+
+
+## Chl -----------------------------------------------------------------------------------------------------------
+
+chl_WS_station <- read.xlsx("Rollups/Rollup Assessment/chl-a.xlsx",
+                            sheet = 'WS station categorization') %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
+
+
+## DO --------------------------------------------------------------------------------------------------------------
+
+
+### DO year round  ----------------------------------------------------------------------------------------------
+
+DO_yr_cont <- read.xlsx('Rollups/Rollup Assessment/DO Year Round.xlsx',
+                        sheet = 'Yr Rnd Cont WS Station Cat') %>%
+  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category)
+
+DO_yr_inst <- read.xlsx('Rollups/Rollup Assessment/DO Year Round.xlsx',
+                        sheet = 'Yr Rnd Instant WS Station Cat') %>%
+  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category)
+
+DO_yr <- bind_rows(DO_yr_cont, DO_yr_inst) %>%
+  GNIS_rollup(periods = TRUE, DO = TRUE) %>%
+  join_pollu_assess()
+
+
+### DO Spawn --------------------------------------------------------------------------------------------------------
+
+DO_sp_cont <- read.xlsx('Rollups/Rollup Assessment/DO Spawn.xlsx',
+                        sheet = 'Spawn Cont WS Station Cat') %>%
+  mutate(period = ifelse(period == 'Spawn', "spawn", period )) %>%
+  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category)
+
+DO_sp_inst <- read.xlsx('Rollups/Rollup Assessment/DO Spawn.xlsx',
+                        sheet = 'Spawn Instant WS Station Cat') %>%
+  mutate(period = ifelse(period == 'Spawn', "spawn", period )) %>%
+  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category)
+
+DO_spawn <- bind_rows(DO_sp_cont, DO_sp_inst) %>%
+  GNIS_rollup(periods = TRUE, DO = TRUE) %>%
+  join_pollu_assess()
+
+##  pH ------------------------------------------------------------------------------------------------------------
+
+ph_WS_station <- read.xlsx('Rollups/Rollup Assessment/pH.xlsx',
+                           sheet = 'pH WS station cat') %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
+
+
+## Tox_AL ----------------------------------------------------------------------------------------------------------
+
+
+### others ------------------------------------------------------------------------------------------------------
+
+
+tox_AL_other_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
+                                     sheet = 'tox_AL_WS_cats') %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
+
+
+### hardness metals -------------------------------------------------------------------------------------------------
+
+tox_AL_hard_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
+                                     sheet = 'tox_AL_hard_WS_cats') %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
+
+
+
+### penta -----------------------------------------------------------------------------------------------------------
+
+tox_AL_penta_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
+                                    sheet = 'tox_AL_penta_WS_cats') %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
+
+
+
+### Ammonia --------------------------------------------------------------------------------------------------------
+
+
+tox_AL_ammonia_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
+                                     sheet = 'tox_AL_Ammonia_WS_cats') %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
+
+
+
+### Aluminum --------------------------------------------------------------------------------------------------------
+
+tox_AL_aluminum_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
+                                       sheet = 'tox_AL_Aluminum_WS_cats') %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
+
+
+
+## Tox HH ----------------------------------------------------------------------------------------------------------
+
+tox_HH_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_HH.xlsx',
+                                        sheet = 'HH Tox WS Station Cat') %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
+
+
+# Turbidity ---------------------------------------------------------------------------------------------------------
+turbidity_WS_station <- read.xlsx('Rollups/Rollup Assessment/turbidity.xlsx',
+                               sheet = 'Turb WS categorization') %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()
+
+
+
+
+
+# All put together ------------------------------------------------------------------------------------------------
+
+WS_GNIS_rollup <- bind_rows(temp_yr_WS_station,
+                            temp_spawn_WS_station,
+                            bacteria_fresh_WS_station_GNIS_rollup,
+                            bacteria_coast_WS_station,
+                            chl_WS_station,
+                            DO_yr,
+                            DO_spawn,
+                            ph_WS_station,
+                            tox_AL_other_WS_station,
+                            tox_AL_hard_WS_station,
+                            tox_AL_penta_WS_station,
+                            tox_AL_ammonia_WS_station,
+                            tox_AL_aluminum_WS_station,
+                            tox_HH_WS_station,
+                            turbidity_WS_station
+                            )
+
+write.xlsx(WS_GNIS_rollup, file = 'Rollups/Rollup outputs/GNIS_rollup.xlsx')
