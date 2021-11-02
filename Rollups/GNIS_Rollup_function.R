@@ -3,7 +3,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
   
 
   #testing
-  # df <- DO_yr_inst
+  # df <- bacteria_fresh_WS_station
   # DO <-  TRUE
   # 
   
@@ -30,7 +30,8 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
              AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
       group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code) %>%
       summarise(stations =  paste(MLocID, collapse = "; "),
-                GNIS_IR_category = max(IR_category)) %>%
+                GNIS_IR_category = max(IR_category),
+                Rationale = paste(Rationale, collapse = " ~ ")) %>%
       full_join(subset_prev_cat, by = c("AU_ID", "AU_GNIS", "Pollu_ID", "wqstd_code")) %>%
       full_join(subset_prev_AU_cat) %>%
       
@@ -100,7 +101,8 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
              AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
       group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code, period) %>%
       summarise(stations =  paste(MLocID, collapse = "; "),
-                GNIS_IR_category = max(IR_category)) %>%
+                GNIS_IR_category = max(IR_category),
+                Rationale = paste(Rationale, collapse = " ~ ")) %>%
       full_join(subset_prev_cat,by = c("AU_ID", "AU_GNIS", "Pollu_ID", "wqstd_code", "period")) %>%
       full_join(subset_prev_AU_cat, by = c("AU_ID", "Pollu_ID", "wqstd_code", "period")) %>%
       
@@ -183,7 +185,8 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
              AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
       group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code, DO_Class, period) %>%
       summarise(stations =  paste(MLocID, collapse = "; "),
-                GNIS_IR_category = max(IR_category)) %>%
+                GNIS_IR_category = max(IR_category),
+                Rationale = paste(Rationale, collapse = " ~ ")) %>%
       left_join(subset_prev_cat) %>%
       full_join(subset_prev_cat_no_class, by = c("AU_ID", "AU_GNIS", "Pollu_ID", "wqstd_code", "period")) %>%
       mutate(GNIS_previous_IR_impairement = case_when(!is.na(GNIS_previous_IR_impairement_class) ~ GNIS_previous_IR_impairement_class,

@@ -22,6 +22,9 @@ Pentachlorophenol_data <- function(database){
   print(paste("Returned", nrow(Results_import), "results from", length(unique(Results_import$MLocID)), "monitoring locations"))
   print("Fetch matching pH values")
   
+  
+  
+  Results_import <- odeqIRtools::data_aggregation(Results_import)
   #Create a vector of monitoring locations with Pentachlorophenol data. This list is used as a filter for the pH query
   mlocs <- unique(Results_import$MLocID)
   
@@ -69,6 +72,8 @@ WHERE Pollu_ID = '124' AND (Statistical_Base IS NULL)
     filter(!is.na(pH))
   
   print("Data censoring")
+  
+
   
   #Run data censoring here
   data_censored <- censor_data(joined_data, criteria_col = CMC_crit)

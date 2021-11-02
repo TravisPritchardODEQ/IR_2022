@@ -28,6 +28,8 @@ chla_data <- function(database) {
   Results_import %>% map_if(is.factor, as.character) %>% as_data_frame -> Results_import
   
   
+  Results_import <- odeqIRtools::data_aggregation(Results_import)
+  
   
   # Data censoring --------------------------------------------------------------------------------------------------
   

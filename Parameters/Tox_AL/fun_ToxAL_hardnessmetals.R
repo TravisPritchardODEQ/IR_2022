@@ -36,6 +36,8 @@ Hardness_based_metals <- function(database){
   Results_import_no_NAs <- Results_import %>%
     filter(!is.na(MLocID))
   
+  Results_import_no_NAs <- odeqIRtools::data_aggregation(Results_import_no_NAs)
+  
   print(paste("Returned", nrow(Results_import), "results from", length(unique(Results_import$MLocID)), "monitoring locations"))
   
   #Create a vector of monitoring locations with metals data. This list is used as a filter for the hardness query

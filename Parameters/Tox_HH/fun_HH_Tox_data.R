@@ -32,6 +32,8 @@ database <- "IR_Dev"
   # Set factors to characters
   Results_import %>% map_if(is.factor, as.character) %>% as_data_frame -> Results_import
   
+  Results_import <- odeqIRtools::data_aggregation(Results_import)
+  
   
   # choose the correct crit
   # if the ben-use code includes public or private water supply, select WaterOrganism

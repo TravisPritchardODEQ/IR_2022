@@ -27,6 +27,10 @@ Copper_data <- function(database){
   # Send query to database and return with the data
   Results_import <-  DBI::dbGetQuery(con, db_qry)
   
+  
+  Results_import <- odeqIRtools::data_aggregation(Results_import)
+  
+  
   print(paste("Returned", nrow(Results_import), "results from", length(unique(Results_import$MLocID)), "monitoring locations"))
   
   #Create a vector of monitoring locations with Pentachlorophenol data. This list is used as a filter for the pH query

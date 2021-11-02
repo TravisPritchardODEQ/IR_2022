@@ -38,7 +38,7 @@ tox_AL_penta_cat <- TOX_AL_penta_analysis(tox_AL_penta_data)
 # Copper data -----------------------------------------------------------------------------------------------------
 
 
-#Copper_data("IR_Dev")
+Copper_data("IR_Dev")
 
 
 

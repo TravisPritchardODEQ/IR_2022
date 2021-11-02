@@ -30,6 +30,7 @@ Results_import_no_NAs <- Results_import %>%
 print(paste("Returned", nrow(Results_import), 
             "results from", length(unique(Results_import$MLocID)), "monitoring locations"))
 
+Results_import_no_NAs <- odeqIRtools::data_aggregation(Results_import_no_NAs)
 
 #Create a vector of monitoring locations with metals data. This list is used as a filter for the hardness query
 mlocs <- unique(Results_import_no_NAs$MLocID)
