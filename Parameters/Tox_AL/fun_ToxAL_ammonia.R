@@ -89,14 +89,14 @@ ToxAL_Ammonia <- function(database){
     
     
     if(AU_type == "other"){  
-      group1 <- c('AU_ID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Crit_fraction' )
+      group1 <- c('AU_ID', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Crit_fraction' )
       
       group2 <- c('AU_ID', 'Char_Name')
       inverse <- TRUE
       
       
     } else if (AU_type == "WS"){
-      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Crit_fraction')
+      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'Pollu_ID', 'wqstd_code', 'Char_Name', 'Crit_fraction')
       
       group2 <- c('AU_ID', 'MLocID', 'Char_Name')
       inverse <- FALSE
@@ -155,9 +155,9 @@ ToxAL_Ammonia <- function(database){
     mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))
   
   WS_AU_rollup <- AL_tox_Ammonia_WS %>%
-    select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,  OWRD_Basin, Char_Name, IR_category, Rationale) %>%
+    select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,   Char_Name, IR_category, Rationale) %>%
     ungroup() %>%
-    group_by(AU_ID, Char_Name, Pollu_ID, wqstd_code,  OWRD_Basin) %>%
+    group_by(AU_ID, Char_Name, Pollu_ID, wqstd_code) %>%
     summarise(IR_category_AU = max(IR_category),
               Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
     mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))

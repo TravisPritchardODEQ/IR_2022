@@ -167,14 +167,14 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
     # AU_type = 'WS'
     # 
     if(AU_type == "other"){  
-      group1 <- c('AU_ID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 'Crit_Fraction')
+      group1 <- c('AU_ID',  'Pollu_ID', 'wqstd_code', 'Char_Name' , 'Crit_Fraction')
       
       group2 <- c('AU_ID', 'Char_Name')
       inverse <- TRUE
       
       
     } else if (AU_type == "WS"){
-      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'OWRD_Basin', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 'Crit_Fraction')
+      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 'Crit_Fraction')
       
       group2 <- c('AU_ID', 'MLocID', 'Char_Name')
       inverse <- FALSE
@@ -231,8 +231,8 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
  
   
   WS_AU_rollup <- tox_HH_WS_assessments %>%
-    select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code, Char_Name, OWRD_Basin,  IR_category, Rationale) %>%
-    group_by(AU_ID, Pollu_ID, wqstd_code, Char_Name, OWRD_Basin) %>%
+    select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code, Char_Name,  IR_category, Rationale) %>%
+    group_by(AU_ID, Pollu_ID, wqstd_code, Char_Name) %>%
     summarise(IR_category_AU = max(IR_category),
               Rationale_AU = str_c(MLocID, ": ", Rationale, collapse =  " ~ " ) ) %>%
     mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code))

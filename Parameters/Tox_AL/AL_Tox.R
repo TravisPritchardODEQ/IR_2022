@@ -167,4 +167,4 @@ writeData(wb = wb, sheet =  'tox_AL_Aluminum_WS_cats'     , x = tox_AL_Aluminum_
 writeData(wb = wb, sheet =  'tox_AL_Aluminum_WS_rollup'   , x = tox_AL_Aluminum_WS_rollup,   headerStyle = header_st)
 
 print("Writing excel doc")
-saveWorkbook(wb, "Parameters/Outputs/Tox_AL2.xlsx", overwrite = TRUE) 
+saveWorkbook(wb, "Parameters/Outputs/Tox_AL.xlsx", overwrite = TRUE) 
