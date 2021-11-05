@@ -3,7 +3,8 @@ library(openxlsx)
 
 fun_turb_analysis <- function(df, write_excel = TRUE){
 
-#df <- Results_censored_turb
+#df <- Results_censored_turb %>%
+  filter(AU_ID == 'OR_WS_170900060805_02_104399')
 
 
 turb_data <- df %>%
@@ -45,7 +46,7 @@ turb_assessment <- df_data %>%
   group_by_at(group2) %>%
   summarise(IR_category = case_when(max(total_excursion_day) > 45 ~ "5",
                                     max(total_excursion_day) <= 45 ~ "2"),
-            Rationale = case_when(max(total_excursion_day) > 45 ~ paste0("Impaired: ",str_c( year[total_excursion_day > 45], ': ', total_excursion_day, " high turbidity days", collapse = "; ")),
+            Rationale = case_when(max(total_excursion_day) > 45 ~ paste0("Impaired: ",str_c( year[total_excursion_day > 45], ': ', total_excursion_day[total_excursion_day > 45], " high turbidity days", collapse = "; ")),
                                   max(total_excursion_day) <= 45 ~ "Attaining: All years of data show 45 or less high turbidity days per year."))%>%
   mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE))
 
