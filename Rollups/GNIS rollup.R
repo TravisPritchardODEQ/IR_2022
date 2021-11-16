@@ -83,12 +83,12 @@ chl_WS_station <- read.xlsx("Rollups/Rollup Assessment/chl-a.xlsx",
 
 DO_yr_cont <- read.xlsx('Rollups/Rollup Assessment/DO Year Round.xlsx',
                         sheet = 'Yr Rnd Cont WS Station Cat') %>%
-  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale) %>%
+  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale, Delist, GNIS_previous_IR_impairement) %>%
   mutate(Rationale = paste0(MLocID, ":", " ", Rationale))
 
 DO_yr_inst <- read.xlsx('Rollups/Rollup Assessment/DO Year Round.xlsx',
                         sheet = 'Yr Rnd Instant WS Station Cat') %>%
-  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale)%>%
+  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale, Delist, GNIS_previous_IR_impairement) %>%
   mutate(Rationale = paste0(MLocID, ":", " ", Rationale))
 
 DO_yr <- bind_rows(DO_yr_cont, DO_yr_inst) %>%
@@ -101,13 +101,13 @@ DO_yr <- bind_rows(DO_yr_cont, DO_yr_inst) %>%
 DO_sp_cont <- read.xlsx('Rollups/Rollup Assessment/DO Spawn.xlsx',
                         sheet = 'Spawn Cont WS Station Cat') %>%
   mutate(period = ifelse(period == 'Spawn', "spawn", period )) %>%
-  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale) %>%
+  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale, Delist, GNIS_previous_IR_impairement) %>%
   mutate(Rationale = paste0(MLocID, ":", " ", Rationale))
 
 DO_sp_inst <- read.xlsx('Rollups/Rollup Assessment/DO Spawn.xlsx',
                         sheet = 'Spawn Instant WS Station Cat') %>%
   mutate(period = ifelse(period == 'Spawn', "spawn", period )) %>%
-  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale) %>%
+  select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale, Delist, GNIS_previous_IR_impairement) %>%
   mutate(Rationale = paste0(MLocID, ":", " ", Rationale))
 
 DO_spawn <- bind_rows(DO_sp_cont, DO_sp_inst) %>%
@@ -316,6 +316,13 @@ WS_AU_rollup <- WS_GNIS_param_rollup %>%
                               !is.na(period) & is.na(DO_Class) ~paste0(year_assessed, "-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-",
                                                                       wqstd_code,"-", period) ) )
 
+delistings_GNIS <- WS_GNIS_param_rollup %>%
+  filter(GNIS_remove_impairment == "Yes")
+
+delistings_WS_AU <- WS_AU_rollup %>%
+  filter(AU_delist == "Yes") %>%
+  select(AU_ID, Pollutant, Assessment,stations, Pollu_ID, wqstd_code, period,DO_Class,AU_final_status, Rationale, AU_delist)
+
 wb <- createWorkbook()
 addWorksheet(wb, sheetName = "WS_GNIS_param_rollup")
 addWorksheet(wb, sheetName = "WS_AU_rollup")
@@ -331,4 +338,4 @@ saveWorkbook(wb, 'Rollups/Rollup outputs/GNIS_rollup.xlsx', overwrite = TRUE)
 
 
 
-save(WS_AU_rollup, WS_GNIS_rollup,WS_GNIS_param_rollup, file = 'Rollups/WS_AU_GNIS_rollup.Rdata')
+save(WS_AU_rollup, WS_GNIS_rollup,WS_GNIS_param_rollup,delistings_GNIS, delistings_WS_AU, file = 'Rollups/WS_AU_GNIS_rollup.Rdata')

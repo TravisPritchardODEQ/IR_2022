@@ -107,7 +107,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
       #If we don't have inorganic, temporarily set the criteria fraction to total so the assessment code works properly
       #we will set this back to 'inorganic' later
     mutate(Crit_Fraction = ifelse(is_inorganic == 0 , "Total", Crit_Fraction)) %>%
-    select(-is_inorganic, -has_inorganic)
+    select(-is_inorganic, -has_inorganic) 
   
   
   # Put summed data together
@@ -145,8 +145,8 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
     filter((Has_Crit_Fraction == 1 & Simplified_sample_fraction == Crit_Fraction) | Has_Crit_Fraction == 0) %>% 
     # Remove results with null evaluation_criteria (indicating a mismatch between water type and criteria (ex freshwater phosporus samples ))
     filter(!is.na(crit)) %>%
-    mutate(evaluation_result = ifelse(Char_Name == "Arsenic" & Sample_Fraction == "Total" & WaterTypeCode == 2, Result_cen*0.8, 
-                                      ifelse(Char_Name == "Arsenic" & Sample_Fraction == "Total" & WaterTypeCode != 2, Result_cen*0.59, Result_cen ))) %>%
+    mutate(evaluation_result = ifelse(Char_Name == "Arsenic" & Simplified_sample_fraction == "Total" & WaterTypeCode == 2, Result_cen*0.8, 
+                                      ifelse(Char_Name == "Arsenic" & Simplified_sample_fraction == "Total" & WaterTypeCode != 2, Result_cen*0.59, Result_cen ))) %>%
     mutate(excursion = ifelse(evaluation_result > crit, 1, 0 )) %>%
     mutate(is.3d = case_when(Result_Operator == "<" & IRResultNWQSunit > crit ~ 1,
                              TRUE ~ 0 )) %>%
@@ -167,16 +167,16 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
     # AU_type = 'WS'
     # 
     if(AU_type == "other"){  
-      group1 <- c('AU_ID',  'Pollu_ID', 'wqstd_code', 'Char_Name' , 'Crit_Fraction')
+      group1 <- c('AU_ID',  'Pollu_ID', 'wqstd_code', 'Pollutant' , 'Crit_Fraction')
       
-      group2 <- c('AU_ID', 'Char_Name')
+      group2 <- c('AU_ID', 'Pollutant')
       inverse <- TRUE
       
       
     } else if (AU_type == "WS"){
-      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'Pollu_ID', 'wqstd_code', 'Char_Name' , 'Crit_Fraction')
+      group1 <- c('AU_ID', 'MLocID', 'AU_GNIS_Name', 'Pollu_ID', 'wqstd_code', 'Pollutant' , 'Crit_Fraction')
       
-      group2 <- c('AU_ID', 'MLocID', 'Char_Name')
+      group2 <- c('AU_ID', 'MLocID', 'Pollutant')
       inverse <- FALSE
     }
     
@@ -194,7 +194,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
                 percent_3d = num_3d/num_samples * 100,
                 num_excursions = sum(excursion),
                 geomean = case_when(percent_3d == 100 ~ NA_real_,
-                                    num_not_3d >= 3 ~ round(geo_mean(Result_cen[!(is.3d)]), 7),
+                                    num_not_3d >= 3 ~ round(geo_mean(evaluation_result[!(is.3d)]), 7),
                                     TRUE ~ -NA_real_
                                     )) %>%
       ungroup() %>%
@@ -214,8 +214,9 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
                                     num_not_3d < 3 ~ paste("Only", num_not_3d, 'samples have QL above criteria',   " - ", num_samples, " total samples"),
                                     geomean < crit ~ paste0("Geometric mean ", geomean, " < criteria (", crit, ")",  " - ", num_samples, " total samples"),
                                     TRUE ~ "ERROR")) %>%
-        arrange(AU_ID, Char_Name) %>%
-      mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE))
+        arrange(AU_ID, Pollutant) %>%
+      mutate(IR_category = factor(IR_category, levels=c("3D", "3", "3B", "2", "5" ), ordered=TRUE)) %>%
+      rename(Char_Name = Pollutant)
     
     tox_HH_assessment <- join_prev_assessments(tox_HH_assessment, AU_type = AU_type)
     

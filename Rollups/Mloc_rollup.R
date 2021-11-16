@@ -32,6 +32,8 @@ temp_yr_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessmen
 
 temp_spawn_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessments-corrected crit periods.xlsx',
                                    sheet = 'Spawn WS station cat') %>%
+  mutate(Pollu_ID = as.character(Pollu_ID),
+         wqstd_code = as.character(wqstd_code)) %>%
   Mloc_Rollup_function(periods = TRUE) %>%
   join_pollu_assess()
 

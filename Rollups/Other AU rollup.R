@@ -142,11 +142,11 @@ turbidity_AU <- read.xlsx('Rollups/Rollup Assessment/turbidity.xlsx',
 
 DO_yr_cont <- read.xlsx('Rollups/Rollup Assessment/DO Year Round.xlsx',
                         sheet = 'Yr Rnd Cont Other AU Cat') %>%
-  select(AU_ID, Pollu_ID, wqstd_code,DO_Class, period,  IR_category, Rationale, recordID) 
+  select(AU_ID, Pollu_ID, wqstd_code,DO_Class, period,  IR_category, Rationale, recordID,Delist, AU_previous_IR_category) 
 
 DO_yr_inst <- read.xlsx('Rollups/Rollup Assessment/DO Year Round.xlsx',
                         sheet = 'Yr Rnd Instant Other AU Cat') %>%
-  select(AU_ID, Pollu_ID, wqstd_code,DO_Class, period,  IR_category, Rationale, recordID) 
+  select(AU_ID, Pollu_ID, wqstd_code,DO_Class, period,  IR_category, Rationale, recordID,Delist, AU_previous_IR_category) 
 
 DO_yr <- bind_rows(DO_yr_cont, DO_yr_inst) %>%
   mutate(recordID = ifelse(!is.na(DO_Class), paste0(recordID, "-", DO_Class), recordID )) %>%
@@ -161,15 +161,17 @@ DO_yr <- bind_rows(DO_yr_cont, DO_yr_inst) %>%
 
 DO_sp_cont <- read.xlsx('Rollups/Rollup Assessment/DO Spawn.xlsx',
                         sheet = 'Spawn Cont Other AU Cat') %>%
+  mutate(Delist = as.character(Delist)) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-",
                            wqstd_code,"-", period, "-", DO_Class )) %>%
-  select(AU_ID, Pollu_ID, wqstd_code,DO_Class, period,  IR_category, Rationale, recordID) 
+  select(AU_ID, Pollu_ID, wqstd_code,DO_Class, period,  IR_category, Rationale, recordID,Delist, AU_previous_IR_category) 
 
 DO_sp_inst <- read.xlsx('Rollups/Rollup Assessment/DO Spawn.xlsx',
                         sheet = 'Spawn Instant Other AU Cat') %>%
+  mutate(Delist = as.character(Delist)) %>%
   mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-",
                            wqstd_code,"-", period, "-", DO_Class )) %>%
-  select(AU_ID, Pollu_ID, wqstd_code,DO_Class, period,  IR_category, Rationale, recordID) 
+  select(AU_ID, Pollu_ID, wqstd_code,DO_Class, period,  IR_category, Rationale, recordID,Delist, AU_previous_IR_category) 
 
 DO_sp <- bind_rows(DO_sp_cont, DO_sp_inst) %>%
   mutate(period = ifelse(period == 'Spawn', "spawn", period )) %>%
@@ -231,4 +233,8 @@ rollup_AU_others <- rollup_AU_others %>%
                               !is.na(period) & is.na(DO_Class) ~paste0(year_assessed, "-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-",
                                                                        wqstd_code,"-", period) ) )
 
-save(rollup_AU_others, file = 'Rollups/rollup_AU_others.Rdata')
+delist_AU_other <- rollup_AU_others %>%
+  filter(AU_delist == "Yes") %>%
+  select(AU_ID, Pollutant, Assessment,stations, Pollu_ID, wqstd_code, period,DO_Class,AU_final_status, Rationale, AU_delist)
+
+save(rollup_AU_others,delist_AU_other, file = 'Rollups/rollup_AU_others.Rdata')

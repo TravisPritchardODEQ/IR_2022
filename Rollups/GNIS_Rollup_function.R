@@ -3,8 +3,11 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
   
 
   #testing
-  # df <- bacteria_fresh_WS_station
-  # DO <-  TRUE
+ #   df <- DO_yr %>%
+ #  filter(AU_ID == 'OR_WS_170900070303_02_104415')
+ # periods = TRUE
+ #   DO = TRUE
+
   # 
   
   if(!periods){
@@ -26,7 +29,11 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
       mutate(AU_previous_IR_category = str_remove(AU_previous_IR_category, 'Category '))
     
     stations_GNIS_rollup <- df %>%
-      mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B", "2", "5" ), ordered=TRUE),
+      mutate(Rationale = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(GNIS_previous_IR_impairement) ~  paste0(Rationale, "- Does not meet delisting requirements") ,
+                                   TRUE ~ Rationale),
+             IR_category = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(GNIS_previous_IR_impairement) ~  str_remove(GNIS_previous_IR_impairement, 'Category ') ,
+                                     TRUE ~ as.character(IR_category))) %>%
+      mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B", "2", "5", '4A', '4B', '4C'), ordered=TRUE),
              AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
       group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code) %>%
       summarise(stations =  paste(MLocID, collapse = "; "),
@@ -47,6 +54,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                                 GNIS_previous_IR_impairement == 'Not previously listed' ~ as.character(GNIS_IR_category),
                                                 GNIS_IR_category == '2' ~ '2',
                                                 GNIS_IR_category == '5' ~ '5',
+                                                GNIS_IR_category == '4A' ~ '4A',
                                                 grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement == 'Not previously listed' ~ as.character(GNIS_IR_category),
                                                 grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement != 'Not previously listed' ~ as.character(GNIS_previous_IR_impairement),
       )) %>%
@@ -57,7 +65,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                          all(GNIS_final_IR_category == '2') ~ "2",
                                          any(GNIS_IR_category == "Unassessed") ~ as.character(AU_previous_IR_category),
                                          any(GNIS_IR_category == '5') & !any(AU_previous_IR_category == '4A') ~ '5',
-                                         any(GNIS_IR_category == '5') & any(AU_previous_IR_category == '4A') ~ '4A',
+                                         any(GNIS_IR_category %in% c('5', '4A')) & any(AU_previous_IR_category == '4A') ~ '4A',
                                          any(GNIS_IR_category == '5') & is.na(AU_previous_IR_category) ~ '5',
                                          all(GNIS_IR_category == '2') ~ '2',
                                          all(GNIS_IR_category %in% c('2', '3', '3B', '3D')) ~ as.character(max(GNIS_IR_category)),
@@ -85,6 +93,8 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
       filter(Pollu_ID %in% Pollu_IDs,
              wqstd_code %in% wqstd_codes,
              period %in% per) %>%
+      mutate(Pollu_ID = as.character(Pollu_ID),
+             wqstd_code = as.character(wqstd_code)) %>%
       select(-Char_Name)
     
     subset_prev_AU_cat <- odeqIRtools::AU_previous_categories %>%
@@ -94,9 +104,17 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
              period %in% per,
              grepl("WS", AU_ID)) %>%
       select(-Char_Name) %>%
+      mutate(Pollu_ID = as.character(Pollu_ID),
+             wqstd_code = as.character(wqstd_code)) %>%
       mutate(AU_previous_IR_category = str_remove(AU_previous_IR_category, 'Category '))
     
     stations_GNIS_rollup <- df %>%
+      mutate(Pollu_ID = as.character(Pollu_ID),
+             wqstd_code = as.character(wqstd_code)) %>%
+      mutate(Rationale = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(GNIS_previous_IR_impairement) ~  paste0(Rationale, "- Does not meet delisting requirements") ,
+                                   TRUE ~ Rationale),
+             IR_category = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(GNIS_previous_IR_impairement) ~  str_remove(GNIS_previous_IR_impairement, 'Category ') ,
+                                     TRUE ~ as.character(IR_category))) %>%
       mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B", "2", "5" ), ordered=TRUE),
              AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
       group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code, period) %>%
@@ -118,6 +136,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                                 GNIS_previous_IR_impairement == 'Not previously listed' ~ as.character(GNIS_IR_category),
                                                 GNIS_IR_category == '2' ~ '2',
                                                 GNIS_IR_category == '5' ~ '5',
+                                                GNIS_IR_category == '4A' ~ '4A',
                                                 grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement == 'Not previously listed' ~ as.character(GNIS_IR_category),
                                                 grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement != 'Not previously listed' ~ as.character(GNIS_previous_IR_impairement),
       )) %>%
@@ -128,7 +147,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
         all(GNIS_final_IR_category == '2') ~ "2",
         any(GNIS_IR_category == "Unassessed") ~ as.character(AU_previous_IR_category),
         any(GNIS_IR_category == '5') & !any(AU_previous_IR_category == '4A') ~ '5',
-        any(GNIS_IR_category == '5') & any(AU_previous_IR_category == '4A') ~ '4A',
+        any(GNIS_IR_category %in% c('5', '4A')) & any(AU_previous_IR_category == '4A') ~ '4A',
         any(GNIS_IR_category == '5') & is.na(AU_previous_IR_category) ~ '5',
         all(GNIS_IR_category == '2') ~ '2',
         all(GNIS_IR_category %in% c('2', '3', '3B', '3D')) ~ as.character(max(GNIS_IR_category)),
@@ -165,6 +184,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
       rename(GNIS_previous_IR_impairement_no_class = GNIS_previous_IR_impairement_class)
     
     subset_prev_AU_cat <- odeqIRtools::AU_previous_categories %>%
+      
       mutate(period = ifelse(period == 'Spawn', "spawn", period )) %>%
       filter(Pollu_ID %in% Pollu_IDs,
              wqstd_code %in% wqstd_codes,
@@ -181,6 +201,10 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
       
     
     stations_GNIS_rollup <- df %>%
+      mutate(Rationale = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(GNIS_previous_IR_impairement) ~  paste0(Rationale, "- Does not meet delisting requirements") ,
+                                   TRUE ~ Rationale),
+             IR_category = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(GNIS_previous_IR_impairement) ~  str_remove(GNIS_previous_IR_impairement, 'Category ') ,
+                                     TRUE ~ as.character(IR_category))) %>%
       mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B", "2", "5" ), ordered=TRUE),
              AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
       group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code, DO_Class, period) %>%
@@ -214,6 +238,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                                 GNIS_previous_IR_impairement == 'Not previously listed' ~ as.character(GNIS_IR_category),
                                                 GNIS_IR_category == '2' ~ '2',
                                                 GNIS_IR_category == '5' ~ '5',
+                                                GNIS_IR_category == '4A' ~ '4A',
                                                 grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement == 'Not previously listed' ~ as.character(GNIS_IR_category),
                                                 grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement != 'Not previously listed' ~ as.character(GNIS_previous_IR_impairement),
       )) %>%
@@ -224,7 +249,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
         all(GNIS_final_IR_category == '2') ~ "2",
         any(GNIS_IR_category == "Unassessed") ~ as.character(AU_previous_IR_category),
         any(GNIS_IR_category == '5') & !any(AU_previous_IR_category == '4A') ~ '5',
-        any(GNIS_IR_category == '5') & any(AU_previous_IR_category == '4A') ~ '4A',
+        any(GNIS_IR_category %in% c('5', '4A')) & any(AU_previous_IR_category == '4A') ~ '4A',
         any(GNIS_IR_category == '5') & is.na(AU_previous_IR_category) ~ '5',
         all(GNIS_IR_category == '2') ~ '2',
         all(GNIS_IR_category %in% c('2', '3', '3B', '3D')) ~ as.character(max(GNIS_IR_category)),

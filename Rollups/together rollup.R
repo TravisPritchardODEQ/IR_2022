@@ -94,20 +94,33 @@ BU_rollup <- AU_BU %>%
   #mutate(Category = ifelse(is.na(Category), "-", Category)) %>%
   spread(ben_use, Category, fill = "-") 
 
+delist_AU_other <- delist_AU_other %>%
+  mutate(AU_final_status = as.character(AU_final_status))
+delistings_WS_AU <- delistings_WS_AU %>%
+  mutate(AU_final_status = as.character(AU_final_status))
+
+
+
+AU_delistings <- bind_rows(delist_AU_other, delistings_WS_AU) %>%
+  arrange(AU_ID, Pollutant)
+
 
 wb <- createWorkbook()
 addWorksheet(wb, sheetName = "AU_all")
 addWorksheet(wb, sheetName = "AU_BU")
 addWorksheet(wb, sheetName = "BU_rollup")
+addWorksheet(wb, sheetName = "Delistings")
 
 header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
 freezePane(wb, "AU_all", firstRow = TRUE) 
 freezePane(wb, "AU_BU", firstRow = TRUE)
 freezePane(wb, "BU_rollup", firstRow = TRUE)
+freezePane(wb, "Delistings", firstRow = TRUE)
 
 writeData(wb = wb, sheet = "AU_all", x = AU_all, headerStyle = header_st)
 writeData(wb = wb, sheet = "AU_BU", x = AU_BU, headerStyle = header_st)
 writeData(wb = wb, sheet = "BU_rollup", x = BU_rollup, headerStyle = header_st)
+writeData(wb = wb, sheet = "Delistings", x = AU_delistings, headerStyle = header_st)
 
 saveWorkbook(wb, 'Rollups/Rollup outputs/AU_all_rollup.xlsx', overwrite = TRUE) 
 

@@ -2,13 +2,13 @@
 
 
 
-# # testing
-# df <- read.xlsx('Rollups/Rollup Assessment/chl-a.xlsx',
-#                                 sheet = 'Other AU categorization') 
-# periods =   FALSE
-
-
-
+# # # testing
+# df <- bacteria_fresh_AU
+# DO = FALSE
+# periods = FALSE
+# 
+# 
+# 
 
 
 
@@ -33,18 +33,29 @@ if(DO == TRUE){
     separate(Char_Name, c("Char_Name", "DO_Class"), sep = " - ") %>%
     select(-Char_Name) %>%
     mutate(AU_previous_IR_category = str_remove(AU_previous_IR_category, 'Category ')) %>%
-    rename(AU_previous_IR_category_class = AU_previous_IR_category)
+    rename(AU_previous_IR_category_class = AU_previous_IR_category) %>%
+    mutate(Pollu_ID = as.character(Pollu_ID),
+           wqstd_code = as.character(wqstd_code)) 
   
   subset_prev_AU_cat_no_class <- subset_prev_AU_cat %>%
     select(-DO_Class) %>%
-    rename(AU_previous_IR_category_no_class = AU_previous_IR_category_class)
+    rename(AU_previous_IR_category_no_class = AU_previous_IR_category_class) %>%
+    mutate(Pollu_ID = as.character(Pollu_ID),
+           wqstd_code = as.character(wqstd_code)) 
   
   
   
   
   AU_rollup <- df%>%
+    mutate(Pollu_ID = as.character(Pollu_ID),
+           wqstd_code = as.character(wqstd_code)) %>%
+    mutate(Rationale = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(AU_previous_IR_category) ~  paste0(Rationale, 
+                                                                                                                          "- Does not meet delisting requirements") ,
+                                 TRUE ~ Rationale),
+           IR_category = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(AU_previous_IR_category) ~  str_remove(AU_previous_IR_category, 'Category ') ,
+                                   TRUE ~ as.character(IR_category))) %>%
     mutate(period = ifelse(period == 'Spawn', "spawn", period )) %>%
-    select(selection) %>% 
+    select(all_of(selection)) %>% 
     left_join(subset_prev_AU_cat) %>%
     full_join(subset_prev_AU_cat_no_class, by = c("AU_ID",  "Pollu_ID", "wqstd_code", "period")) %>%
     mutate(AU_previous_IR_category = case_when(!is.na(AU_previous_IR_category_class ) ~ AU_previous_IR_category_class ,
@@ -56,7 +67,7 @@ if(DO == TRUE){
            AU_previous_IR_category =  factor(AU_previous_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A' ), ordered=TRUE),
            AU_final_status = case_when(is.na(IR_category) ~ AU_previous_IR_category,
                                        IR_category %in% c("Unassessed", '3D',"3", "3B") ~ pmax(IR_category, AU_previous_IR_category, na.rm= TRUE),
-                                       IR_category == 5 & AU_previous_IR_category == '4A' ~ AU_previous_IR_category,
+                                       IR_category %in% c('5', '4A') & AU_previous_IR_category == '4A' ~ AU_previous_IR_category,
                                        IR_category %in% c( "2", "5", '4A') ~ IR_category
            ) ) %>%
     mutate(assessed_2022 = case_when(is.na(IR_category) & !is.na(AU_previous_IR_category) ~ "No",
@@ -84,7 +95,9 @@ if(DO == TRUE){
            !grepl("WS", AU_ID),
            period %in% per) %>%
     select(-Char_Name) %>%
-    mutate(AU_previous_IR_category = str_remove(AU_previous_IR_category, 'Category '))
+    mutate(AU_previous_IR_category = str_remove(AU_previous_IR_category, 'Category ')) %>%
+    mutate(Pollu_ID = as.character(Pollu_ID),
+           wqstd_code = as.character(wqstd_code)) 
   
   
 } else if (periods == FALSE){
@@ -98,7 +111,9 @@ if(DO == TRUE){
            wqstd_code %in% wqstd_codes,
            !grepl("WS", AU_ID)) %>%
     select(-Char_Name, -period) %>%
-    mutate(AU_previous_IR_category = str_remove(AU_previous_IR_category, 'Category '))
+    mutate(AU_previous_IR_category = str_remove(AU_previous_IR_category, 'Category ')) %>%
+    mutate(Pollu_ID = as.character(Pollu_ID),
+           wqstd_code = as.character(wqstd_code)) 
 }
   
 
@@ -106,13 +121,20 @@ if(DO == TRUE){
 
 
 AU_rollup <- df%>%
-  select(selection) %>%
+  mutate(Pollu_ID = as.character(Pollu_ID),
+         wqstd_code = as.character(wqstd_code)) %>%
+  mutate(Rationale = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(AU_previous_IR_category) ~   paste0(Rationale, 
+                                                                                                                         "- Does not meet delisting requirements") ,
+                               TRUE ~ Rationale),
+         IR_category = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(AU_previous_IR_category) ~  str_remove(AU_previous_IR_category, 'Category ') ,
+                                 TRUE ~ as.character(IR_category))) %>%
+  select(all_of(selection)) %>%
   full_join(subset_prev_AU_cat) %>%
   mutate(IR_category = factor(IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A' ), ordered=TRUE),
          AU_previous_IR_category =  factor(AU_previous_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A' ), ordered=TRUE),
          AU_final_status = case_when(is.na(IR_category) ~ AU_previous_IR_category,
                                      IR_category %in% c("Unassessed", '3D',"3", "3B") ~ pmax(IR_category, AU_previous_IR_category, na.rm= TRUE),
-                                     IR_category == 5 & AU_previous_IR_category == '4A' ~ AU_previous_IR_category,
+                                     IR_category  %in% c('5', '4A') & AU_previous_IR_category == '4A' ~ AU_previous_IR_category,
                                      IR_category %in% c( "2", "5", '4A') ~ IR_category
                                      ) ) %>%
   mutate(assessed_2022 = case_when(is.na(IR_category) & !is.na(AU_previous_IR_category) ~ "No",

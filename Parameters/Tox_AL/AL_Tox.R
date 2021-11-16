@@ -12,6 +12,7 @@ source("parameters/Tox_AL/fun_ToxAL_copper_data.R")
 source("parameters/Tox_AL/fun_ToxAL_hardnessmetals.R")
 source("parameters/Tox_AL/fun_ToxAL_ammonia.R")
 source('Parameters/Tox_AL/toxAL_aluminum.R')
+source('Parameters/Tox_AL/fun_ToxAL_Copper_assessment.R')
 
 
 
@@ -38,8 +39,8 @@ tox_AL_penta_cat <- TOX_AL_penta_analysis(tox_AL_penta_data)
 # Copper data -----------------------------------------------------------------------------------------------------
 
 
-Copper_data("IR_Dev")
-
+#Copper_data("IR_Dev")
+Copper_categories <- copper_assessment(CU_file= 'Parameters/Tox_AL/Copper_criteria_results.csv')
 
 
 # Ammonia ---------------------------------------------------------------------------------------------------------
@@ -81,6 +82,12 @@ tox_AL_Aluminum_other_cats <-  tox_AL_aluminum[['AL_Tox_AL_other']]
 tox_AL_Aluminum_WS_cats    <-  tox_AL_aluminum[['AL_Tox_AL_WS']]
 tox_AL_Aluminum_WS_rollup  <-  tox_AL_aluminum[['AL_Tox_AL_WS_rollup']]
 
+tox_AL_Copper_data        <- Copper_categories[['data']]
+tox_AL_Copper_other_cats   <- Copper_categories[['AL_Tox_CU_other']]
+tox_AL_Copper_WS_cats      <- Copper_categories[['AL_Tox_CU_WS']]
+tox_AL_Copper_WS_rollup    <- Copper_categories[['WS_AU_rollup']]
+
+
 # Write excel doc -------------------------------------------------------------------------------------------------
 library(openxlsx)
 
@@ -112,6 +119,13 @@ addWorksheet(wb, sheetName =  'tox_AL_Aluminum_other_cats'      )
 addWorksheet(wb, sheetName =  'tox_AL_Aluminum_WS_cats'      )   
 addWorksheet(wb, sheetName =  'tox_AL_Aluminum_WS_rollup'       )  
 
+addWorksheet(wb, sheetName = 'tox_AL_Copper_data'       )
+addWorksheet(wb, sheetName = 'tox_AL_Copper_other_cats' )
+addWorksheet(wb, sheetName = 'tox_AL_Copper_WS_cats'    )
+addWorksheet(wb, sheetName = 'tox_AL_Copper_WS_rollup'  )
+
+
+
 header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
 
 freezePane(wb, "tox_AL_data"                , firstRow = TRUE)
@@ -140,6 +154,12 @@ freezePane(wb,  'tox_AL_Aluminum_other_cats' , firstRow = TRUE)
 freezePane(wb,  'tox_AL_Aluminum_WS_cats'    , firstRow = TRUE)
 freezePane(wb,  'tox_AL_Aluminum_WS_rollup'  , firstRow = TRUE) 
 
+
+freezePane(wb, 'tox_AL_Copper_data',   firstRow = TRUE)
+freezePane(wb, 'tox_AL_Copper_other_cats', firstRow = TRUE)
+freezePane(wb, 'tox_AL_Copper_WS_cats'   , firstRow = TRUE)
+freezePane(wb, 'tox_AL_Copper_WS_rollup' , firstRow = TRUE)
+
 writeData(wb = wb, sheet = "tox_AL_data"                , x = tox_AL_data, headerStyle = header_st)
 writeData(wb = wb, sheet = "tox_AL_other_cats"          , x = tox_AL_other_cats , headerStyle = header_st)
 writeData(wb = wb, sheet = "tox_AL_WS_cats"             , x = tox_AL_WS_cats, headerStyle = header_st)
@@ -150,10 +170,10 @@ writeData(wb = wb, sheet = "tox_AL_hard_other_cats"     , x = tox_AL_hard_other_
 writeData(wb = wb, sheet = "tox_AL_hard_WS_cats"        , x = tox_AL_hard_WS_cats, headerStyle = header_st)
 writeData(wb = wb, sheet = "tox_AL_hard_WS_rollup"      , x = tox_AL_hard_WS_rollup, headerStyle = header_st)
 
-writeData(wb = wb, sheet =   'tox_AL_penta_data'      , x = tox_AL_penta_data      , headerStyle = header_st)
-writeData(wb = wb, sheet =   'tox_AL_penta_other_cats', x = tox_AL_penta_other_cats, headerStyle = header_st)
-writeData(wb = wb, sheet =   'tox_AL_penta_WS_cats'   , x = tox_AL_penta_WS_cats   , headerStyle = header_st)
-writeData(wb = wb, sheet =   'tox_AL_penta_WS_rollup' , x = tox_AL_penta_WS_rollup , headerStyle = header_st)
+writeData(wb = wb, sheet =   'tox_AL_penta_data'      , x = tox_AL_penta_data      ,  headerStyle = header_st)
+writeData(wb = wb, sheet =   'tox_AL_penta_other_cats', x = tox_AL_penta_other_cats,  headerStyle = header_st)
+writeData(wb = wb, sheet =   'tox_AL_penta_WS_cats'   , x = tox_AL_penta_WS_cats   ,  headerStyle = header_st)
+writeData(wb = wb, sheet =   'tox_AL_penta_WS_rollup' , x = tox_AL_penta_WS_rollup ,  headerStyle = header_st)
 
 
 writeData(wb = wb, sheet = "tox_AL_Ammonia_data"        , x = tox_AL_Ammonia_data, headerStyle = header_st)
@@ -165,6 +185,11 @@ writeData(wb = wb, sheet =  'tox_AL_Aluminum_data'        , x = tox_AL_Aluminum_
 writeData(wb = wb, sheet =  'tox_AL_Aluminum_other_cats'  , x = tox_AL_Aluminum_other_cats,    headerStyle = header_st) 
 writeData(wb = wb, sheet =  'tox_AL_Aluminum_WS_cats'     , x = tox_AL_Aluminum_WS_cats,   headerStyle = header_st)
 writeData(wb = wb, sheet =  'tox_AL_Aluminum_WS_rollup'   , x = tox_AL_Aluminum_WS_rollup,   headerStyle = header_st)
+
+writeData(wb = wb, sheet= 'tox_AL_Copper_data'      , x = tox_AL_Copper_data        , headerStyle = header_st)
+writeData(wb = wb, sheet= 'tox_AL_Copper_other_cats', x = tox_AL_Copper_other_cats, headerStyle = header_st)
+writeData(wb = wb, sheet= 'tox_AL_Copper_WS_cats'   , x = tox_AL_Copper_WS_cats   , headerStyle = header_st)
+writeData(wb = wb, sheet= 'tox_AL_Copper_WS_rollup' , x = tox_AL_Copper_WS_rollup , headerStyle = header_st)
 
 print("Writing excel doc")
 saveWorkbook(wb, "Parameters/Outputs/Tox_AL.xlsx", overwrite = TRUE) 
