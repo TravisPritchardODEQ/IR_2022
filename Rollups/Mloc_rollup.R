@@ -197,6 +197,57 @@ turbidity_WS_station <- read.xlsx('Rollups/Rollup Assessment/turbidity.xlsx',
 
 
 
+# Biocriteria -----------------------------------------------------------------------------------------------------
+
+MWCF_SS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+                     sheet = 'MWCF_SS') %>%
+  rename(IR_category = IR_Cat,
+         GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`) %>%
+  mutate(IR_category = str_remove(IR_category, 'Cat')) %>%
+  mutate(Pollu_ID = "156",
+         wqstd_code = "5",
+         Delist = as.character(Delist)) %>%
+  select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale, GNIS_previous_IR_impairement, Delist)
+
+MWCF_MS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+                     sheet = 'MWCF_MS')%>%
+  rename(IR_category = IR_Cat_ave,
+         GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`) %>%
+  mutate(IR_category = str_remove(IR_category, 'Cat')) %>%
+  mutate(Pollu_ID = "156",
+         wqstd_code = "5",
+         Delist = as.character(Delist)) %>%
+  select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale, GNIS_previous_IR_impairement, Delist)
+
+
+WCCP_SS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+                     sheet = 'WCCP_SS') %>%
+  rename(IR_category = IR_Cat) %>%
+  mutate(IR_category = str_remove(IR_category, 'Cat')) %>%
+  mutate(Pollu_ID = "156",
+         wqstd_code = "5",
+         Delist = as.character(Delist)) %>%
+  select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale, Delist)
+
+WCCP_MS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+                     sheet = 'WCCP_MS') %>%
+  rename(IR_category = IR_Cat_ave,
+         GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`) %>%
+  mutate(IR_category = str_remove(IR_category, 'Cat')) %>%
+  mutate(Pollu_ID = "156",
+         wqstd_code = "5",
+         Delist = as.character(Delist)) %>%
+  select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale, GNIS_previous_IR_impairement, Delist)
+
+biocriteria_together <- bind_rows(MWCF_MS, MWCF_SS, WCCP_MS, WCCP_SS)
+
+WS_biocriteria <- biocriteria_together %>%
+  filter(str_detect(AU_ID, "WS", negate = FALSE)) 
+
+biocriteria_WS_station <- WS_biocriteria %>%
+  mutate(Rationale = paste0(MLocID, ":", " ", Rationale)) %>%
+  Mloc_Rollup_function() %>%
+  join_pollu_assess()
 
 # All put together ------------------------------------------------------------------------------------------------
 
@@ -214,7 +265,8 @@ WS_MLocID_param_rollup <- bind_rows(temp_yr_WS_station,
                                   tox_AL_ammonia_WS_station,
                                   tox_AL_aluminum_WS_station,
                                   tox_HH_WS_station,
-                                  turbidity_WS_station
+                                  turbidity_WS_station,
+                                  biocriteria_WS_station
 ) %>%
   mutate(Rationale = str_replace_all(Rationale, 'Â', ''))
 

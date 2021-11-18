@@ -3,7 +3,7 @@
 
 
 # # # testing
-# df <- bacteria_fresh_AU
+# df <- unassessed
 # DO = FALSE
 # periods = FALSE
 # 
@@ -63,10 +63,10 @@ if(DO == TRUE){
                                                is.na(AU_previous_IR_category_class) & is.na(AU_previous_IR_category_no_class) ~ NA_character_,
                                                TRUE ~ "ERROR")) %>%
     select(-AU_previous_IR_category_no_class, -AU_previous_IR_category_class) %>%
-    mutate(IR_category = factor(IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A' ), ordered=TRUE),
-           AU_previous_IR_category =  factor(AU_previous_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A' ), ordered=TRUE),
+    mutate(IR_category = factor(IR_category, levels=c("Unassessed", '3D',"3", "3B","3C", "2", "5", '4B', '4A', '4C' ), ordered=TRUE),
+           AU_previous_IR_category =  factor(AU_previous_IR_category, levels=c("Unassessed", '3D',"3", "3B", "3C", "2", "5", '4B', '4A', "4C" ), ordered=TRUE),
            AU_final_status = case_when(is.na(IR_category) ~ AU_previous_IR_category,
-                                       IR_category %in% c("Unassessed", '3D',"3", "3B") ~ pmax(IR_category, AU_previous_IR_category, na.rm= TRUE),
+                                       IR_category %in% c("Unassessed", '3D',"3", "3B", "3C") ~ pmax(IR_category, AU_previous_IR_category, na.rm= TRUE),
                                        IR_category %in% c('5', '4A') & AU_previous_IR_category == '4A' ~ AU_previous_IR_category,
                                        IR_category %in% c( "2", "5", '4A') ~ IR_category
            ) ) %>%
@@ -130,17 +130,17 @@ AU_rollup <- df%>%
                                  TRUE ~ as.character(IR_category))) %>%
   select(all_of(selection)) %>%
   full_join(subset_prev_AU_cat) %>%
-  mutate(IR_category = factor(IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A' ), ordered=TRUE),
-         AU_previous_IR_category =  factor(AU_previous_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A' ), ordered=TRUE),
+  mutate(IR_category = factor(IR_category, levels=c("Unassessed", '3D',"3", "3B", "3C", "2", "5", '4B', '4A', '4C' ), ordered=TRUE),
+         AU_previous_IR_category =  factor(AU_previous_IR_category, levels=c("Unassessed", '3D',"3", "3B","3C", "2", "5", '4B', '4A', "4C" ), ordered=TRUE),
          AU_final_status = case_when(is.na(IR_category) ~ AU_previous_IR_category,
-                                     IR_category %in% c("Unassessed", '3D',"3", "3B") ~ pmax(IR_category, AU_previous_IR_category, na.rm= TRUE),
-                                     IR_category  %in% c('5', '4A') & AU_previous_IR_category == '4A' ~ AU_previous_IR_category,
+                                     IR_category %in% c("Unassessed", '3D',"3","3C", "3B") ~ pmax(IR_category, AU_previous_IR_category, na.rm= TRUE),
+                                     IR_category  %in% c('5', '4A', '4B', '4C') & AU_previous_IR_category %in%  c('4B', '4A', '4C') ~ AU_previous_IR_category,
                                      IR_category %in% c( "2", "5", '4A') ~ IR_category
                                      ) ) %>%
   mutate(assessed_2022 = case_when(is.na(IR_category) & !is.na(AU_previous_IR_category) ~ "No",
                                    !is.na(IR_category) ~ "Yes",
                                    TRUE ~ "ERROR"),
-         AU_delist = case_when(AU_final_status == 2 & AU_previous_IR_category %in% c('5', '4A') ~ "Yes",
+         AU_delist = case_when(AU_final_status == 2 & AU_previous_IR_category %in% c('5', '4A', '4B', '4C') ~ "Yes",
                                TRUE ~ "No")) %>%
   rename(`2022_IR_category` = IR_category)
 

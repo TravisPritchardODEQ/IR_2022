@@ -3,10 +3,9 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
   
 
   #testing
- #   df <- DO_yr %>%
- #  filter(AU_ID == 'OR_WS_170900070303_02_104415')
- # periods = TRUE
- #   DO = TRUE
+ #   df <- test_GNIS
+ # periods = FALSE
+ #   DO = FALSE
 
   # 
   
@@ -33,7 +32,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                    TRUE ~ Rationale),
              IR_category = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(GNIS_previous_IR_impairement) ~  str_remove(GNIS_previous_IR_impairement, 'Category ') ,
                                      TRUE ~ as.character(IR_category))) %>%
-      mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B", "2", "5", '4A', '4B', '4C'), ordered=TRUE),
+      mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B","3C", "2", "5", '4A', '4B', '4C'), ordered=TRUE),
              AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
       group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code) %>%
       summarise(stations =  paste(MLocID, collapse = "; "),
@@ -46,7 +45,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                           TRUE ~as.character(GNIS_IR_category)),
              GNIS_previous_IR_impairement = case_when(is.na(GNIS_previous_IR_impairement) ~ "Not previously listed",
                                                       TRUE ~ GNIS_previous_IR_impairement)) %>%
-      mutate(GNIS_IR_category = factor(GNIS_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4A' ), ordered=TRUE)) %>%
+      mutate(GNIS_IR_category = factor(GNIS_IR_category, levels=c("Unassessed",'3D',"3", "3B","3C", "2", "5", '4A', '4B', '4C'), ordered=TRUE)) %>%
       separate(AU_GNIS, c(NA, "AU_GNIS_Name"),sep = ";") %>%
       #arrange(AU_ID, AU_GNIS_Name) %>%
       ungroup() %>%
@@ -59,7 +58,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                                 grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement != 'Not previously listed' ~ as.character(GNIS_previous_IR_impairement),
       )) %>%
       mutate(GNIS_final_IR_category = str_remove(GNIS_final_IR_category, 'Category ')) %>%
-      mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4A' ), ordered=TRUE)) %>%
+      mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed", '3D',"3", "3B","3C", "2", "5", '4A', '4B', '4C' ), ordered=TRUE)) %>%
       group_by(AU_ID, Pollu_ID, wqstd_code) %>%
       mutate(AU_final_status = case_when(#GNIS_IR_category == "Unassessed" & GNIS_previous_IR_impairement == 'Not previously listed' ~ AU_previous_IR_category,
                                          all(GNIS_final_IR_category == '2') ~ "2",
@@ -68,7 +67,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                          any(GNIS_IR_category %in% c('5', '4A')) & any(AU_previous_IR_category == '4A') ~ '4A',
                                          any(GNIS_IR_category == '5') & is.na(AU_previous_IR_category) ~ '5',
                                          all(GNIS_IR_category == '2') ~ '2',
-                                         all(GNIS_IR_category %in% c('2', '3', '3B', '3D')) ~ as.character(max(GNIS_IR_category)),
+                                         all(GNIS_IR_category %in% c('2', '3', '3B', '3D', "3C")) ~ as.character(max(GNIS_IR_category)),
                                          TRUE ~ "Error"
                                          )) %>%
       ungroup() %>%
@@ -115,7 +114,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                    TRUE ~ Rationale),
              IR_category = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(GNIS_previous_IR_impairement) ~  str_remove(GNIS_previous_IR_impairement, 'Category ') ,
                                      TRUE ~ as.character(IR_category))) %>%
-      mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B", "2", "5" ), ordered=TRUE),
+      mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B","3C", "2", "5", '4A', '4B', '4C' ), ordered=TRUE),
              AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
       group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code, period) %>%
       summarise(stations =  paste(MLocID, collapse = "; "),
@@ -128,7 +127,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                           TRUE ~as.character(GNIS_IR_category)),
              GNIS_previous_IR_impairement = case_when(is.na(GNIS_previous_IR_impairement) ~ "Not previously listed",
                                                       TRUE ~ GNIS_previous_IR_impairement)) %>%
-      mutate(GNIS_IR_category = factor(GNIS_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4A' ), ordered=TRUE)) %>%
+      mutate(GNIS_IR_category = factor(GNIS_IR_category, levels=c("Unassessed",'3D',"3", "3B","3C", "2", "5", '4A', '4B', '4C' ), ordered=TRUE)) %>%
       separate(AU_GNIS, c(NA, "AU_GNIS_Name"),sep = ";") %>%
       #arrange(AU_ID, AU_GNIS_Name) %>%
       ungroup() %>%
@@ -141,7 +140,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                                 grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement != 'Not previously listed' ~ as.character(GNIS_previous_IR_impairement),
       )) %>%
       mutate(GNIS_final_IR_category = str_remove(GNIS_final_IR_category, 'Category ')) %>%
-      mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4A' ), ordered=TRUE)) %>%
+      mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed", '3D',"3", "3B","3C", "2", "5", '4A', '4B', '4C' ), ordered=TRUE)) %>%
       group_by(AU_ID, Pollu_ID, wqstd_code, period) %>%
       mutate(AU_final_status = case_when(#GNIS_IR_category == "Unassessed" & GNIS_previous_IR_impairement == 'Not previously listed' ~ AU_previous_IR_category,
         all(GNIS_final_IR_category == '2') ~ "2",
@@ -205,7 +204,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                    TRUE ~ Rationale),
              IR_category = case_when(IR_category == '2' & tolower(Delist) == 'no' & !is.na(GNIS_previous_IR_impairement) ~  str_remove(GNIS_previous_IR_impairement, 'Category ') ,
                                      TRUE ~ as.character(IR_category))) %>%
-      mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B", "2", "5" ), ordered=TRUE),
+      mutate(IR_category = factor(IR_category, levels=c('3D',"3", "3B","3C", "2", "5", '4A', '4B', '4C' ), ordered=TRUE),
              AU_GNIS = str_c(AU_ID, AU_GNIS_Name, sep = ";")) %>%
       group_by(AU_ID, AU_GNIS, Pollu_ID, wqstd_code, DO_Class, period) %>%
       summarise(stations =  paste(MLocID, collapse = "; "),
@@ -230,7 +229,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                           TRUE ~as.character(GNIS_IR_category)),
              GNIS_previous_IR_impairement = case_when(is.na(GNIS_previous_IR_impairement) ~ "Not previously listed",
                                                       TRUE ~ GNIS_previous_IR_impairement)) %>%
-      mutate(GNIS_IR_category = factor(GNIS_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4A' ), ordered=TRUE)) %>%
+      mutate(GNIS_IR_category = factor(GNIS_IR_category, levels=c("Unassessed", '3D',"3", "3B","3C", "2", "5", '4A', '4B', '4C' ), ordered=TRUE)) %>%
       separate(AU_GNIS, c(NA, "AU_GNIS_Name"),sep = ";") %>%
       #arrange(AU_ID, AU_GNIS_Name) %>%
       ungroup() %>%
@@ -243,7 +242,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
                                                 grepl('3', GNIS_IR_category) &GNIS_previous_IR_impairement != 'Not previously listed' ~ as.character(GNIS_previous_IR_impairement),
       )) %>%
       mutate(GNIS_final_IR_category = str_remove(GNIS_final_IR_category, 'Category ')) %>%
-      mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4A' ), ordered=TRUE)) %>%
+      mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed",'3D',"3", "3B","3C", "2", "5", '4A', '4B', '4C' ), ordered=TRUE)) %>%
       group_by(AU_ID, Pollu_ID, wqstd_code, period) %>%
       mutate(AU_final_status = case_when(#GNIS_IR_category == "Unassessed" & GNIS_previous_IR_impairement == 'Not previously listed' ~ AU_previous_IR_category,
         all(GNIS_final_IR_category == '2') ~ "2",

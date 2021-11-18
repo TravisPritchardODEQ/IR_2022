@@ -69,7 +69,7 @@ all_ben_uses <- AU_to_ben_use %>%
 
 AU_all <- AU_all_parameter %>%
   mutate(AU_final_status = factor(AU_final_status, 
-                                  levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A' ), ordered=TRUE)) 
+                                  levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A', '4C' ), ordered=TRUE)) 
 
 AU_BU <- AU_all %>%
   left_join(select(BUs, -Pollutant), by = c("Pollu_ID", 'wqstd_code' = "WQstd_code") )

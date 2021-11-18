@@ -178,6 +178,123 @@ DO_sp <- bind_rows(DO_sp_cont, DO_sp_inst) %>%
   AU_rollup_other(DO = TRUE) %>%
   join_pollu_assess()
 
+
+
+# Biocriteria -----------------------------------------------------------------------------------------------------
+
+
+MWCF_SS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+                     sheet = 'MWCF_SS') %>%
+  rename(IR_category = IR_Cat,
+         GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`,
+         AU_previous_IR_category = Previous.Status) %>%
+  mutate(IR_category = str_remove(IR_category, 'Cat')) %>%
+  mutate(Pollu_ID = "156",
+         wqstd_code = "5",
+         Delist = as.character(Delist),
+         GNIS_previous_IR_impairement =  as.character(GNIS_previous_IR_impairement)) %>%
+  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code )) %>%
+  select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale,
+         GNIS_previous_IR_impairement,AU_previous_IR_category, recordID, Delist)
+
+MWCF_MS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+                     sheet = 'MWCF_MS') %>%
+  rename(IR_category = IR_Cat_ave,
+         GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`,
+         AU_previous_IR_category = Previous.Status) %>%
+  mutate(IR_category = str_remove(IR_category, 'Cat')) %>%
+  mutate(Pollu_ID = "156",
+         wqstd_code = "5",
+         Delist = as.character(Delist),
+         GNIS_previous_IR_impairement =  as.character(GNIS_previous_IR_impairement)) %>%
+  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code )) %>%
+  select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale,
+         GNIS_previous_IR_impairement,AU_previous_IR_category, recordID, Delist)
+
+
+
+WCCP_SS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+                     sheet = 'WCCP_SS') %>%
+  rename(IR_category = IR_Cat,
+         GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`,
+         AU_previous_IR_category = Previous.Status) %>%
+  mutate(IR_category = str_remove(IR_category, 'Cat')) %>%
+  mutate(Pollu_ID = "156",
+         wqstd_code = "5",
+         Delist = as.character(Delist),
+         GNIS_previous_IR_impairement =  as.character(GNIS_previous_IR_impairement)) %>%
+  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code )) %>%
+  select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale,
+         GNIS_previous_IR_impairement,AU_previous_IR_category, recordID, Delist)
+
+
+WCCP_MS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+                     sheet = 'WCCP_MS') %>%
+  rename(IR_category = IR_Cat_ave,
+         GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`,
+         AU_previous_IR_category = Previous.Status) %>%
+  mutate(IR_category = str_remove(IR_category, 'Cat')) %>%
+  mutate(Pollu_ID = "156",
+         wqstd_code = "5",
+         Delist = as.character(Delist),
+         GNIS_previous_IR_impairement =  as.character(GNIS_previous_IR_impairement)) %>%
+  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code )) %>%
+  select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale,
+         GNIS_previous_IR_impairement,AU_previous_IR_category, recordID, Delist)
+
+
+biocriteria_together <- bind_rows(MWCF_MS, MWCF_SS, WCCP_MS, WCCP_SS)
+
+
+
+SR_biocriteria <-  biocriteria_together %>%
+  filter(str_detect(AU_ID, "WS", negate = TRUE)) 
+
+biocriteria_AU <- SR_biocriteria %>%
+  AU_rollup_other() %>%
+  join_pollu_assess()
+
+
+# HABs ------------------------------------------------------------------------------------------------------------
+
+HABs_AU <- read.xlsx('Rollups/Rollup Assessment/HABs.xlsx') %>%
+  rename(IR_category = `2022`,
+         AU_previous_IR_category = '2018/2020') %>%
+  mutate(IR_category = str_remove(IR_category, 'Cat '),
+         Delist = NA_character_,
+         Pollu_ID = "174",
+         wqstd_code = NA_character_) %>%
+  mutate(recordID = paste0("2022-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code )) %>%
+  AU_rollup_other() %>%
+  join_pollu_assess()
+  
+
+
+
+# Unassessed ------------------------------------------------------------------------------------------------------
+
+load('Rollups/unassessed_prev_AU_cat.Rdata')
+
+
+
+unassessed <- data.frame(
+  stringsAsFactors = FALSE,
+  Pollu_ID = as.character(unassessed_prev_AU_cat$Pollu_ID),
+  wqstd_code = as.character(unassessed_prev_AU_cat$wqstd_code),
+  AU_ID = NA_character_,
+  AU_GNIS_Name = NA_character_,
+  MLocID = NA_character_,
+  IR_category= NA_character_,
+  Rationale = NA_character_,
+  AU_previous_IR_category = NA_character_,
+  Delist = NA_character_,
+  recordID = NA_character_
+) %>%
+  distinct() %>%
+  AU_rollup_other() %>%
+  filter(!is.na(AU_ID)) %>%
+  join_pollu_assess()
+  
 # Put it together -------------------------------------------------------------------------------------------------
 
 rollup_AU_others <- bind_rows(temp_yr_AU,
@@ -194,7 +311,10 @@ rollup_AU_others <- bind_rows(temp_yr_AU,
                              tox_HH_AU,
                              turbidity_AU,
                              DO_yr,
-                             DO_sp) %>%
+                             DO_sp,
+                             biocriteria_AU,
+                             HABs_AU,
+                             unassessed) %>%
   arrange(AU_ID, Assessment) %>%
   select(AU_ID, Pollu_ID,wqstd_code, Assessment,  Pollutant, period, DO_Class,assessed_2022, AU_previous_IR_category,
          `2022_IR_category`,AU_final_status, Rationale, recordID, AU_delist)
