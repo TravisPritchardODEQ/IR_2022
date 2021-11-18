@@ -73,7 +73,7 @@ coast_AU_summary_no_WS0 <-  coast_contact_geomeans_no_WS %>%
   filter(str_detect(AU_ID, "WS", negate = TRUE)) %>%
   arrange(MLocID) %>%
   ungroup() %>%
-  group_by(AU_ID,  Pollu_ID, wqstd_code, OWRD_Basin ) %>%
+  group_by(AU_ID,  Pollu_ID, wqstd_code ) %>%
   summarise(num_Samples = as.numeric(n()),
             Max_Geomean = ifelse(!all(is.na(geomean)),max(geomean, na.rm = TRUE),NA),
             max.value  = max(Result_cen),
@@ -239,16 +239,16 @@ if(write_excel){
   addWorksheet(wb, sheetName = "Other AU categorization")
   
   header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
-  freezePane(wb, "Coast Bacteria Data_WS", firstRow = TRUE) 
-  freezePane(wb, "WS station categorization", firstRow = TRUE)
-  freezePane(wb, "WS AU categorization", firstRow = TRUE)
+  #freezePane(wb, "Coast Bacteria Data_WS", firstRow = TRUE) 
+ # freezePane(wb, "WS station categorization", firstRow = TRUE)
+  #freezePane(wb, "WS AU categorization", firstRow = TRUE)
   freezePane(wb,  "Coast Bacteria Data_Other", firstRow = TRUE)
   freezePane(wb, "Other AU categorization", firstRow = TRUE)
 
   
-  writeData(wb = wb, sheet = "Coast Bacteria Data_WS", x = coast_contact_geomeans_WS, headerStyle = header_st)
-  writeData(wb = wb, sheet = "WS station categorization", x = coast_AU_summary_WS, headerStyle = header_st)
-  writeData(wb = wb, sheet = "WS AU categorization", x = WS_AU_rollup, headerStyle = header_st)
+  #writeData(wb = wb, sheet = "Coast Bacteria Data_WS", x = coast_contact_geomeans_WS, headerStyle = header_st)
+  #writeData(wb = wb, sheet = "WS station categorization", x = coast_AU_summary_WS, headerStyle = header_st)
+  #writeData(wb = wb, sheet = "WS AU categorization", x = WS_AU_rollup, headerStyle = header_st)
   writeData(wb = wb, sheet =  "Coast Bacteria Data_Other", x = coast_contact_geomeans_no_WS, headerStyle = header_st)
   writeData(wb = wb, sheet = "Other AU categorization", x = coast_AU_summary_no_WS, headerStyle = header_st )
   
