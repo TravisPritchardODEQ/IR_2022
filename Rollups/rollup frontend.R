@@ -12,7 +12,15 @@
 #' together rollup.R combines watershed and other unit types. Tabs here also include beneficaial use information 
 #' 
 
- 
+
+
+# Set options -----------------------------------------------------------------------------------------------------
+
+options(scipen=999)
+options(dplyr.summarise.inform = FALSE)
+
+
+source('Rollups/rollup helper/AU_prev_cat.R') 
 
 
 # Rollup MLOC -----------------------------------------------------------------------------------------------------

@@ -7,7 +7,7 @@ library(openxlsx)
 
 source('Rollups/GNIS_Rollup_function.R')
 source('Rollups/poll_asses_join.R')
-
+load('Rollups/rollup helper/AU_to_ben_use.Rdata')
 # Bring in assessments --------------------------------------------------------------------------------------------
 
 
@@ -18,7 +18,7 @@ source('Rollups/poll_asses_join.R')
 
 
 
-temp_yr_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessments-corrected crit periods.xlsx',
+temp_yr_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessments.xlsx',
                                 sheet = 'YrRnd WS station cat') %>%
   GNIS_rollup(periods = TRUE) %>%
   join_pollu_assess()%>%   mutate(GNIS_IR_category = as.character(GNIS_IR_category))
@@ -30,7 +30,7 @@ temp_yr_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessmen
 
 
 
-temp_spawn_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessments-corrected crit periods.xlsx',
+temp_spawn_WS_station <- read.xlsx('Rollups/Rollup Assessment/temperature-assessments.xlsx',
                                 sheet = 'Spawn WS station cat') %>%
   GNIS_rollup(periods = TRUE) %>%
   join_pollu_assess()%>%   mutate(GNIS_IR_category = as.character(GNIS_IR_category))
@@ -57,10 +57,10 @@ bacteria_fresh_WS_station_GNIS_rollup <- join_pollu_assess(bacteria_fresh_WS_sta
 
 ### Coastal Contact -------------------------------------------------------------------------------------------------
 
-bacteria_coast_WS_station <- read.xlsx('Rollups/Rollup Assessment/bacteria coast contact.xlsx',
-                                       sheet = 'WS station categorization')  %>%
-  GNIS_rollup() %>%
-  join_pollu_assess()%>%   mutate(GNIS_IR_category = as.character(GNIS_IR_category))
+# bacteria_coast_WS_station <- read.xlsx('Rollups/Rollup Assessment/bacteria coast contact.xlsx',
+#                                        sheet = 'WS station categorization')  %>%
+#   GNIS_rollup() %>%
+#   join_pollu_assess()%>%   mutate(GNIS_IR_category = as.character(GNIS_IR_category))
 
 
 
@@ -100,13 +100,15 @@ DO_yr <- bind_rows(DO_yr_cont, DO_yr_inst) %>%
 
 DO_sp_cont <- read.xlsx('Rollups/Rollup Assessment/DO Spawn.xlsx',
                         sheet = 'Spawn Cont WS Station Cat') %>%
-  mutate(period = ifelse(period == 'Spawn', "spawn", period )) %>%
+  mutate(period = ifelse(period == 'Spawn', "spawn", period ),
+         Delist = as.character(Delist)) %>%
   select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale, Delist, GNIS_previous_IR_impairement) %>%
   mutate(Rationale = paste0(MLocID, ":", " ", Rationale))
 
 DO_sp_inst <- read.xlsx('Rollups/Rollup Assessment/DO Spawn.xlsx',
                         sheet = 'Spawn Instant WS Station Cat') %>%
-  mutate(period = ifelse(period == 'Spawn', "spawn", period )) %>%
+  mutate(period = ifelse(period == 'Spawn', "spawn", period ),
+         Delist = as.character(Delist)) %>%
   select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale, Delist, GNIS_previous_IR_impairement) %>%
   mutate(Rationale = paste0(MLocID, ":", " ", Rationale))
 
@@ -198,7 +200,7 @@ turbidity_WS_station <- read.xlsx('Rollups/Rollup Assessment/turbidity.xlsx',
 
 # Biocriteria -----------------------------------------------------------------------------------------------------
 
-MWCF_SS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+MWCF_SS <- read.xlsx('Rollups/Rollup Assessment/Biocriteria.xlsx',
                      sheet = 'MWCF_SS') %>%
   rename(IR_category = IR_Cat,
          GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`) %>%
@@ -208,7 +210,7 @@ MWCF_SS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx
          Delist = as.character(Delist)) %>%
   select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale, GNIS_previous_IR_impairement, Delist)
 
-MWCF_MS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+MWCF_MS <- read.xlsx('Rollups/Rollup Assessment/Biocriteria.xlsx',
                      sheet = 'MWCF_MS')%>%
   rename(IR_category = IR_Cat_ave,
          GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`) %>%
@@ -219,7 +221,7 @@ MWCF_MS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx
   select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale, GNIS_previous_IR_impairement, Delist)
 
 
-WCCP_SS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+WCCP_SS <- read.xlsx('Rollups/Rollup Assessment/Biocriteria.xlsx',
                      sheet = 'WCCP_SS') %>%
   rename(IR_category = IR_Cat) %>%
   mutate(IR_category = str_remove(IR_category, 'Cat')) %>%
@@ -228,7 +230,7 @@ WCCP_SS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx
          Delist = as.character(Delist)) %>%
   select(AU_ID, MLocID, AU_GNIS_Name, Pollu_ID, wqstd_code,IR_category, Rationale, Delist)
 
-WCCP_MS <- read.xlsx('Rollups/Rollup Assessment/IR_2022_Biocriteria_for_BPJ.xlsx',
+WCCP_MS <-read.xlsx('Rollups/Rollup Assessment/Biocriteria.xlsx',
                      sheet = 'WCCP_MS') %>%
   rename(IR_category = IR_Cat_ave,
          GNIS_previous_IR_impairement = `Previous_Impaired_AU:GNIS`) %>%
@@ -281,7 +283,7 @@ unassessed <- data.frame(
 WS_GNIS_param_rollup <- bind_rows(temp_yr_WS_station,
                             temp_spawn_WS_station,
                             bacteria_fresh_WS_station_GNIS_rollup,
-                            bacteria_coast_WS_station,
+                            #bacteria_coast_WS_station,
                             chl_WS_station,
                             DO_yr,
                             DO_spawn,
@@ -296,12 +298,22 @@ WS_GNIS_param_rollup <- bind_rows(temp_yr_WS_station,
                             biocriteria_WS_station,
                             unassessed
                             ) %>%
-  mutate(Rationale = str_replace_all(Rationale, 'Â', ''))
+  mutate(Rationale = str_replace_all(Rationale, 'Â', '')) %>%
+  left_join(select(AU_to_ben_use, AU_ID, AU_Name, AU_Description))
+
+
+num_col <-  ncol(WS_GNIS_param_rollup)
+num_col_2 <- num_col-2
+
+WS_GNIS_param_rollup <- WS_GNIS_param_rollup[,c(1, 
+                                                 num_col-1,
+                                                 num_col, 
+                                                 2:num_col_2)]
 
 WS_GNIS_rollup <- WS_GNIS_param_rollup %>%
   mutate(GNIS_final_IR_category = ifelse(is.na(GNIS_final_IR_category), AU_previous_IR_category, as.character(GNIS_final_IR_category) )) %>%
   mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed", '3D',"3", "3B", "3C", "2", "5", '4A' ), ordered=TRUE),) %>%
-  group_by(AU_ID, AU_GNIS_Name) %>%
+  group_by(AU_ID,AU_Name,AU_Description, AU_GNIS_Name) %>%
   summarise(GNIS_status =  case_when(all(is.na(GNIS_final_IR_category)) & max(AU_final_status) %in% c("4B","4C","4A", "5","4" ) ~ "Impaired",
                                    all(is.na(GNIS_final_IR_category)) & max(AU_final_status) %in% c("3C","3D","3B", "3", "3C") ~ "Insufficient Data",
                                    all(is.na(GNIS_final_IR_category)) & max(AU_final_status) %in% c("2","3D","3B") ~ "Attaining",
@@ -374,7 +386,7 @@ AU_prev_cat <- AU_prev_cat %>%
 WS_AU_rollup <- WS_GNIS_param_rollup %>%
   mutate(AU_final_status =factor(AU_final_status, levels=c("Unassessed", '3D',"3", "3B", "3C","2", "5", '4A', '4B', '4C' ), ordered=TRUE),
          Rationale = str_replace_all(Rationale, 'Â', '')) %>%
-  group_by(AU_ID, Pollutant, Assessment, Pollu_ID, wqstd_code, period, DO_Class) %>%
+  group_by(AU_ID, AU_Name,AU_Description, Pollutant, Assessment, Pollu_ID, wqstd_code, period, DO_Class) %>%
   summarise(stations =  paste(stations[!is.na(stations)], collapse = "; "),
             AU_final_status = max(AU_final_status),
             assessed_2022 = case_when(all(GNIS_IR_category == "Unassessed") ~ "No",
@@ -388,8 +400,8 @@ WS_AU_rollup <- WS_GNIS_param_rollup %>%
   mutate(Rationale = case_when(assessed_2022 == 'No' ~ previous_rationale,
                                TRUE ~ Rationale),
          year_assessed = case_when(assessed_2022 == 'No' ~ year_assessed,
-                                   TRUE ~ as.integer(2022)),
-         Year_listed = case_when(is.na(Year_listed) & AU_final_status %in% c('5', '4A') ~ as.integer(2022),
+                                   TRUE ~ 2022),
+         Year_listed = case_when(is.na(Year_listed) & AU_final_status %in% c('5', '4A') ~ 2022,
                                  TRUE ~ Year_listed)) %>%
   mutate(recordID = case_when(is.na(period) ~ paste0(year_assessed, "-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-", wqstd_code),
                               !is.na(DO_Class) ~ paste0(year_assessed, "-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-",
@@ -402,7 +414,7 @@ delistings_GNIS <- WS_GNIS_param_rollup %>%
 
 delistings_WS_AU <- WS_AU_rollup %>%
   filter(AU_delist == "Yes") %>%
-  select(AU_ID, Pollutant, Assessment,stations, Pollu_ID, wqstd_code, period,DO_Class,AU_final_status, Rationale, AU_delist)
+  select(AU_ID, AU_Name, AU_Description, Pollutant, Assessment,stations, Pollu_ID, wqstd_code, period,DO_Class,AU_final_status, Rationale, AU_delist)
 
 wb <- createWorkbook()
 addWorksheet(wb, sheetName = "WS_GNIS_param_rollup")

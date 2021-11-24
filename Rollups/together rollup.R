@@ -85,7 +85,7 @@ BU_rollup <- AU_BU %>%
                              ben_use == "Boating" ~ "boating",
                              TRUE ~ "ERROR"
   )) %>%
-  group_by(AU_ID, ben_use) %>%
+  group_by(AU_ID,AU_Name,AU_Description , ben_use) %>%
   summarise(Category = max(AU_final_status)) %>%
   right_join(filter(all_ben_uses, AU_ID %in% AU_all$AU_ID)) %>%
   mutate(Category = as.character(Category),
