@@ -194,7 +194,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
                 percent_3d = num_3d/num_samples * 100,
                 num_excursions = sum(excursion),
                 geomean = case_when(percent_3d == 100 ~ NA_real_,
-                                    num_not_3d >= 3 ~ round(geo_mean(evaluation_result[!(is.3d)]), 7),
+                                    num_not_3d >= 3 ~ geo_mean(evaluation_result[!(is.3d)]),
                                     TRUE ~ -NA_real_
                                     )) %>%
       ungroup() %>%
@@ -208,7 +208,7 @@ fun_Tox_HH_analysis <-function(df, write_excel = TRUE){
                                       geomean < crit ~ "2",
                                       TRUE ~ "ERROR"), 
              Rationale =  case_when(percent_3d == 100 ~ paste0("All results are non-detects with detection limits above criteria- ", num_samples, " total samples"),
-                                    num_samples >= 3 & geomean > crit ~ paste("Geometric mean of", round(geomean, 7), "above criteria of", crit,  " - ", num_samples, " total samples"),
+                                    num_samples >= 3 & geomean > crit ~ paste("Geometric mean of", geomean, "above criteria of", crit,  " - ", num_samples, " total samples"),
                                     num_samples < 3 & num_excursions >= 1 ~ paste('Only', num_samples, " samples", 'and', num_excursions, "excursions"), 
                                     num_samples < 3 & num_excursions == 0 ~ paste('Only', num_samples, " samples", 'and', num_excursions, "excursions"),
                                     num_not_3d < 3 ~ paste("Only", num_not_3d, 'samples have QL above criteria',   " - ", num_samples, " total samples"),
