@@ -283,7 +283,23 @@ WS_MLocID_param_rollup <- WS_MLocID_param_rollup[,c(1,
                                                 num_col, 
                                                 2:num_col_2)]
 
-WS_MlocID_rollup <- WS_MLocID_param_rollup %>%
+TMDL_updates_import <- read.xlsx("//deqHQ1/WQASSESSMENT/2022IRFiles/Communications/DEQ Internal comment/IR_2022_draft_ImpairedWaters_Comments_RM.xlsx",
+                                 sheet = 'update lookup')
+
+
+TMDL_updates <- TMDL_updates_import %>%
+  select(-Comment, -action_ID, -TMDL, -recordID, -AU_final_status, -DO_Class) %>%
+  distinct()
+
+
+
+WS_MLocID_param_rollup2 <- WS_MLocID_param_rollup %>%
+  left_join(TMDL_updates) %>%
+  mutate(MLocID_IR_category = case_when(MLocID_IR_category %in% c('5', '4A') & !is.na(AU_status_update) ~ AU_status_update,
+                                         TRUE ~ as.character(MLocID_IR_category)
+  ))
+
+WS_MlocID_rollup <- WS_MLocID_param_rollup2 %>%
   group_by(AU_ID, AU_Name,AU_Description, MLocID) %>%
   summarise(MLocID_status =  case_when(max(MLocID_IR_category, na.rm = TRUE) %in% c("4B","4C","4A", "5","4" ) ~ "Impaired",
                                      max(MLocID_IR_category, na.rm = TRUE) %in% c("3C","3D","3B", "3") ~ "Insufficient Data",
@@ -350,7 +366,7 @@ header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
 freezePane(wb, "WS_MLocID_param_rollup", firstRow = TRUE) 
 freezePane(wb, "WS_MlocID_rollup", firstRow = TRUE)
 
-writeData(wb = wb, sheet = "WS_MLocID_param_rollup", x = WS_MLocID_param_rollup, headerStyle = header_st)
+writeData(wb = wb, sheet = "WS_MLocID_param_rollup", x = WS_MLocID_param_rollup2, headerStyle = header_st)
 writeData(wb = wb, sheet = "WS_MlocID_rollup", x = WS_MlocID_rollup, headerStyle = header_st)
 
 saveWorkbook(wb, 'Rollups/Rollup outputs/MLoc_rollup.xlsx', overwrite = TRUE) 

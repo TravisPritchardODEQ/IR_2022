@@ -359,6 +359,22 @@ rollup_AU_others <- rollup_AU_others %>%
                               !is.na(period) & is.na(DO_Class) ~paste0(year_assessed, "-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-",
                                                                        wqstd_code,"-", period) ) )
 
+TMDL_updates_import <- read.xlsx("//deqHQ1/WQASSESSMENT/2022IRFiles/Communications/DEQ Internal comment/IR_2022_draft_ImpairedWaters_Comments_RM.xlsx",
+                                 sheet = 'update lookup')
+
+
+TMDL_updates <- TMDL_updates_import %>%
+  select(-Comment, -action_ID, -TMDL, -recordID, -AU_final_status, -DO_Class) %>%
+  distinct()
+
+
+
+rollup_AU_others2 <- rollup_AU_others %>%
+  left_join(TMDL_updates) %>%
+  mutate(AU_final_status = case_when(AU_final_status %in% c('5', '4A') & !is.na(AU_status_update) ~ AU_status_update,
+                                         TRUE ~ as.character(AU_final_status)
+  ))
+
 delist_AU_other <- rollup_AU_others %>%
   filter(AU_delist == "Yes") %>%
   select(AU_ID,AU_Name, AU_Description, Pollutant, Assessment,stations, Pollu_ID, wqstd_code, period,DO_Class,AU_final_status, Rationale, AU_delist)

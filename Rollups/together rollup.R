@@ -63,13 +63,30 @@ all_ben_uses <- AU_to_ben_use %>%
 
 
 
+# TMDL updates ----------------------------------------------------------------------------------------------------
 
+
+# TMDL_updates_import <- read.xlsx("//deqHQ1/WQASSESSMENT/2022IRFiles/Communications/DEQ Internal comment/IR_2022_draft_ImpairedWaters_Comments_RM.xlsx",
+#                                  sheet = 'update lookup')
+# 
+# 
+# TMDL_updates <- TMDL_updates_import %>%
+#   select(-Comment, -action_ID, -TMDL)
+# 
+# 
+# AU_all_parameter_2 <- AU_all_parameter %>%
+#   left_join(TMDL_updates) %>%
+#   mutate(AU_final_status = case_when(!is.na(AU_status_update) ~ AU_status_update,
+#                                      TRUE ~ AU_final_status)) %>%
+#   select(-AU_status_update)
 
 
 
 AU_all <- AU_all_parameter %>%
   mutate(AU_final_status = factor(AU_final_status, 
                                   levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A', '4C' ), ordered=TRUE)) 
+
+
 
 AU_BU <- AU_all %>%
   left_join(select(BUs, -Pollutant), by = c("Pollu_ID", 'wqstd_code' = "WQstd_code") )

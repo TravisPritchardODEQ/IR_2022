@@ -310,7 +310,28 @@ WS_GNIS_param_rollup <- WS_GNIS_param_rollup[,c(1,
                                                  num_col, 
                                                  2:num_col_2)]
 
-WS_GNIS_rollup <- WS_GNIS_param_rollup %>%
+
+TMDL_updates_import <- read.xlsx("//deqHQ1/WQASSESSMENT/2022IRFiles/Communications/DEQ Internal comment/IR_2022_draft_ImpairedWaters_Comments_RM.xlsx",
+                                sheet = 'update lookup')
+
+
+TMDL_updates <- TMDL_updates_import %>%
+  select(-Comment, -action_ID, -TMDL, -recordID, -AU_final_status, -DO_Class) %>%
+  distinct()
+
+
+
+WS_GNIS_param_rollup2 <- WS_GNIS_param_rollup %>%
+  left_join(TMDL_updates) %>%
+  mutate(GNIS_final_IR_category = case_when(GNIS_final_IR_category %in% c('5', '4A') & !is.na(AU_status_update) ~ AU_status_update,
+                                        TRUE ~ as.character(GNIS_final_IR_category)),
+         AU_final_status = case_when(AU_final_status %in% c('5', '4A') & !is.na(AU_status_update) ~ AU_status_update,
+                                             TRUE ~ as.character(AU_final_status))
+         ) %>%
+  select(-AU_status_update)
+
+
+WS_GNIS_rollup <- WS_GNIS_param_rollup2 %>%
   filter(!is.na(AU_GNIS_Name)) %>%
   mutate(GNIS_final_IR_category = ifelse(is.na(GNIS_final_IR_category), AU_previous_IR_category, as.character(GNIS_final_IR_category) )) %>%
   mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed", '3D',"3", "3B", "3C", "2", "5", '4A' ), ordered=TRUE),) %>%
@@ -384,7 +405,7 @@ AU_prev_cat <- AU_prev_cat %>%
   distinct() %>%
   select(-Assessed_in_2018)
 
-WS_AU_rollup <- WS_GNIS_param_rollup %>%
+WS_AU_rollup <- WS_GNIS_param_rollup2 %>%
   mutate(AU_final_status =factor(AU_final_status, levels=c("Unassessed", '3D',"3", "3B", "3C","2", "5", '4A', '4B', '4C' ), ordered=TRUE),
          Rationale = str_replace_all(Rationale, 'Â', '')) %>%
   group_by(AU_ID, AU_Name,AU_Description, Pollutant, Assessment, Pollu_ID, wqstd_code, period, DO_Class) %>%
@@ -410,7 +431,7 @@ WS_AU_rollup <- WS_GNIS_param_rollup %>%
                               !is.na(period) & is.na(DO_Class) ~paste0(year_assessed, "-",odeqIRtools::unique_AU(AU_ID),"-", Pollu_ID, "-",
                                                                       wqstd_code,"-", period) ) )
 
-delistings_GNIS <- WS_GNIS_param_rollup %>%
+delistings_GNIS <- WS_GNIS_param_rollup2 %>%
   filter(GNIS_remove_impairment == "Yes")
 
 delistings_WS_AU <- WS_AU_rollup %>%
@@ -418,7 +439,7 @@ delistings_WS_AU <- WS_AU_rollup %>%
   select(AU_ID, AU_Name, AU_Description, Pollutant, Assessment,stations, Pollu_ID, wqstd_code, period,DO_Class,AU_final_status, Rationale, AU_delist)
 
 
-WS_GNIS_param_rollup2 <- WS_GNIS_param_rollup %>%
+WS_GNIS_param_rollup3 <- WS_GNIS_param_rollup2 %>%
   rename(GNIS_22_category = GNIS_IR_category,
          GNIS_final_category = GNIS_final_IR_category) %>%
   filter(!is.na(GNIS_final_category))
@@ -433,7 +454,7 @@ freezePane(wb, "WS_GNIS_param_rollup", firstRow = TRUE)
 freezePane(wb, "WS_AU_rollup", firstRow = TRUE)
 freezePane(wb, "GNIS_Map_Display", firstRow = TRUE)
 
-writeData(wb = wb, sheet = "WS_GNIS_param_rollup", x = WS_GNIS_param_rollup2, headerStyle = header_st)
+writeData(wb = wb, sheet = "WS_GNIS_param_rollup", x = WS_GNIS_param_rollup3, headerStyle = header_st)
 writeData(wb = wb, sheet = "WS_AU_rollup", x = WS_AU_rollup, headerStyle = header_st)
 writeData(wb = wb, sheet = "GNIS_Map_Display", x = WS_GNIS_rollup, headerStyle = header_st)
 
@@ -441,4 +462,4 @@ saveWorkbook(wb, 'Rollups/Rollup outputs/GNIS_rollup.xlsx', overwrite = TRUE)
 
 
 
-save(WS_AU_rollup, WS_GNIS_rollup,WS_GNIS_param_rollup,delistings_GNIS, delistings_WS_AU, file = 'Rollups/WS_AU_GNIS_rollup.Rdata')
+save(WS_AU_rollup, WS_GNIS_rollup,WS_GNIS_param_rollup2,delistings_GNIS, delistings_WS_AU, file = 'Rollups/WS_AU_GNIS_rollup.Rdata')
