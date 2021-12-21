@@ -311,6 +311,7 @@ WS_GNIS_param_rollup <- WS_GNIS_param_rollup[,c(1,
                                                  2:num_col_2)]
 
 WS_GNIS_rollup <- WS_GNIS_param_rollup %>%
+  filter(!is.na(AU_GNIS_Name)) %>%
   mutate(GNIS_final_IR_category = ifelse(is.na(GNIS_final_IR_category), AU_previous_IR_category, as.character(GNIS_final_IR_category) )) %>%
   mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed", '3D',"3", "3B", "3C", "2", "5", '4A' ), ordered=TRUE),) %>%
   group_by(AU_ID,AU_Name,AU_Description, AU_GNIS_Name) %>%
@@ -416,16 +417,25 @@ delistings_WS_AU <- WS_AU_rollup %>%
   filter(AU_delist == "Yes") %>%
   select(AU_ID, AU_Name, AU_Description, Pollutant, Assessment,stations, Pollu_ID, wqstd_code, period,DO_Class,AU_final_status, Rationale, AU_delist)
 
+
+WS_GNIS_param_rollup2 <- WS_GNIS_param_rollup %>%
+  rename(GNIS_22_category = GNIS_IR_category,
+         GNIS_final_category = GNIS_final_IR_category) %>%
+  filter(!is.na(GNIS_final_category))
+
 wb <- createWorkbook()
 addWorksheet(wb, sheetName = "WS_GNIS_param_rollup")
+addWorksheet(wb, sheetName = "GNIS_Map_Display")
 addWorksheet(wb, sheetName = "WS_AU_rollup")
 
 header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
 freezePane(wb, "WS_GNIS_param_rollup", firstRow = TRUE) 
 freezePane(wb, "WS_AU_rollup", firstRow = TRUE)
+freezePane(wb, "GNIS_Map_Display", firstRow = TRUE)
 
-writeData(wb = wb, sheet = "WS_GNIS_param_rollup", x = WS_GNIS_param_rollup, headerStyle = header_st)
+writeData(wb = wb, sheet = "WS_GNIS_param_rollup", x = WS_GNIS_param_rollup2, headerStyle = header_st)
 writeData(wb = wb, sheet = "WS_AU_rollup", x = WS_AU_rollup, headerStyle = header_st)
+writeData(wb = wb, sheet = "GNIS_Map_Display", x = WS_GNIS_rollup, headerStyle = header_st)
 
 saveWorkbook(wb, 'Rollups/Rollup outputs/GNIS_rollup.xlsx', overwrite = TRUE) 
 

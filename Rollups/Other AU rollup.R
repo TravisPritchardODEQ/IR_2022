@@ -258,6 +258,11 @@ biocriteria_AU <- SR_biocriteria %>%
 # HABs ------------------------------------------------------------------------------------------------------------
 
 HABs_AU <- read.xlsx('Rollups/Rollup Assessment/HABs.xlsx') %>%
+  group_by(AU_ID) %>%
+  summarise(Waterbody = max(Waterbody),
+            `2018/2020` = first(`2018/2020`),
+            `2022` = first(`2022`),
+            Rationale = first(Rationale)) %>%
   rename(IR_category = `2022`,
          AU_previous_IR_category = '2018/2020') %>%
   mutate(IR_category = str_remove(IR_category, 'Cat '),

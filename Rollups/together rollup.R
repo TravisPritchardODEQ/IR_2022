@@ -105,22 +105,52 @@ AU_delistings <- bind_rows(delist_AU_other, delistings_WS_AU) %>%
   arrange(AU_ID, Pollutant)
 
 
+map_display <- AU_all_parameter %>%
+  mutate(pollutant_strd = case_when(!is.na(period) ~ paste0(Pollutant, "- ", period),
+                                    wqstd_code == 15 ~  paste0(Pollutant, "- Aquatic Life Toxics"),
+                                    wqstd_code == 16 ~  paste0(Pollutant, "- Human Health Toxics"),
+                                    TRUE ~ Pollutant
+                                    )) %>%
+  group_by(AU_ID) %>%
+  summarise(AU_status = case_when(any(str_detect(AU_final_status, '5') | str_detect(AU_final_status, '4'))~ 'Impaired',
+                                  any(str_detect(AU_final_status, '2')) ~ "Attaining",
+                                  all(str_detect(AU_final_status, '3')) ~ "Insufficient Data",
+                                  TRUE ~ "ERROR"
+                                  ),
+            year_last_assessed = max(year_assessed, na.rm = TRUE),
+            Year_listed = ifelse(AU_status == 'Impaired', min(Year_listed,  na.rm = TRUE), NA_integer_ ) ,
+            Cat_5_count = length(pollutant_strd[AU_final_status == '5']),
+            Cat_4_count = length(pollutant_strd[str_detect(AU_final_status, '4')]),
+            Impaired_count = Cat_5_count + Cat_4_count,
+            Impaired_parameters = str_flatten(pollutant_strd[!is.na(AU_final_status) & (str_detect(AU_final_status, '5') | str_detect(AU_final_status, '4'))], ","),
+            Cat_2_count = length(pollutant_strd[AU_final_status == '2']),
+            Attaining_parameters = str_flatten(pollutant_strd[!is.na(AU_final_status) & AU_final_status == '2'], ","),
+            Cat_3_count = length(pollutant_strd[AU_final_status == '3']),
+            Cat_3B_count = length(pollutant_strd[AU_final_status == '3B']),
+            Cat_3D_count = length(pollutant_strd[AU_final_status == '3D']),
+            Cat_3_count_total = sum(Cat_3_count, Cat_3B_count, Cat_3D_count),
+            Insuffcient_parameters = str_flatten(pollutant_strd[!is.na(AU_final_status) & str_detect(AU_final_status, '3')], ",")
+            )
+
 wb <- createWorkbook()
 addWorksheet(wb, sheetName = "AU_all")
 addWorksheet(wb, sheetName = "AU_BU")
 addWorksheet(wb, sheetName = "BU_rollup")
 addWorksheet(wb, sheetName = "Delistings")
+addWorksheet(wb, sheetName = "map_display")
 
 header_st <- createStyle(textDecoration = "Bold", border = "Bottom")
 freezePane(wb, "AU_all", firstRow = TRUE) 
 freezePane(wb, "AU_BU", firstRow = TRUE)
 freezePane(wb, "BU_rollup", firstRow = TRUE)
 freezePane(wb, "Delistings", firstRow = TRUE)
+freezePane(wb, "map_display", firstRow = TRUE)
 
 writeData(wb = wb, sheet = "AU_all", x = AU_all, headerStyle = header_st)
 writeData(wb = wb, sheet = "AU_BU", x = AU_BU, headerStyle = header_st)
 writeData(wb = wb, sheet = "BU_rollup", x = BU_rollup, headerStyle = header_st)
 writeData(wb = wb, sheet = "Delistings", x = AU_delistings, headerStyle = header_st)
+writeData(wb = wb, sheet = "map_display", x = map_display, headerStyle = header_st)
 
 saveWorkbook(wb, 'Rollups/Rollup outputs/AU_all_rollup.xlsx', overwrite = TRUE) 
 

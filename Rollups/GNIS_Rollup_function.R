@@ -3,9 +3,9 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
   
 
   #testing
- #   df <- test_GNIS
- # periods = FALSE
- #   DO = FALSE
+ #   df <- DO_yr
+ # periods = TRUE
+ #   DO = TRUE
 
   # 
   
@@ -247,11 +247,11 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
       mutate(AU_final_status = case_when(#GNIS_IR_category == "Unassessed" & GNIS_previous_IR_impairement == 'Not previously listed' ~ AU_previous_IR_category,
         all(GNIS_final_IR_category == '2') ~ "2",
         any(GNIS_IR_category == "Unassessed") ~ as.character(AU_previous_IR_category),
-        any(GNIS_IR_category == '5') & !any(AU_previous_IR_category == '4A') ~ '5',
-        any(GNIS_IR_category %in% c('5', '4A')) & any(AU_previous_IR_category == '4A') ~ '4A',
-        any(GNIS_IR_category == '5') & is.na(AU_previous_IR_category) ~ '5',
-        all(GNIS_IR_category == '2') ~ '2',
-        all(GNIS_IR_category %in% c('2', '3', '3B', '3D')) ~ as.character(max(GNIS_IR_category)),
+        any(GNIS_final_IR_category == '5') & !any(AU_previous_IR_category == '4A') ~ '5',
+        any(GNIS_final_IR_category %in% c('5', '4A')) & any(AU_previous_IR_category == '4A') ~ '4A',
+        any(GNIS_final_IR_category == '5') & is.na(AU_previous_IR_category) ~ '5',
+        all(GNIS_final_IR_category == '2') ~ '2',
+        all(GNIS_final_IR_category %in% c('2', '3', '3B', '3D')) ~ as.character(max(GNIS_IR_category)),
         TRUE ~ "Error"
       )) %>%
       ungroup() %>%
