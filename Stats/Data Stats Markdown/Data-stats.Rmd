@@ -1,0 +1,547 @@
+---
+title: "2022 Integrated Report Data Statistics"
+
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+options(scipen=999)
+options(dplyr.summarise.inform = FALSE)
+
+library(tidyverse)
+library(flextable)
+library(openxlsx)
+
+```
+
+File run at `r Sys.time()`
+
+## Data
+
+```{r data_query}
+database <- "IR_Dev" 
+
+con <- DBI::dbConnect(odbc::odbc(), database)
+
+
+db_qry <- glue::glue_sql( "SELECT distinct [org_name] as Organization
+    FROM [awqms].[dbo].[VW_AWQMS_Results]
+    WHERE  [OrganizationID] IN (
+        SELECT distinct [OrganizationID]
+          FROM [IntegratedReport].[dbo].[InputRaw])
+    Order by org_name", .con = con)
+
+  # Send query to database and return with the data
+  db_orgs <-  DBI::dbGetQuery(con, db_qry)
+  
+  db_results_count <-  DBI::dbGetQuery(con, 'SELECT count([Result_UID])
+  FROM [IntegratedReport].[dbo].[InputRaw]')
+
+
+db_results_count <- as.numeric(db_results_count[[1,1]])
+
+
+
+  db_results__cont_count <-  DBI::dbGetQuery(con, 'SELECT count([Result_UID])
+  FROM [IntegratedReport].[dbo].[InputRaw_ContpH]')
+
+
+db_results__cont_count <- as.numeric(db_results__cont_count[[1,1]])
+
+
+
+
+```
+
+For the 2022 IR:
+
+-   `r format(db_results_count,  big.mark=",")` numeric results from grab samples
+
+-   `r format(db_results__cont_count, big.mark=",")` numeric continuous results
+
+-   `r format(db_results_count+db_results__cont_count, big.mark=",")` total numeric results
+
+-   `r nrow(db_orgs)` organizations supplied the numeric data used in the report
+
+Of the `r nrow(db_orgs)` organizations, 14 submitted data (grab, continuous, and biological) through the Call For Data process.
+
+## Assessments
+
+### Assessment Units
+
+```{r}
+
+wordlist<-function(w, oxford=F) {
+    if(length(w)==1) return(w);
+    if(length(w)==2) return(paste(w[1],"and",w[2]));
+    paste0( paste(w[-length(w)], collapse=", "), 
+        ifelse(oxford,",","")," and ", w[length(w)] )
+}
+
+AU_all_rollup <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Rollup outputs/AU_all_rollup.xlsx",
+                           sheet = "AU_all")
+
+
+
+impaired_new <- AU_all_rollup %>%
+  filter(str_detect( AU_final_status, "[54]") & 
+           Year_listed == '2022')
+
+impaired_parameter_summary <- impaired_new %>%
+  group_by(Pollutant) %>%
+  summarise(num_impairements = sum(str_detect( AU_final_status, "[54]"))) %>%
+  arrange(desc(num_impairements))
+
+write.csv(impaired_parameter_summary, file = 'impaired_parameter_summary.csv')
+
+
+top_5 <- impaired_parameter_summary %>%
+  head(n = 5) %>%
+  pull(Pollutant) %>%
+  wordlist()
+
+
+top_5_vector <- impaired_parameter_summary %>%
+  head(n = 5) %>%
+  pull(Pollutant)
+
+
+total_2022_assessments <- AU_all_rollup %>%
+  filter(assessed_2022 == "Yes")
+
+length(unique(total_2022_assessments$AU_ID))
+
+
+library(sf)
+
+
+rivcoast_AU <- st_read("//deqHQ1/GISLIBRARY/Base_Data/DEQ_Data/Water_Quality/WQ_Assessment/WQ_2018_20_IntegratedReport_FINAL/WQ_Assessment_2018_20.gdb",
+                        layer = "AssessmentUnits_OR_Rivers_Coast") %>%
+  as.data.frame() %>%
+  select(AU_ID, AU_Name, AU_Description, AU_LenMiles, AU_AreaAcr)
+
+watershed_AU <- st_read("//deqHQ1/GISLIBRARY/Base_Data/DEQ_Data/Water_Quality/WQ_Assessment/WQ_2018_20_IntegratedReport_FINAL/WQ_Assessment_2018_20.gdb",
+                       layer = "AssessmentUnit_OR_Watershed_Area") %>%
+  as.data.frame() %>%
+  select(AU_ID, AU_Name, AU_Description, AU_LenMiles, AU_AreaAcr)
+
+waterbody_AUs <-  st_read("//deqHQ1/GISLIBRARY/Base_Data/DEQ_Data/Water_Quality/WQ_Assessment/WQ_2018_20_IntegratedReport_FINAL/WQ_Assessment_2018_20.gdb",
+                                         layer = "AssessmentUnits_OR_Waterbodies") %>%
+  as.data.frame() %>%
+  select(AU_ID, AU_Name, AU_Description, AU_LenMile, AU_AreaAcre) %>%
+  rename(AU_LenMiles = AU_LenMile,
+         AU_AreaAcr = AU_AreaAcre)
+
+assessment_units <- bind_rows(rivcoast_AU, watershed_AU, waterbody_AUs) %>%
+  distinct()
+
+
+test <-  assessment_units%>%
+  group_by(AU_ID) %>%
+  mutate(n = n())
+
+total_assessment_units <- length(unique(assessment_units$AU_ID))
+total_assessed_units <- length(unique(AU_all_rollup$AU_ID))
+total_assessed_units_22 <- length(unique(total_2022_assessments$AU_ID))
+total_assessed_units/total_assessment_units*100
+
+
+assessed_units <- assessment_units %>%
+  filter(AU_ID %in% unique(AU_all_rollup$AU_ID))
+
+map_display <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Rollup outputs/AU_all_rollup.xlsx",
+                          sheet = "map_display")
+
+impaired_AUs <- map_display %>%
+  filter(AU_status == "Impaired")
+  
+
+
+```
+
+For the 2022 cycle, we assessed `r total_assessed_units_22` assessment units. Including assessment units that did not have data in the IR 2022 data window, the 2022 Integrated Report has assessment conclusions for `r total_assessed_units` assessment units.
+
+Oregon has `r total_assessment_units` total assessment units, `r round(total_assessed_units/total_assessment_units*100, 0)` % are categorized.
+
+### Assessment Unit / Parameter Combo
+
+```{r}
+
+
+AU_all_rollup <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Rollup outputs/AU_all_rollup.xlsx",
+                           sheet = "AU_all")
+
+assessments_2022 <- AU_all_rollup %>%
+  filter(assessed_2022 == 'Yes')
+
+impaired <- AU_all_rollup %>%
+  filter(str_detect( AU_final_status, "[54]") )
+
+impaired_2022 <- AU_all_rollup %>%
+  filter(str_detect( AU_final_status, "[54]") &(assessed_2022 == 'Yes' ))
+
+
+impaired_new <- AU_all_rollup %>%
+  filter(str_detect( AU_final_status, "[54]") & 
+           Year_listed == '2022')
+```
+
+The 2022 Integrated Report contains assessment conclusions for `r format(nrow(AU_all_rollup), big.mark=",")` assessment unit/parameter/standard combinations. Of those, `r format(nrow(assessments_2022), big.mark=",")` assessment unit/parameter/standard combinations were assessed in 2022, using data from the 2022 IR data window (2016-2020). The remaining were carried forward from previous listings.
+
+`r format(nrow(impaired), big.mark=",")` assessment unit/parameter/standard combinations are classified as impaired. Of those, `r format(nrow(impaired_2022), big.mark=",")` assessment unit/parameter/standard combinations were assessed in 2022, and `r format(nrow(impaired_new), big.mark=",")` were newly classified as impaired this cycle.
+
+```{r}
+
+wordlist<-function(w, oxford=F) {
+    if(length(w)==1) return(w);
+    if(length(w)==2) return(paste(w[1],"and",w[2]));
+    paste0( paste(w[-length(w)], collapse=", "), 
+        ifelse(oxford,",","")," and ", w[length(w)] )
+}
+
+impaired_parameter_summary <- impaired %>%
+  group_by(Pollutant) %>%
+  summarise(num_impairements = sum(str_detect( AU_final_status, "[54]"))) %>%
+  arrange(desc(num_impairements))
+
+top_5 <- impaired_parameter_summary %>%
+  head(n = 5) %>%
+  pull(Pollutant) %>%
+  wordlist()
+```
+
+The top 5 impaired pollutants are `r top_5`.
+
+```{r name_of_chunk, fig.height=8, fig.width=12}
+
+top_5_vector <- impaired_parameter_summary %>%
+  head(n = 5) %>%
+  pull(Pollutant)
+
+
+impaired_parameter_summary2 <- impaired %>%
+  group_by(Pollutant, assessed_2022) %>%
+  summarise(num_impairements = sum(str_detect( AU_final_status, "[54]"))) %>%
+  arrange(desc(num_impairements))
+
+# palette <- lacroix_palette("Berry", type = "discrete")[-c(1:2, 4)]
+palette <- c("#15647A", 
+             '#93BDC6', 
+             '#CAF4F9', 
+             '#DA9E3E', 
+             '#CC928D')
+
+# palette <- c("#264653", 
+#              '#2A9D8F', 
+#              '#E9C46A', 
+#              '#F4A261', 
+#              '#E76F51')
+
+ggplot(data = filter(impaired_parameter_summary2, Pollutant %in% top_5_vector), 
+       aes(x = Pollutant, y = num_impairements,  fill=assessed_2022))  +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=palette) +
+  theme_bw()+
+  scale_y_continuous(expand = c(0, 0),limits = c(0, 2500))+
+  labs(title = "2022 IR Impairements", x = NULL,
+       y = "Assessment Unit/Parameter Impairements ", fill = "Assessed in 2022",
+       subtitle = "Overall number of Assessment Unit/Parameter impairments\nfor the top 5 impaired parameters") + 
+  theme(axis.text = element_text(size = 12), axis.text.y = element_text(size = 12), 
+        axis.title.y = element_text(size = 12), legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12))
+
+ggsave(filename = "top5_impairements.png", width = 9.48, height = 6.19, units = c("in"))
+
+
+```
+
+```{r}
+wordlist<-function(w, oxford=F) {
+    if(length(w)==1) return(w);
+    if(length(w)==2) return(paste(w[1],"and",w[2]));
+    paste0( paste(w[-length(w)], collapse=", "), 
+        ifelse(oxford,",","")," and ", w[length(w)] )
+}
+
+
+impaired_parameter_summary <- impaired_2022 %>%
+  group_by(Pollutant) %>%
+  summarise(num_impairements = sum(str_detect( AU_final_status, "[54]"))) %>%
+  arrange(desc(num_impairements))
+
+top_5 <- impaired_parameter_summary %>%
+  head(n = 5) %>%
+  pull(Pollutant) %>%
+  wordlist()
+
+
+top_5_vector <- impaired_parameter_summary %>%
+  head(n = 5) %>%
+  pull(Pollutant)
+
+
+```
+
+Of the data that was assessed in this cycle, the top 5 parameters are `r top_5`.
+
+```{r fig.height=8, fig.width=12}
+impaired_parameter_summary2 <- impaired_2022 %>%
+  group_by(Pollutant, assessed_2022) %>%
+  summarise(num_impairements = sum(str_detect( AU_final_status, "[54]"))) %>%
+  arrange(desc(num_impairements))
+
+ggplot(data = filter(impaired_parameter_summary2, Pollutant %in% top_5_vector), 
+       aes(x = Pollutant, y = num_impairements))  +
+  geom_bar(stat="identity", fill = palette[[1]]) +
+  scale_fill_manual(values=palette) +
+  theme_bw()+
+  scale_y_continuous(expand = c(0, 0))+
+  labs(title = "2022 IR Impairments", x = NULL,
+       y = "Impaired assessment units", fill = "Assessed in 2022",
+       subtitle = "Assessment unit impairements for the top 5 impaired parameters",
+       caption = "Limited to 2022 assessments only")  + 
+   theme(axis.text = element_text(size = 12), axis.text.y = element_text(size = 12), 
+        axis.title.y = element_text(size = 12), legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12))
+
+ggsave(filename = "top5_impairements_2022_cycle.png", width = 9.48, height = 6.19, units = c("in"))
+
+
+```
+
+### New Impairments
+
+```{r}
+wordlist<-function(w, oxford=F) {
+    if(length(w)==1) return(w);
+    if(length(w)==2) return(paste(w[1],"and",w[2]));
+    paste0( paste(w[-length(w)], collapse=", "), 
+        ifelse(oxford,",","")," and ", w[length(w)] )
+}
+
+
+impaired_parameter_summary <- impaired_new %>%
+  group_by(Pollutant) %>%
+  summarise(num_impairements = sum(str_detect( AU_final_status, "[54]"))) %>%
+  arrange(desc(num_impairements))
+
+top_5 <- impaired_parameter_summary %>%
+  head(n = 5) %>%
+  pull(Pollutant) %>%
+  wordlist()
+
+
+top_5_vector <- impaired_parameter_summary %>%
+  head(n = 5) %>%
+  pull(Pollutant)
+
+
+```
+
+Of the newly added impairments this cycle, the top 5 are `r top_5`.
+
+```{r fig.height=8, fig.width=12}
+
+
+impaired_parameter_summary2 <- impaired_new %>%
+  group_by(Pollutant, assessed_2022) %>%
+  summarise(num_impairements = sum(str_detect( AU_final_status, "[54]"))) %>%
+  arrange(desc(num_impairements))
+
+ggplot(data = filter(impaired_parameter_summary2, Pollutant %in% top_5_vector), 
+       aes(x = Pollutant, y = num_impairements))  +
+  geom_bar(stat="identity", fill = palette[[1]]) +
+  scale_fill_manual(values=palette) +
+  theme_bw()+
+  scale_y_continuous(expand = c(0, 0))+
+  labs(title = "2022 IR Impairements", x = NULL,
+       y = "Impaired assessment units", fill = "Assessed in 2022",
+       subtitle = "Newly added impairements") + 
+ theme(axis.text = element_text(size = 12), axis.text.y = element_text(size = 12), 
+        axis.title.y = element_text(size = 12), legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12))
+
+ggsave(filename = "top5_impairements_newly_added.png", width = 9.48, height = 6.19, units = c("in"))
+
+
+```
+
+## Delistings
+
+```{r}
+
+wordlist<-function(w, oxford=F) {
+    if(length(w)==1) return(w);
+    if(length(w)==2) return(paste(w[1],"and",w[2]));
+    paste0( paste(w[-length(w)], collapse=", "), 
+        ifelse(oxford,",","")," and ", w[length(w)] )
+}
+
+
+delisting_rollup <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Rollup outputs/AU_all_rollup.xlsx",
+                           sheet = "Delistings")
+
+delistings_summary <- delisting_rollup %>%
+  group_by(Pollutant) %>%
+  summarise(num_delisting = n()) %>%
+  arrange(desc(num_delisting))
+
+top_5 <- delistings_summary %>%
+  head(n = 5) %>%
+  pull(Pollutant) %>%
+  wordlist()
+
+
+```
+
+The top 5 delisted parameters are `r top_5`.
+
+```{r fig.height=8, fig.width=12}
+ggplot(data = head(delistings_summary, 5), 
+       aes(x = Pollutant, y = num_delisting))  +
+  geom_bar(stat="identity", fill = palette[[1]]) +
+  scale_fill_manual(values=palette) +
+  theme_bw()+
+  scale_y_continuous(expand = c(0, 0))+
+  labs(title = "2022 IR Delistings", x = NULL,
+       y = "Number of Delistings",
+       subtitle = "Top 5 delistings") + 
+  theme(axis.text = element_text(size = 12), axis.text.y = element_text(size = 12), 
+        axis.title.y = element_text(size = 12), legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12))
+
+ggsave(filename = "top5_delist.png", width = 9.48, height = 6.19, units = c("in"))
+
+```
+
+As for a temperature delistings, adding a min data requirement to the delisting process for temperature may be prudent.
+
+```{r fig.height=8, fig.width=12}
+
+AU_all_rollup <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Rollup outputs/AU_all_rollup.xlsx",
+                           sheet = "AU_all")
+
+delisting_rollup <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Rollup outputs/AU_all_rollup.xlsx",
+                              sheet = "Delistings")
+
+temp__year_round_assessment_other <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Parameters/Outputs/temperature-assessments-corrected crit periods.xlsx",
+                                               sheet = "YrRnd Other AU cat") %>%
+  select(AU_ID,total_air_exclusions, distinct_years, distinct_years_sufficient_crit_period, total_results, period )
+
+temp__spawn_assessment_other <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Parameters/Outputs/temperature-assessments-corrected crit periods.xlsx",
+                                               sheet = "Spawn Other AU cat") %>%
+  rename(distinct_years_sufficient_crit_period = distinct_years_sufficient_spawn_period ) %>%
+  select(AU_ID,total_air_exclusions, distinct_years, distinct_years_sufficient_crit_period, total_results, period )
+
+temp_other <- bind_rows(temp__year_round_assessment_other, temp__spawn_assessment_other)
+
+temp_delistings <- delisting_rollup %>%
+  filter(Pollutant == 'Temperature')
+
+temp_delistings_other <-temp_delistings %>%
+  filter(str_detect(AU_ID, "WS", negate = TRUE)) %>%
+  left_join(temp_other)
+
+
+# Watershed units -------------------------------------------------------------------------------------------------
+delisting_rollup_temp <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Rollup outputs/AU_all_rollup.xlsx",
+                              sheet = "Delistings") %>%
+  filter(Pollutant == "Temperature") %>%
+  mutate(joinby = paste0(AU_ID, Pollutant, period))
+
+
+temp__year_round_assessment_WS <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Parameters/Outputs/temperature-assessments-corrected crit periods.xlsx",
+                                               sheet = "YrRnd WS station cat") %>%
+  select(AU_ID,MLocID, AU_GNIS_Name, total_air_exclusions, distinct_years, distinct_years_sufficient_crit_period, total_results, period, Rationale )
+
+temp__spawn_assessment_WS <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Parameters/Outputs/temperature-assessments-corrected crit periods.xlsx",
+                                          sheet = "Spawn WS station cat") %>%
+  rename(distinct_years_sufficient_crit_period = distinct_years_sufficient_spawn_period ) %>%
+  select(AU_ID,MLocID, AU_GNIS_Name, total_air_exclusions, distinct_years, distinct_years_sufficient_crit_period, total_results, period, Rationale )
+
+temp_ws <- bind_rows(temp__year_round_assessment_WS, temp__spawn_assessment_WS) %>%
+  mutate(Pollutant = "Temperature",
+         joinby = paste0(AU_ID, Pollutant, period)) %>%
+  left_join(delisting_rollup_temp, by =  c("AU_ID", "period",  "Pollutant", "joinby")) %>%
+  filter(AU_delist == "Yes")
+  
+
+
+# together --------------------------------------------------------------------------------------------------------
+
+temp_together <- bind_rows(temp_delistings_other, temp_ws) %>%
+  mutate(AU_Type = case_when(str_detect(AU_ID, "WS", negate = TRUE) ~ "Other",
+                          str_detect(AU_ID, "WS", negate = FALSE) ~ "Watershed"))
+
+color_pal <- c("#001219",
+               "#005f73",
+               "#0a9396",
+               "#94d2bd",
+               "#e9d8a6",
+               "#ee9b00",
+               "#ca6702",
+               "#bb3e03",
+               "#ae2012",
+               "#9b2226")
+
+ggplot(data = temp_together) +
+  geom_bar(aes(x = distinct_years_sufficient_crit_period, fill = AU_Type))+
+  scale_fill_manual(values = color_pal) +
+  theme_bw()+
+  scale_y_continuous(expand = c(0, 0))+
+  labs(title = "2022 temperature Delistings", x = NULL,
+       y = "Num years",
+       subtitle = "Number of suffcient Critical period years for temp delisting",
+       caption = "Note: The watershed units may have multiple monitoring locations within each unit that get assessed separately") + 
+  theme(axis.text = element_text(size = 12), axis.text.y = element_text(size = 12), 
+        axis.title.y = element_text(size = 12), legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12))
+  
+
+ggsave(filename = "temp delist data quantity.png", width = 9.48, height = 6.19, units = c("in"))
+
+```
+
+```{r}
+library(tidyverse)
+library(flextable)
+library(openxlsx)
+
+AU_all_rollup <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Rollup outputs/AU_all_rollup.xlsx",
+                           sheet = "AU_all")
+
+list_by_year <- AU_all_rollup %>%
+  group_by(Year_listed) %>%
+  summarise(count = n())
+
+color_pal <- c("#001219",
+               "#005f73",
+               "#0a9396",
+               "#94d2bd",
+               "#e9d8a6",
+               "#ee9b00",
+               "#ca6702",
+               "#bb3e03",
+               "#ae2012",
+               "#9b2226")
+
+ggplot(data = list_by_year, aes(x = Year_listed, y = count)) +
+  geom_col(fill = color_pal[[2]])+
+  scale_x_continuous(breaks = seq(from = 1998, to = 2022, by = 2))+
+  theme_bw()+
+  scale_y_continuous(expand = c(0, 0))+
+  labs(title = "New impairements by IR cycle", x = NULL,
+       y = "Num Impairments",
+       subtitle = "Number of impairments (AU/parameter combination) added in each IR cycle") + 
+  theme(axis.text = element_text(size = 12), axis.text.y = element_text(size = 12), 
+        axis.title.y = element_text(size = 12), legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12))
+
+
+
+ggsave(filename = "New impairements by IR cycle.png", width = 9.48, height = 6.19, units = c("in"))
+
+
+```

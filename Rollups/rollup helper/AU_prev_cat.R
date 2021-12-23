@@ -33,7 +33,7 @@ library(tidyverse)
 #                           period == 'Year Round' ~ 'year_round',
 #                           TRUE ~ period)) 
 
-AU_prev_cat <- read.xlsx("C:/Users/tpritch/Desktop/Previous IR categories.xlsx",
+AU_prev_cat <- read.xlsx("Rollups/rollup helper/Previous IR categories.xlsx",
           sheet = "Previous AU categoires") %>%
   select(AU_ID, Pollu_ID, wqstd_code, Period,IR_category,Rationale, year_assessed, Year_listed, Assessed_in_2018)%>%
   distinct()  %>%

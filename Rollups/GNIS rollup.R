@@ -335,6 +335,10 @@ WS_GNIS_rollup <- WS_GNIS_param_rollup2 %>%
   filter(!is.na(AU_GNIS_Name)) %>%
   mutate(GNIS_final_IR_category = ifelse(is.na(GNIS_final_IR_category), AU_previous_IR_category, as.character(GNIS_final_IR_category) )) %>%
   mutate(GNIS_final_IR_category = factor(GNIS_final_IR_category, levels=c("Unassessed", '3D',"3", "3B", "3C", "2", "5", '4A' ), ordered=TRUE),) %>%
+  mutate(Pollutant = case_when(!is.na(period) ~ paste0(Pollutant, "- ", period),
+                               wqstd_code == 15 ~ paste0(Pollutant, "- Aquatic Life"),
+                               wqstd_code == 16 ~ paste0(Pollutant, "- Human Health"),
+                               TRUE ~ Pollutant)) %>%
   group_by(AU_ID,AU_Name,AU_Description, AU_GNIS_Name) %>%
   summarise(GNIS_status =  case_when(all(is.na(GNIS_final_IR_category)) & max(AU_final_status) %in% c("4B","4C","4A", "5","4" ) ~ "Impaired",
                                    all(is.na(GNIS_final_IR_category)) & max(AU_final_status) %in% c("3C","3D","3B", "3", "3C") ~ "Insufficient Data",

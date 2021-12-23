@@ -300,6 +300,11 @@ WS_MLocID_param_rollup2 <- WS_MLocID_param_rollup %>%
   ))
 
 WS_MlocID_rollup <- WS_MLocID_param_rollup2 %>%
+  mutate(Pollutant = case_when(!is.na(period) ~ paste0(Pollutant, "- ", period),
+                               wqstd_code == 15 ~ paste0(Pollutant, "- Aquatic Life"),
+                               wqstd_code == 16 ~ paste0(Pollutant, "- Human Health"),
+                               TRUE ~ Pollutant
+                               )) %>%
   group_by(AU_ID, AU_Name,AU_Description, MLocID) %>%
   summarise(MLocID_status =  case_when(max(MLocID_IR_category, na.rm = TRUE) %in% c("4B","4C","4A", "5","4" ) ~ "Impaired",
                                      max(MLocID_IR_category, na.rm = TRUE) %in% c("3C","3D","3B", "3") ~ "Insufficient Data",
