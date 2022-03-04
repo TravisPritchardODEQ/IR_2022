@@ -332,7 +332,8 @@ all_other_stations <- all_other_stations %>%
           wqstd_code = as.character(wqstd_code))
 
 rollup_AU_others <- rollup_AU_others %>%
-  left_join(all_other_stations)
+  left_join(all_other_stations) %>%
+  distinct()
 
 
 
@@ -343,10 +344,10 @@ AU_prev_cat <- AU_prev_cat %>%
   rename(previous_rationale = Rationale) %>%
   select(-IR_category) %>%
   distinct() %>%
-  select(-Assessed_in_2018)
+  select(-Assessed_in_2018, -DO_Class)
 
 rollup_AU_others <- rollup_AU_others %>%
-  left_join(AU_prev_cat) %>%
+  left_join(AU_prev_cat, c("AU_ID", "Pollu_ID", "wqstd_code", "period")) %>%
   mutate(Rationale = case_when(assessed_2022 == 'No' ~ previous_rationale,
                                TRUE ~ Rationale),
          year_assessed = case_when(assessed_2022 == 'No' ~ year_assessed,
@@ -369,7 +370,7 @@ TMDL_updates <- TMDL_updates_import %>%
 
 
 
-rollup_AU_others2 <- rollup_AU_others %>%
+rollup_AU_others <- rollup_AU_others %>%
   left_join(TMDL_updates) %>%
   mutate(AU_final_status = case_when(AU_final_status %in% c('5', '4A') & !is.na(AU_status_update) ~ AU_status_update,
                                          TRUE ~ as.character(AU_final_status)

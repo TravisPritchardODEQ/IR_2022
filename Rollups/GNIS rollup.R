@@ -404,6 +404,7 @@ load('Rollups/rollup helper/AU_prev_cat.Rdata')
 AU_prev_cat <- AU_prev_cat %>%
   mutate(wqstd_code = as.character(wqstd_code),
          Pollu_ID = as.character(Pollu_ID)) %>%
+
   rename(previous_rationale = Rationale) %>%
   select(-IR_category) %>%
   distinct() %>%
@@ -422,7 +423,7 @@ WS_AU_rollup <- WS_GNIS_param_rollup2 %>%
             Rationale = paste(unique(Rationale), collapse = " ~ ")
             
             ) %>%
-  left_join(AU_prev_cat) %>%
+  left_join(select(AU_prev_cat, -DO_Class), by = c("AU_ID", "Pollu_ID", "wqstd_code", "period")) %>%
   mutate(Rationale = case_when(assessed_2022 == 'No' ~ previous_rationale,
                                TRUE ~ Rationale),
          year_assessed = case_when(assessed_2022 == 'No' ~ year_assessed,

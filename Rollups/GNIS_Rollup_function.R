@@ -5,7 +5,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
   #testing
  #   df <- DO_yr
  # periods = TRUE
- #   DO = TRUE
+ #   DO = FALSE
 
   # 
   
@@ -219,6 +219,7 @@ GNIS_rollup <- function(df, periods = FALSE, DO = FALSE){
       select(-GNIS_previous_IR_impairement_class, -GNIS_previous_IR_impairement_no_class) %>%
       left_join(subset_prev_AU_cat) %>%
       full_join(subset_prev_AU_cat_no_class) %>%
+      distinct() %>%
       mutate(AU_previous_IR_category = case_when(!is.na(AU_previous_IR_category_class) ~ AU_previous_IR_category_class,
                                                       !is.na(AU_previous_IR_category_no_class) & is.na(AU_previous_IR_category_class) ~ AU_previous_IR_category_no_class,
                                                       is.na(AU_previous_IR_category_class) & is.na(AU_previous_IR_category_no_class) ~ NA_character_,

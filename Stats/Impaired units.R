@@ -2,7 +2,7 @@ library(tidyverse)
 library(openxlsx)
 
 
-AU_all_rollup <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Rollup outputs/AU_all_rollup.xlsx",
+AU_all_rollup <- read.xlsx("//deqHQ1/WQASSESSMENT/2022IRFiles/Draft List/Rollup outputs/Actual Final Final Final/AU_all_rollup.xlsx",
                            sheet = "AU_all")
 
 
@@ -96,6 +96,26 @@ previous_impaired <- previous_assessment %>%
   
   
 
+
+
+# Lead stats for RTC ------------------------------------------------------------------------------------------------------
+
+lead_assessments <- AU_all_rollup %>%
+  filter(Pollutant == "Lead ")
+
+count_current_cycle <- lead_assessments %>%
+  summarise(current_cycle = n_distinct(AU_ID[year_assessed == 2022]),
+            previous_cycles =  n_distinct(AU_ID[year_assessed != 2022]))
   
-  
+status <- lead_assessments %>%
+  filter(year_assessed == 2022) %>%
+  summarise(impaired = n_distinct(AU_ID[AU_final_status == '5']),
+            attains = n_distinct(AU_ID[AU_final_status == '2']),
+            insufficient = n_distinct(AU_ID[AU_final_status %in% c('3', '3B', '3D')]),
+            check = sum(impaired, attains, insufficient))
+
+cate3s <- lead_assessments %>%
+  filter(year_assessed == 2022,
+         AU_final_status %in% c('3', '3B', '3D')) %>%
+
 

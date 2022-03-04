@@ -35,7 +35,12 @@ library(tidyverse)
 
 AU_prev_cat <- read.xlsx("Rollups/rollup helper/Previous IR categories.xlsx",
           sheet = "Previous AU categoires") %>%
-  select(AU_ID, Pollu_ID, wqstd_code, Period,IR_category,Rationale, year_assessed, Year_listed, Assessed_in_2018)%>%
+  mutate(DO_Class =  case_when(str_detect(Char_Name, 'Cold', negate = FALSE) | str_detect(Char_Name, 'Cool', negate = FALSE) ~ str_sub(Char_Name, 20, 29)    ,
+                               TRUE ~ NA_character_),
+         Char_Name = case_when(str_detect(Char_Name, 'Cold', negate = FALSE) | str_detect(Char_Name, 'Cool', negate = FALSE) ~ str_sub(Char_Name, 1, 16)    ,
+                               TRUE ~ Char_Name)
+  ) %>%
+  select(AU_ID, Pollu_ID, wqstd_code, Period,DO_Class,IR_category,Rationale, year_assessed, Year_listed, Assessed_in_2018)%>%
   distinct()  %>%
   rename(period = Period) %>%
   mutate(Rationale = case_when(year_assessed == '2018' & !is.na(Rationale) ~ paste("2018:", Rationale),

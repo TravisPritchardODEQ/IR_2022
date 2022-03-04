@@ -1,6 +1,10 @@
 ---
 title: "2022 IR Marine DO analysis"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  word_document: default
 ---
 
 Oregon's marine dissolved oxygen standard states:
@@ -698,8 +702,8 @@ month_stats <- newport_line_data %>%
                                                    summarise(wilcoxxon_pvalue = wilcox.test(Result_Numeric[period == "Historical"],
                                                                                             Result_Numeric[period == "IR Period"])[["p.value"]]))) %>%
   tidyr::unnest_wider(wilcoxxon_pvalue) %>%
-  mutate(statistical_signifigance = case_when(wilcoxxon_pvalue < 0.05 ~ "Signifigant",
-                                              wilcoxxon_pvalue >= 0.05 ~ "No statistical signifigance"))
+  mutate(statistical_signifigance = case_when(wilcoxxon_pvalue < 0.05/12 ~ "Signifigant",
+                                              wilcoxxon_pvalue >= 0.05/12 ~ "No statistical signifigance"))
 
 
 
@@ -715,7 +719,7 @@ stats_narrative <- month_stats %>%
   pivot_wider(names_from = depth_position, values_from = statistical_signifigance)
 
 stats_narrative %>%
-  kbl(caption = "p-value > 0.05 is signifigant") %>%
+  kbl(caption = "p-value > 0.00416 is signifigant") %>%
   kable_classic(full_width = F, html_font = "Cambria")
                                   
 ```

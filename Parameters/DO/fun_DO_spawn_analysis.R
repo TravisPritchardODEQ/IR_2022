@@ -186,7 +186,7 @@ spawn_cont_function <- function(df = Results_spawndates, continuous_list = resul
 #Setting AU_type to 'WS' will group the analysis by AU_ID and MlocID, and set the filter to only keep WS units (inverse = FALSE)
 if(AU_type == "other"){  
   group1 <- c('AU_ID', 'DO_Class')
-  group2 <- c('AU_ID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class')
+  group2 <- c('AU_ID', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class')
   inverse <- TRUE
   query_type = 'AU_ID'
   
@@ -464,7 +464,7 @@ spawn_inst_function <- function(df = Results_spawndates, continuous_list = resul
   #Setting AU_type to 'WS' will group the analysis by AU_ID and MlocID, and set the filter to only keep WS units (inverse = FALSE)
   if(AU_type == "other"){  
     group1 <- c('AU_ID', 'DO_Class')
-    group2 <- c('AU_ID', 'GNIS_Name', 'Pollu_ID', 'wqstd_code',  'OWRD_Basin', 'DO_Class')
+    group2 <- c('AU_ID',  'Pollu_ID', 'wqstd_code',  'DO_Class')
     inverse <- TRUE
     
     

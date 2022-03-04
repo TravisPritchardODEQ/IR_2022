@@ -75,7 +75,7 @@ if(DO == TRUE){
                                      TRUE ~ "ERROR"),
            AU_delist = case_when(AU_final_status == 2 & AU_previous_IR_category %in% c('5', '4A') ~ "Yes",
                                  TRUE ~ "No")) %>%
-    rename(`2022_IR_category` = IR_category)
+    rename(`2022_IR_category` = IR_category) 
   
   return(AU_rollup)
   

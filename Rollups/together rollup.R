@@ -11,10 +11,12 @@ load('Rollups/WS_AU_GNIS_rollup.Rdata')
 
 rollup_AU_others <- rollup_AU_others %>%
   select(-AU_previous_IR_category, -`2022_IR_category`) %>%
-  mutate(AU_final_status = as.character(AU_final_status))
+  mutate(AU_final_status = as.character(AU_final_status)) %>%
+  distinct()
 
 WS_AU_rollup <- WS_AU_rollup %>%
-  mutate(AU_final_status = as.character(AU_final_status))
+  mutate(AU_final_status = as.character(AU_final_status)) %>%
+  distinct()
 
 
 
@@ -84,7 +86,8 @@ all_ben_uses <- AU_to_ben_use %>%
 
 AU_all <- AU_all_parameter %>%
   mutate(AU_final_status = factor(AU_final_status, 
-                                  levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A', '4C' ), ordered=TRUE)) 
+                                  levels=c("Unassessed", '3D',"3", "3B", "2", "5", '4B', '4A', '4C' ), ordered=TRUE)) %>%
+  distinct()
 
 
 
@@ -102,12 +105,17 @@ BU_rollup <- AU_BU %>%
                              ben_use == "Boating" ~ "boating",
                              TRUE ~ "ERROR"
   )) %>%
-  group_by(AU_ID,AU_Name,AU_Description , ben_use) %>%
-  summarise(Category = max(AU_final_status)) %>%
+  group_by(AU_ID, ben_use) %>%
+  summarise(AU_Name = max(AU_Name, na.rm = TRUE),
+            AU_Description = max(AU_Description, na.rm = TRUE),
+            Category = max(AU_final_status)) %>%
   right_join(filter(all_ben_uses, AU_ID %in% AU_all$AU_ID)) %>%
   mutate(Category = as.character(Category),
          Category = ifelse(is.na(Category), 'Unassessed', Category )) %>%
   select(-ben_use_id) %>%
+  group_by(AU_ID) %>%
+  mutate(AU_Name = max(AU_Name, na.rm = TRUE),
+         AU_Description = max(AU_Description, na.rm = TRUE)) %>%
   #mutate(Category = ifelse(is.na(Category), "-", Category)) %>%
   spread(ben_use, Category, fill = "-") 
 
