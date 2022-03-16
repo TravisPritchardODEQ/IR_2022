@@ -254,8 +254,8 @@ continuous_data_categories <- continuous_data_analysis %>%
                                  TRUE ~ "Error" ))
 
 # Datatable of results that need percent saturation
-cont_perc_sat_check <- continuous_data_categories %>%
-  filter(AU_ID %in% unique(subset(continuous_data_categories, IR_category == "Check percent Sat" )$AU_ID) )
+cont_perc_sat_check <- continuous_data_categories #%>%
+ #filter(AU_ID %in% unique(subset(continuous_data_categories, IR_category == "Check percent Sat" )$AU_ID) )
 
 
 # Query Database --------------------------------------------------------------------------------------------------
@@ -277,12 +277,12 @@ if(nrow(cont_perc_sat_check) > 0){
   
   
   
-  #Query DOSat from AWQMS
+  #Query DOSat from ResultsRawWater
   DOsat_AWQMS <- "SELECT [OrganizationID],[MLocID], [SampleStartDate],[SampleStartTime],[Statistical_Base],[IRResultNWQSunit] as DO_sat
 FROM [ResultsRawWater]
 WHERE   Char_Name = 'Dissolved oxygen saturation' AND 
         AU_ID in ({continuous_mon_locs*}) AND 
-        Statistical_Base = 'Mean'"
+        Statistical_Base in ('Mean', 'Minimum')"
   
   
   DoSatqry <- glue::glue_sql(DOsat_AWQMS, .con = con)
@@ -291,10 +291,10 @@ WHERE   Char_Name = 'Dissolved oxygen saturation' AND
   
   
   
-  # Query out the mean DO values from the indentified monitoring locations
+  # Query out the mean and minimum DO values from the identified monitoring locations
   Doqry <- "SELECT * 
 FROM            VW_DO
-WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
+WHERE        (Statistical_Base in ('Mean', 'Minimum')) AND AU_ID in ({continuous_mon_locs*})"
   
   
   Doqry <- glue::glue_sql(Doqry, .con = con)
@@ -302,10 +302,10 @@ WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
   perc_sat_DO <- DBI::dbGetQuery(con, Doqry)
   
   
-  # Query out the mean temp values from the indentified monitoring locations
+  # Query out the mean temp values from the identified monitoring locations
   tempqry <- "SELECT * 
 FROM            VW_Temp_4_DO
-WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
+WHERE        (Statistical_Base in ('Mean', 'Minimum')) AND AU_ID in ({continuous_mon_locs*})"
   
   tempqry <- glue::glue_sql(tempqry, .con = con)
   
@@ -330,7 +330,7 @@ WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
   
   # Pare down the temperature table to be used to join
   perc_sat_temp_join <- perc_sat_temp %>%
-    select(OrganizationID,MLocID, IRResultNWQSunit, SampleStartDate, SampleStartTime) %>%
+    select(OrganizationID,MLocID, Statistical_Base, IRResultNWQSunit, SampleStartDate, SampleStartTime) %>%
     rename(Temp_res = IRResultNWQSunit)
   
   
@@ -340,9 +340,12 @@ WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
   # Calculate DOSat
   DO_sat <- perc_sat_DO %>%
     rename(DO_res =  IRResultNWQSunit) %>%
-    left_join(perc_sat_temp_join, by = c('OrganizationID','MLocID', 'SampleStartDate', 'SampleStartTime')) %>%
+    left_join(perc_sat_temp_join, by = c('OrganizationID','MLocID', 'SampleStartDate', 'SampleStartTime', 'Statistical_Base')) %>%
     mutate(DO_sat = ifelse(is.na(DO_sat), DOSat_calc(DO_res, Temp_res, ELEV_Ft ), DO_sat ),
            DO_sat = ifelse(DO_sat > 100, 100, DO_sat )) 
+  
+  do_sat_pivot <- DO_sat %>%
+    pivot_wider(names_from = Statistical_Base, values_from = DO_sat)
   
   
   # Calculate moving 7 day average
@@ -351,7 +354,7 @@ WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
   DO_sat_7dma <- DO_sat %>%
     mutate(Date = as.Date(SampleStartDate)) %>%
     arrange(MLocID, SampleStartDate) %>%
-    group_by(MLocID) %>%
+    group_by(MLocID, Statistical_Base) %>%
     mutate(startdate7 = lag(Date, 6, order_by = Date),
            # flag out which result gets a moving average calculated
            calc7ma = ifelse(startdate7 == (Date - 6), 1, 0 ),
@@ -362,21 +365,63 @@ WHERE        (Statistical_Base = 'Mean') AND AU_ID in ({continuous_mon_locs*})"
   
   # Pare down the table of DO_Sats so it can be joined
   DO_sat_join <- DO_sat_7dma %>%
-    select(MLocID, dosat_mean7, Date) 
+    select(MLocID,Date, Statistical_Base, Temp_res, DO_sat, dosat_mean7) 
+  
+  do_sat_pivot_temp <- DO_sat_join %>%
+    distinct(MLocID, Date, Statistical_Base, .keep_all = TRUE) %>%
+    mutate(Statistical_Base = case_when(Statistical_Base == "Minimum" ~ "Temp_minimum",
+                                        Statistical_Base == "Mean" ~ "Temp_mean")) %>%
+    select(MLocID, Date, Statistical_Base,Temp_res ) %>%
+    pivot_wider(names_from = Statistical_Base, values_from = Temp_res)
+  
+  do_sat_pivot_DO_sat <- DO_sat_join %>%
+    distinct(MLocID, Date,Statistical_Base,  .keep_all = TRUE) %>%
+    mutate(Statistical_Base = case_when(Statistical_Base == "Minimum" ~ "DO_sat_minimum",
+                                        Statistical_Base == "Mean" ~ "DO_sat_mean")) %>%
+    select(MLocID, Date, Statistical_Base,DO_sat ) %>%
+    pivot_wider(names_from = Statistical_Base, values_from = DO_sat)
+  
+  do_sat_pivot_DO_sat_7d <- DO_sat_join %>%
+    ungroup() %>%
+    distinct(MLocID, Date,Statistical_Base, .keep_all = TRUE) %>%
+    filter(Statistical_Base == "Mean") %>%
+    select(MLocID, Date, dosat_mean7 ) 
+  
+  DO_sat_join_wide <- left_join(do_sat_pivot_temp, do_sat_pivot_DO_sat) %>%
+    left_join(do_sat_pivot_DO_sat_7d)
   
 
+
   
+  
+  if(AU_type == "WS"){
   # Join DO_Sat values to the table that will be used for evaluation
   spawn_DO_data <- Results_spawndates %>%
-    filter(AU_ID %in% continuous_list) %>%
+    filter(MLocID %in% continuous_list) %>%
     filter(Statistical_Base %in% c("7DADMean", "Minimum")) %>%
-    left_join(DO_sat_join, by = c('MLocID', 'SampleStartDate'  = 'Date')) %>%
+    left_join(DO_sat_join_wide, by = c('MLocID', 'SampleStartDate'  = 'Date')) %>%
     mutate(Violation = case_when(!is.na(dosat_mean7) & Statistical_Base == "7DADMean" & IRResultNWQSunit < crit_spawn &
                                    dosat_mean7 < 95 ~ 1,
                                  is.na(dosat_mean7) & Statistical_Base == "7DADMean" & IRResultNWQSunit < crit_spawn ~ 1,
-                                 Statistical_Base == 'Minimum' & IRResultNWQSunit < crit_Min ~ 1,
+                                 !is.na(DO_sat_minimum) & Statistical_Base == "Minimum" & IRResultNWQSunit < crit_Min &
+                                   DO_sat_minimum < 95 ~ 1,
+                                 is.na(DO_sat_minimum) & Statistical_Base == "Minimum" & IRResultNWQSunit < crit_Min ~ 1,
                                  TRUE ~ 0 
                                  ))
+  } else {
+    spawn_DO_data <- Results_spawndates %>%
+      filter(AU_ID %in% continuous_list) %>%
+      filter(Statistical_Base %in% c("7DADMean", "Minimum")) %>%
+      left_join(DO_sat_join_wide, by = c('MLocID', 'SampleStartDate'  = 'Date')) %>%
+      mutate(Violation = case_when(!is.na(dosat_mean7) & Statistical_Base == "7DADMean" & IRResultNWQSunit < crit_spawn &
+                                     dosat_mean7 < 95 ~ 1,
+                                   is.na(dosat_mean7) & Statistical_Base == "7DADMean" & IRResultNWQSunit < crit_spawn ~ 1,
+                                   !is.na(DO_sat_minimum) & Statistical_Base == "Minimum" & IRResultNWQSunit < crit_Min &
+                                     DO_sat_minimum < 95 ~ 1,
+                                   is.na(DO_sat_minimum) & Statistical_Base == "Minimum" & IRResultNWQSunit < crit_Min ~ 1,
+                                   TRUE ~ 0 
+      ))
+  }
   
 } else {
   
@@ -734,7 +779,7 @@ if(write_excel){
   writeData(wb, "Spawn WS AU combined Cat", x = WS_AU_rollup_spawn, headerStyle = header_st) 
   
   print("Writing excel doc")
-  saveWorkbook(wb, "Parameters/Outputs/DO Spawn.xlsx", overwrite = TRUE) 
+  saveWorkbook(wb, "Parameters/Outputs/DO Spawn_3.xlsx", overwrite = TRUE) 
   
 }
 
