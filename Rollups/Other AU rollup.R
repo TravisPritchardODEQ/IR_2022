@@ -118,6 +118,14 @@ tox_AL_aluminum_AU <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
   join_pollu_assess()
 
 
+### Copper ----------------------------------------------------------------------------------------------------------
+
+tox_AL_copper_AU <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
+                                sheet = 'tox_AL_Copper_other_cats') %>%
+  AU_rollup_other() %>%
+  join_pollu_assess()
+
+
 ## Tox HH ----------------------------------------------------------------------------------------------------------
 
 tox_HH_AU <- read.xlsx('Rollups/Rollup Assessment/Tox_HH.xlsx',
@@ -313,6 +321,7 @@ rollup_AU_others <- bind_rows(temp_yr_AU,
                              tox_AL_penta_AU,
                              tox_AL_ammonia_AU,
                              tox_AL_aluminum_AU,
+                             tox_AL_copper_AU,
                              tox_HH_AU,
                              turbidity_AU,
                              DO_yr,

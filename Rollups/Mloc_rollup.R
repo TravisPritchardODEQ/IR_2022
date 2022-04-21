@@ -180,6 +180,11 @@ tox_AL_aluminum_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
   join_pollu_assess()
 
 
+tox_AL_copper_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
+                                       sheet = 'tox_AL_Copper_WS_cats') %>%
+  mutate(Rationale = paste0(MLocID, ":", " ", Rationale)) %>%
+  Mloc_Rollup_function() %>%
+  join_pollu_assess()
 
 ## Tox HH ----------------------------------------------------------------------------------------------------------
 
@@ -267,6 +272,7 @@ WS_MLocID_param_rollup <- bind_rows(temp_yr_WS_station,
                                   tox_AL_penta_WS_station,
                                   tox_AL_ammonia_WS_station,
                                   tox_AL_aluminum_WS_station,
+                                  tox_AL_copper_WS_station,
                                   tox_HH_WS_station,
                                   turbidity_WS_station,
                                   biocriteria_WS_station

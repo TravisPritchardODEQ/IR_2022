@@ -84,12 +84,14 @@ chl_WS_station <- read.xlsx("Rollups/Rollup Assessment/chl-a.xlsx",
 DO_yr_cont <- read.xlsx('Rollups/Rollup Assessment/DO Year Round.xlsx',
                         sheet = 'Yr Rnd Cont WS Station Cat') %>%
   select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale, Delist, GNIS_previous_IR_impairement) %>%
-  mutate(Rationale = paste0(MLocID, ":", " ", Rationale))
+  mutate(Rationale = paste0(MLocID, ":", " ", Rationale),
+         Delist = as.character(Delist))
 
 DO_yr_inst <- read.xlsx('Rollups/Rollup Assessment/DO Year Round.xlsx',
                         sheet = 'Yr Rnd Instant WS Station Cat') %>%
   select(AU_ID, AU_GNIS_Name, Pollu_ID, wqstd_code,DO_Class, period, MLocID, IR_category, Rationale, Delist, GNIS_previous_IR_impairement) %>%
-  mutate(Rationale = paste0(MLocID, ":", " ", Rationale))
+  mutate(Rationale = paste0(MLocID, ":", " ", Rationale),
+         Delist = as.character(Delist))
 
 DO_yr <- bind_rows(DO_yr_cont, DO_yr_inst) %>%
   GNIS_rollup(periods = TRUE, DO = TRUE) %>%
@@ -173,6 +175,16 @@ tox_AL_ammonia_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
 
 tox_AL_aluminum_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
                                        sheet = 'tox_AL_Aluminum_WS_cats') %>%
+  mutate(Rationale = paste0(MLocID, ":", " ", Rationale)) %>%
+  GNIS_rollup() %>%
+  join_pollu_assess()%>%   mutate(GNIS_IR_category = as.character(GNIS_IR_category))
+
+
+
+# Tox AL copper ---------------------------------------------------------------------------------------------------
+
+tox_AL_copper_WS_station <- read.xlsx('Rollups/Rollup Assessment/Tox_AL.xlsx',
+                                     sheet = 'tox_AL_Copper_WS_cats') %>%
   mutate(Rationale = paste0(MLocID, ":", " ", Rationale)) %>%
   GNIS_rollup() %>%
   join_pollu_assess()%>%   mutate(GNIS_IR_category = as.character(GNIS_IR_category))
@@ -293,6 +305,7 @@ WS_GNIS_param_rollup <- bind_rows(temp_yr_WS_station,
                             tox_AL_penta_WS_station,
                             tox_AL_ammonia_WS_station,
                             tox_AL_aluminum_WS_station,
+                            tox_AL_copper_WS_station,
                             tox_HH_WS_station,
                             turbidity_WS_station,
                             biocriteria_WS_station,
