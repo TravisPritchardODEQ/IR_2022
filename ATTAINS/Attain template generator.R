@@ -136,9 +136,13 @@ parameters0 <- AU_BU_2022 %>%
   
 
 Parameters <- parameters0 %>%
-  mutate(PARAM_STATUS_NAME =case_when(str_detect(AU_parameter_category, '5') | str_detect(AU_parameter_category, '4') ~ 'Cause',
-                                      AU_parameter_category %in% c('2') ~ 'Meeting Criteria',
-                                      str_detect(AU_parameter_category, '3') ~ 'Insufficient Information' 
+  mutate(AU_parameter_category = factor(AU_parameter_category, 
+                                        levels=c("Unassessed", '3D',"3", "3B", "3C", "2", '4B', '4C', '4','4A', "5" ), 
+                                        ordered=TRUE)) %>%
+  group_by(AU_ID, Attains_PolluName) %>%
+  mutate(PARAM_STATUS_NAME =case_when(str_detect(max(AU_parameter_category), '5') | str_detect(max(AU_parameter_category), '4') ~ 'Cause',
+                                      max(AU_parameter_category) %in% c('2') ~ 'Meeting Criteria',
+                                      str_detect(max(AU_parameter_category), '3') ~ 'Insufficient Information' 
                                       ),
          PARAM_ATTAINMENT_CODE = case_when(str_detect(AU_parameter_category, '5') | str_detect(AU_parameter_category, '4') ~ 'Not meeting criteria',
                                             AU_parameter_category %in% c('2') ~ 'Meeting Criteria',
