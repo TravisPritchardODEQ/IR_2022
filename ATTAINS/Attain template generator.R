@@ -21,6 +21,7 @@ AU_All_2022 <- AU_All %>%
 # Assessments Tab ---------------------------------------------------------------------------------------------------------------
 
 Assessments <- AU_All_2022 %>%
+  ungroup() %>%
   select(AU_ID) %>%
   distinct() %>%
   rename(ASSESSMENT_UNIT_ID = AU_ID) %>%
@@ -66,7 +67,9 @@ Uses <- AU_BU_2022 %>%
   group_by(AU_ID, ben_use) %>%
   summarise(Category = max(AU_parameter_category),
             USE_COMMENT = str_c(pollutant_strd_cat, sep = ";", collapse = "; " )) %>%
-  mutate(USE_ATTAINMENT_CODE = case_when(str_detect(Category, '5') | str_detect(Category, '4') ~ 'N',
+  ungroup() %>%
+  mutate(USE_COMMENT = str_sub(USE_COMMENT,1,3996),
+         USE_ATTAINMENT_CODE = case_when(str_detect(Category, '5') | str_detect(Category, '4') ~ 'N',
                                          Category %in% c('2') ~ 'F',
                                          str_detect(Category, '3') ~ 'I' )) %>%
   select(AU_ID, ben_use, USE_ATTAINMENT_CODE, Category, USE_COMMENT) %>%
@@ -117,6 +120,7 @@ delist_dups <- delistings %>%
 if(nrow(delist_dups) > 0 ) {
   stop('delising dups')
 }
+
 
 parameters0 <- AU_BU_2022 %>%
   left_join(Attains_polluname_LU) %>%
@@ -178,6 +182,10 @@ Parameters <- parameters0 %>%
 
 # Seasons ---------------------------------------------------------------------------------------------------------
 
+
+seasons_2020 <- read.csv("C:/Users/tpritch/Documents/IR_2022/ATTAINS/2020 Download/seasons.csv") %>%
+  select(ASSESSMENT_UNIT_ID, PARAM_NAME, PARAM_USE_NAME, PARAM_ATTAINMENT_CODE)
+
 seasons0 <- AU_BU_2022 %>%
   filter(period == "spawn") %>%
   left_join(Attains_polluname_LU)
@@ -206,7 +214,7 @@ Spawn_dates <-  DBI::dbGetQuery(con, "SELECT TOP (1000) [SpawnCode]
   FROM [IntegratedReport].[dbo].[LU_Spawn]")
 
 
-Seasons <- seasons0 %>%
+Seasons_1 <- seasons0 %>%
   select(AU_ID, Pollu_ID, Attains_PolluName,ben_use, AU_parameter_category  ) %>%
   mutate(AU_parameter_category = factor(AU_parameter_category, 
                                         levels=c("Unassessed", '3D',"3", "3B", "3C", "2", '4B', '4C', '4','4A', "5" ), 
@@ -251,8 +259,13 @@ Seasons <- seasons0 %>%
                              TRUE ~ "ERROR"
   )) %>%
   ungroup() %>%
-  select(AU_ID, Attains_PolluName, ben_use,PARAM_ATTAINMENT_CODE, SEASON_START, SEASON_END )
+  select(AU_ID, Attains_PolluName, ben_use,PARAM_ATTAINMENT_CODE, SEASON_START, SEASON_END ) %>%
+  rename(ASSESSMENT_UNIT_ID = AU_ID, 
+         PARAM_NAME = Attains_PolluName,
+         PARAM_USE_NAME = ben_use)
 
+Seasons <- Seasons_1 %>%
+  anti_join(seasons_2020)
 
 
 # Associated-action -----------------------------------------------------------------------------------------------
@@ -264,7 +277,8 @@ Associated_actions <- AU_All %>%
   filter(!is.na(action_ID)) %>%
   left_join(Attains_polluname_LU) %>%
   select(AU_ID, Attains_PolluName, action_ID) %>%
-  mutate(ACTION_TYPE = 'TMDL')
+  mutate(ACTION_TYPE = 'TMDL') %>%
+  distinct()
 
 
 
@@ -284,6 +298,7 @@ writeData(wb = wb, sheet = "Seasons", x = Seasons)
 writeData(wb = wb, sheet = "Associated_actions", x = Associated_actions)
 
 
-saveWorkbook(wb, 'C:/Users/tpritch/Documents/IR_2022/ATTAINS/ATTAINS_template_source.xlsx', overwrite = TRUE) 
+saveWorkbook(wb, 'C:/Users/tpritch/Oregon/DEQ - Integrated Report - IR 2022/ATTAINS/ATTAINS_R_output.xlsx', overwrite = TRUE) 
+
 
 
