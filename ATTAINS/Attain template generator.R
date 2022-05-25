@@ -302,3 +302,249 @@ saveWorkbook(wb, 'C:/Users/tpritch/Oregon/DEQ - Integrated Report - IR 2022/ATTA
 
 
 
+
+# Delist previous errors--------------------------------------------------------------------------------------------
+
+
+
+AU_all_rollup_file <- "C:/Users/tpritch/Oregon/DEQ - Integrated Report - IR 2022/Final List/AU_all_rollup.xlsx"
+
+AU_All <- read.xlsx(AU_all_rollup_file)
+
+delistings <- read.xlsx(AU_all_rollup_file,
+                        sheet = "Delistings") %>%
+  filter(Attains_code == 'DELISTING_ORIG_INCORRECT') %>%
+  select(AU_ID, Pollu_ID, wqstd_code, period, DO_Class, Attains_code, ATTAINS_delist_reason, Rationale)
+
+## Errors Assessments Tab ---------------------------------------------------------------------------------------------------------------
+
+Assessments <- delistings %>%
+  ungroup() %>%
+  select(AU_ID) %>%
+  distinct() %>%
+  rename(ASSESSMENT_UNIT_ID = AU_ID) %>%
+  mutate(Agency_Code = 'S',
+         CYCLE_LAST_ASSESSED = 2022) %>%
+  filter(ASSESSMENT_UNIT_ID %in% delistings$AU_ID)
+
+## Error Use Tab-----------------------------------------------------------------------------------------------------------------
+
+
+
+con <- DBI::dbConnect(odbc::odbc(), "IR_Dev")
+
+LU_BU_Assessment <- DBI::dbReadTable(con, 'LU_BU_Assessment') %>%
+  mutate(Pollu_ID = as.character(Pollu_ID),
+         wqstd_code = as.character(wqstd_code))
+
+load('Rollups/rollup helper/AU_to_ben_use.Rdata')
+
+
+
+
+AU_to_ben_use <- AU_to_ben_use %>%
+  select(AU_ID, AU_UseCode) %>%
+  mutate(AU_UseCode = as.character(AU_UseCode))
+
+names(AU_to_ben_use) <- c("AU_ID", "ben_use_code")
+
+LU_benuses <- DBI::dbReadTable(con, 'LU_BenUseCode')
+
+
+names(LU_benuses) <- c("ben_use_code", "ben_use_id", "ben_use")
+
+LU_benuses$ben_use_code <- as.numeric(LU_benuses$ben_use_code)
+
+all_ben_uses <- AU_to_ben_use %>%
+  mutate(ben_use_code = as.numeric(ben_use_code)) %>%
+  left_join(LU_benuses) %>%
+  filter(!is.na(ben_use),
+         ben_use != "NULL")
+
+all_ben_uses2 <- all_ben_uses %>%
+  mutate(keep = "keep") %>%
+  select(-ben_use)
+
+
+unassessed_AU_BU <- delistings %>%
+  left_join(select(LU_BU_Assessment, -Assessment), by = c("Pollu_ID", 'wqstd_code') ) %>%
+  right_join(all_ben_uses2) %>%
+  select(-keep) %>%
+  filter(!is.na(Attains_code)) %>%
+  mutate(AU_parameter_category = "Unassessed",
+         AU_delist = "Yes",
+         Rationale = Rationale,
+         year_assessed = '2022',
+         ben_use) %>%
+  select(-ben_use_id, -ben_use_code)
+
+
+
+AU_BU <- read.xlsx(AU_all_rollup_file,
+                   sheet = "AU_BU") 
+
+
+AU_BU_delistings <- AU_BU %>%
+  bind_rows(unassessed_AU_BU) %>%
+  mutate(AU_parameter_category = factor(AU_parameter_category, 
+                                        levels=c("Unassessed", '3D',"3", "3B", "3C", "2", '4B', '4C', '4','4A', "5" ), 
+                                        ordered=TRUE)) %>%
+  group_by(AU_ID, Pollu_ID, wqstd_code, period, ben_use) %>%
+  filter(AU_parameter_category == max(AU_parameter_category)) %>%
+  filter(row_number()==1) %>%
+  filter(AU_ID %in% unassessed_AU_BU$AU_ID) 
+
+Uses <- AU_BU_delistings %>%
+  mutate(AU_parameter_category = factor(AU_parameter_category, 
+                                                                  levels=c("Unassessed", '3D',"3", "3B", "3C", "2", '4B', '4C', '4','4A', "5" ), 
+                                                                  ordered=TRUE)) %>%
+  mutate(ben_use = case_when(ben_use == "Fishing" ~ "fishing",
+                             ben_use == "Private Domestic Water Supply" ~ "Private domestic water supply",
+                             ben_use == "Public Domestic Water Supply" ~ "Public domestic water supply",
+                             ben_use == "Fish and Aquatic Life" ~ "fish and aquatic life",
+                             ben_use == "Water Contact Recreation" ~ "water contact recreation",
+                             ben_use == "Aesthetic Quality" ~ "aesthetic quality",
+                             ben_use == "Livestock Watering" ~ "livestock watering",
+                             ben_use == "Boating" ~ "boating",
+                             TRUE ~ "ERROR"
+  )) %>%
+  mutate(ben_use = case_when(ben_use == 'fish and aquatic life' & period == 'spawn' ~ 'fish and aquatic life - spawning',
+                             TRUE ~ ben_use)) %>%
+  mutate(pollutant_strd = case_when(!is.na(period) ~ paste0(Pollutant, "- ", period),
+                                    wqstd_code == 15 ~  paste0(Pollutant, "- Aquatic Life Toxics"),
+                                    wqstd_code == 16 ~  paste0(Pollutant, "- Human Health Toxics"),
+                                    TRUE ~ Pollutant),
+         pollutant_strd_cat = paste0(AU_parameter_category, ": ", pollutant_strd)) %>%
+  group_by(AU_ID, ben_use) %>%
+  summarise(Category = max(AU_parameter_category),
+            USE_COMMENT = ifelse(Category != "Unassessed", str_c(pollutant_strd_cat, sep = ";", collapse = "; " ),
+                                 "Error Correction- Unassessed")) %>%
+  ungroup() %>%
+  mutate(USE_COMMENT = str_sub(USE_COMMENT,1,3996),
+         USE_ATTAINMENT_CODE = case_when(str_detect(Category, '5') | str_detect(Category, '4') ~ 'N',
+                                         Category %in% c('2') ~ 'F',
+                                         str_detect(Category, '3') ~ 'I',
+                                         Category == "Unassessed" ~ 'X')) %>%
+  select(AU_ID, ben_use, USE_ATTAINMENT_CODE, Category, USE_COMMENT) %>%
+  rename(ASSESSMENT_UNIT_ID = AU_ID,
+         USE_NAME = ben_use) %>%
+  mutate(USE_AGENCY_CODE = 'S',
+         USE_TREND = NA_character_,
+         USE_THREATENED = NA_character_,
+         USE_ASMT_BASIS = NA_character_,
+         USE_MONITORING_START = NA_character_,
+         USE_MONITORING_END= NA_character_,
+         USE_ASMT_DATE = NA_character_,
+         USE_ASSESSOR_NAME = NA_character_,
+         USE_COMMENT = USE_COMMENT,
+         USE_STATE_IR_CAT = Category,
+         USE_ORG_QUALIFIER_FLAG = NA_character_ ) %>%
+  select(ASSESSMENT_UNIT_ID,USE_NAME, USE_ATTAINMENT_CODE, USE_AGENCY_CODE, USE_TREND, USE_THREATENED,USE_ASMT_BASIS,
+         USE_MONITORING_START, USE_MONITORING_END, USE_ASMT_DATE, USE_ASSESSOR_NAME, USE_COMMENT,
+         USE_STATE_IR_CAT, USE_ORG_QUALIFIER_FLAG)
+
+
+## Error Parameters ------------------------------------------------------------------------------------------------------
+
+
+library(DBI)
+con <- DBI::dbConnect(odbc::odbc(), "IR_Dev")
+
+
+Attains_polluname_LU <- DBI::dbGetQuery(con, "SELECT cast([Pollu_ID] AS varchar) as Pollu_ID
+                                        ,[Attains_PolluName]
+                                        ,[Attains_Group] 
+                                        FROM [IntegratedReport].[dbo].[LU_Pollutant]
+                                        "
+) 
+
+delistings0 <- read.xlsx(AU_all_rollup_file,
+                        sheet = "Delistings") %>%
+  select(AU_ID, Pollu_ID, wqstd_code, period, DO_Class, Attains_code, ATTAINS_delist_reason)
+
+delist_dups <- delistings %>%
+  group_by(AU_ID, Pollu_ID, wqstd_code, period, DO_Class) %>%
+  summarise(n = n()) %>%
+  filter(n > 1)
+
+if(nrow(delist_dups) > 0 ) {
+  stop('delising dups')
+}
+
+
+parameters0 <- AU_BU_delistings %>%
+  left_join(Attains_polluname_LU) %>%
+  left_join(delistings) %>%
+  mutate(ben_use = case_when(ben_use == "Fishing" ~ "fishing",
+                             ben_use == "Private Domestic Water Supply" ~ "Private domestic water supply",
+                             ben_use == "Public Domestic Water Supply" ~ "Public domestic water supply",
+                             ben_use == "Fish and Aquatic Life" ~ "fish and aquatic life",
+                             ben_use == "Water Contact Recreation" ~ "water contact recreation",
+                             ben_use == "Aesthetic Quality" ~ "aesthetic quality",
+                             ben_use == "Livestock Watering" ~ "livestock watering",
+                             ben_use == "Boating" ~ "boating",
+                             TRUE ~ "ERROR"
+  )) %>%
+  mutate(ben_use = case_when(ben_use == 'fish and aquatic life' & period == 'spawn' ~ 'fish and aquatic life - spawning',
+                             TRUE ~ ben_use))
+
+
+
+Parameters <- parameters0 %>%
+  mutate(AU_parameter_category = factor(AU_parameter_category, 
+                                        levels=c("Unassessed", '3D',"3", "3B", "3C", "2", '4B', '4C', '4','4A', "5" ), 
+                                        ordered=TRUE)) %>%
+  group_by(AU_ID, Attains_PolluName) %>%
+  mutate(PARAM_STATUS_NAME =case_when(str_detect(max(AU_parameter_category), '5') | str_detect(max(AU_parameter_category), '4') ~ 'Cause',
+                                      max(AU_parameter_category) %in% c('2') ~ 'Meeting Criteria',
+                                      str_detect(max(AU_parameter_category), '3') ~ 'Insufficient Information',
+                                      AU_parameter_category == 'Unassessed' ~ 'Removed'
+  ),
+  PARAM_ATTAINMENT_CODE = case_when(str_detect(AU_parameter_category, '5') | str_detect(AU_parameter_category, '4') ~ 'Not meeting criteria',
+                                    AU_parameter_category %in% c('2') ~ 'Meeting Criteria',
+                                    str_detect(AU_parameter_category, '3') ~ 'Not enough information',
+                                    AU_parameter_category == 'Unassessed' ~ 'Not Applicable'),
+  PARAM_TREND = NA_character_,
+  PARAM_COMMENT = Rationale,
+  PARAM_AGENCY_CODE = "S",
+  PARAM_POLLUTANT_INDICATOR = case_when(PARAM_STATUS_NAME == 'Cause' & Attains_PolluName %in% c('HABITAT ALTERATIONS', 'FLOW REGIME MODIFICATION', 'BENTHIC MACROINVERTEBRATES BIOASSESSMENTS') ~ 'N',
+                                        PARAM_STATUS_NAME == 'Cause' ~ 'Y',
+                                        TRUE ~ NA_character_),
+  PARAM_YEAR_LISTED = case_when(PARAM_STATUS_NAME == 'Cause' ~ Year_listed,
+                                TRUE ~ NA_character_),
+  PARAM_TARGET_TMDL_DATE = NA_character_,
+  PARAM_EXPECTED_TO_ATTAIN = NA_character_,
+  PARAM_PRIORITY_RANKING = case_when(str_detect(AU_parameter_category, '4') & is.na(TMDL_Priority) ~ 'Low',
+                                     TRUE ~ TMDL_Priority),
+  PARAM_CONSENT_DECREE_CYCLE = NA_character_,
+  PARAM_ALT_LISTING_ID = NA_character_,
+  PARAM_STATE_IR_CAT = AU_parameter_category,
+  PARAM_ORG_QUALIFIER_FLAG = NA_character_,
+  PARAM_DELISTING_REASON = Attains_code,
+  PARAM_DELISTING_COMMENT = ATTAINS_delist_reason,
+  PARAM_DELISTING_AGENCY = ifelse(!is.na(PARAM_DELISTING_REASON), 'S', NA_character_ )
+  
+  ) %>%
+  select(AU_ID, Attains_PolluName, ben_use, PARAM_STATUS_NAME, PARAM_ATTAINMENT_CODE,PARAM_TREND,
+         PARAM_COMMENT, PARAM_AGENCY_CODE, PARAM_POLLUTANT_INDICATOR,  PARAM_YEAR_LISTED, PARAM_TARGET_TMDL_DATE,
+         PARAM_EXPECTED_TO_ATTAIN, PARAM_PRIORITY_RANKING, PARAM_CONSENT_DECREE_CYCLE,PARAM_ALT_LISTING_ID, 
+         PARAM_STATE_IR_CAT, PARAM_ORG_QUALIFIER_FLAG, PARAM_DELISTING_REASON, PARAM_DELISTING_COMMENT, 
+         PARAM_DELISTING_AGENCY)
+
+
+
+wb <- createWorkbook()
+addWorksheet(wb, sheetName = "Assessments")
+addWorksheet(wb, sheetName = "Uses")
+addWorksheet(wb, sheetName = "Parameters")
+
+
+writeData(wb = wb, sheet = "Assessments", x = Assessments)
+writeData(wb = wb, sheet = "Uses", x = Uses)
+writeData(wb = wb, sheet = "Parameters", x = Parameters)
+
+
+
+saveWorkbook(wb, 'C:/Users/tpritch/Oregon/DEQ - Integrated Report - IR 2022/ATTAINS/ATTAINS_R_output_unassessed_delistings2.xlsx', overwrite = TRUE) 
+
+

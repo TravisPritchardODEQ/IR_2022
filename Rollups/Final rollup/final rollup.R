@@ -99,7 +99,7 @@ saveWorkbook(wb, 'Rollups/Final rollup/MLoc_rollup_final.xlsx', overwrite = TRUE
 
 
 
-WS_GNIS_param_rollup <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Final rollup/GNIS_rollup.xlsx")
+WS_GNIS_param_rollup <- read.xlsx("C:/Users/tpritch/Oregon/DEQ - Integrated Report - IR 2022/Final List/GNIS_rollup_final.xlsx")
 
 
 GNIS_Map_Display <- WS_GNIS_param_rollup %>%
@@ -183,16 +183,15 @@ writeData(wb = wb, sheet = "WS_GNIS_param_rollup", x = WS_GNIS_param_rollup, hea
 
 writeData(wb = wb, sheet = "GNIS_Map_Display", x = GNIS_Map_Display, headerStyle = header_st)
 
-saveWorkbook(wb, 'Rollups/Final rollup/GNIS_rollup_final.xlsx', overwrite = TRUE) 
+saveWorkbook(wb, 'GNIS_rollup_final.xlsx', overwrite = TRUE) 
 
 
 ## AU_ID -----------------------------------------------------------------------------------------------------------
 
 
-AU_all <- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Final rollup/AU_all_rollup.xlsx",
-                    sheet = "AU_all")
+AU_all <- read.xlsx("C:/Users/tpritch/Oregon/DEQ - Integrated Report - IR 2022/Final List/AU_all_rollup.xlsx")
 
-Delistings<- read.xlsx("C:/Users/tpritch/Documents/IR_2022/Rollups/Final rollup/AU_all_rollup.xlsx",
+Delistings<- read.xlsx("C:/Users/tpritch/Oregon/DEQ - Integrated Report - IR 2022/Final List/AU_all_rollup.xlsx",
                        sheet = "Delistings")
 
 con <- DBI::dbConnect(odbc::odbc(), "IR_Dev")
@@ -235,8 +234,8 @@ all_ben_uses <- AU_to_ben_use %>%
 
 
 AU_all <- AU_all %>%
-  mutate(AU_final_status = factor(AU_final_status, 
-                                  levels=c("Unassessed", '3D',"3", "3B", "3C", "2", "5", '4B', '4A', '4C', '4' ), ordered=TRUE)) %>%
+  mutate(AU_parameter_category = factor(AU_parameter_category, 
+                                        levels=c("Unassessed", '3D',"3", "3B", "3C", "2", '4B', '4C', '4','4A', "5" ), ordered=TRUE)) %>%
   distinct()
 
 all_ben_uses2 <- all_ben_uses %>%
@@ -266,7 +265,7 @@ BU_rollup <- AU_BU %>%
   group_by(AU_ID, ben_use) %>%
   summarise(AU_Name = max(AU_Name, na.rm = TRUE),
             AU_Description = max(AU_Description, na.rm = TRUE),
-            Category = max(AU_final_status)) %>%
+            Category = max(AU_parameter_category)) %>%
   right_join(filter(all_ben_uses, AU_ID %in% AU_all$AU_ID)) %>%
   mutate(Category = as.character(Category),
          Category = ifelse(is.na(Category), 'Unassessed', Category )) %>%
@@ -285,24 +284,24 @@ map_display <- AU_all %>%
                                     TRUE ~ Pollutant
   )) %>%
   group_by(AU_ID) %>%
-  summarise(AU_status = case_when(any(str_detect(AU_final_status, '5') | str_detect(AU_final_status, '4'))~ 'Impaired',
-                                  any(str_detect(AU_final_status, '2')) ~ "Attaining",
-                                  all(str_detect(AU_final_status, '3')) ~ "Insufficient Data",
+  summarise(AU_status = case_when(any(str_detect(AU_parameter_category, '5') | str_detect(AU_parameter_category, '4'))~ 'Impaired',
+                                  any(str_detect(AU_parameter_category, '2')) ~ "Attaining",
+                                  all(str_detect(AU_parameter_category, '3')) ~ "Insufficient Data",
                                   TRUE ~ "ERROR"
   ),
   year_last_assessed = max(year_assessed, na.rm = TRUE),
   Year_listed = ifelse(AU_status == 'Impaired', as.integer(min(Year_listed,  na.rm = TRUE)), NA_integer_ ) ,
-  Cat_5_count = length(pollutant_strd[AU_final_status == '5']),
-  Cat_4_count = length(pollutant_strd[str_detect(AU_final_status, '4')]),
+  Cat_5_count = length(pollutant_strd[AU_parameter_category == '5']),
+  Cat_4_count = length(pollutant_strd[str_detect(AU_parameter_category, '4')]),
   Impaired_count = Cat_5_count + Cat_4_count,
-  Impaired_parameters = str_flatten(pollutant_strd[!is.na(AU_final_status) & (str_detect(AU_final_status, '5') | str_detect(AU_final_status, '4'))], ","),
-  Cat_2_count = length(pollutant_strd[AU_final_status == '2']),
-  Attaining_parameters = str_flatten(pollutant_strd[!is.na(AU_final_status) & AU_final_status == '2'], ","),
-  Cat_3_count = length(pollutant_strd[AU_final_status == '3']),
-  Cat_3B_count = length(pollutant_strd[AU_final_status == '3B']),
-  Cat_3D_count = length(pollutant_strd[AU_final_status == '3D']),
+  Impaired_parameters = str_flatten(pollutant_strd[!is.na(AU_parameter_category) & (str_detect(AU_parameter_category, '5') | str_detect(AU_parameter_category, '4'))], ","),
+  Cat_2_count = length(pollutant_strd[AU_parameter_category == '2']),
+  Attaining_parameters = str_flatten(pollutant_strd[!is.na(AU_parameter_category) & AU_parameter_category == '2'], ","),
+  Cat_3_count = length(pollutant_strd[AU_parameter_category == '3']),
+  Cat_3B_count = length(pollutant_strd[AU_parameter_category == '3B']),
+  Cat_3D_count = length(pollutant_strd[AU_parameter_category == '3D']),
   Cat_3_count_total = sum(Cat_3_count, Cat_3B_count, Cat_3D_count),
-  Insufficient_parameters = str_flatten(pollutant_strd[!is.na(AU_final_status) & str_detect(AU_final_status, '3')], ",")
+  Insufficient_parameters = str_flatten(pollutant_strd[!is.na(AU_parameter_category) & str_detect(AU_parameter_category, '3')], ",")
   )
 
 
@@ -326,7 +325,7 @@ writeData(wb = wb, sheet = "BU_rollup", x = BU_rollup, headerStyle = header_st)
 writeData(wb = wb, sheet = "Delistings", x = Delistings, headerStyle = header_st)
 writeData(wb = wb, sheet = "map_display", x = map_display, headerStyle = header_st)
 
-saveWorkbook(wb, 'Rollups/Final rollup/AU_all_rollup.xlsx', overwrite = TRUE) 
+saveWorkbook(wb, "AU_all_rollup.xlsx", overwrite = TRUE) 
 
 
 
